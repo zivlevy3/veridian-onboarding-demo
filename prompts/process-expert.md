@@ -19,7 +19,7 @@ it, use it as given):
   department: { department, mission, primary_kpis, ... } | null,
   team: { team_id, team, mission, core_tools, primary_office, ... } | null,
   office: { office_id, city, work_model, ... } | null,
-  people: { manager, skipManager, executive, hrbp, humanBuddy, directReports: [...] },
+  people: { manager, skipManager, executive, hrbp, humanBuddy, professionalMentor, directReports: [...] },
   role: { role_id, title, core_collaboration, ... } | null,
   careerLevel: { track, level, label, scope, ... } | null,
   systems: [ { system, purpose, access_method, due: { days, isPreboarding, unparsed } } ],
@@ -92,7 +92,7 @@ orchestrator/manager may later override in the edit step - not your job here):
 | `human_buddy` | mandatory | Intro meeting - never deferred. If `people.humanBuddy` is null, still add the item but note the gap (see below) instead of inventing a name |
 | `hr` | mandatory | Intake session, if the org has one - never deferred |
 | `skip_manager` | recommended | Can defer 1-2 weeks under load |
-| `professional_mentor` | recommended | Can defer under load |
+| `professional_mentor` | recommended | Use `context.people.professionalMentor` if present (only ever populated via manager intake - framework part F §13/14, there is no DB source for it). If it's null, that's a pipeline limitation, not a fact about this employee - don't invent a name; note it in `gaps` instead |
 | `interface_contact` | recommended | Local or Global team contact; mandatory only if there's a direct, immediate work dependency |
 | `direct_report` | mandatory, always | Manager's own 1:1 with a direct report - see the numbered rule above. Weeks 1-2 only. Not subject to the shared 5/week cap (has its own allowance) |
 | `team_member` | mandatory for the one 6+-team group meeting; flexible otherwise | See the numbered rule above for exactly when it's the mandatory group meeting vs. an optional individual follow-up |
