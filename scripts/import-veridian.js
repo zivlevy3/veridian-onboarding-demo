@@ -92,7 +92,30 @@ const LOAD_ORDER = ['Departments', 'Offices', 'Teams', 'Employees', 'Products', 
 // Only these tables are ever dropped/recreated here - app-state tables (manager_intake,
 // plans, plan_item_status - see db/persistence-schema.sql) live in the same file but are
 // never touched by this script, so re-importing an updated xlsx doesn't wipe saved plans.
-const ORG_TABLES = Object.values(SHEETS).map((spec) => spec.table);
+// company_overview isn't in SHEETS (its sheet is a transposed Metric/Value layout, not a
+// normal row-per-record sheet - see importOverview) but still needs dropping/recreating.
+const ORG_TABLES = [...Object.values(SHEETS).map((spec) => spec.table), 'company_overview'];
+
+// Overview is a transposed Metric/Value sheet (one row per field), not a row-per-record
+// table like everything else - handled separately rather than forced into the SHEETS shape.
+function importOverview(db, workbook) {
+  const sheet = workbook.Sheets.Overview;
+  if (!sheet) throw new Error('Sheet "Overview" not found in workbook');
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null });
+  const values = new Map(rows.slice(1).map(([metric, value]) => [metric, value]));
+
+  db.prepare(
+    `INSERT INTO company_overview (company_name, category, employee_count, offices, as_of_date, purpose) VALUES (?, ?, ?, ?, ?, ?)`
+  ).run(
+    values.get('Company') ?? null,
+    values.get('Category') ?? null,
+    values.get('Employees') ?? null,
+    values.get('Offices') ?? null,
+    values.get('As-of date') ?? null,
+    values.get('Purpose') ?? null
+  );
+  console.log('Imported 1 row into company_overview (from "Overview")');
+}
 
 function main() {
   if (!fs.existsSync(XLSX_PATH)) {
@@ -107,6 +130,8 @@ function main() {
   db.exec(fs.readFileSync(SCHEMA_PATH, 'utf8'));
 
   const workbook = XLSX.readFile(XLSX_PATH, { cellDates: true });
+
+  importOverview(db, workbook);
 
   for (const sheetName of LOAD_ORDER) {
     const spec = SHEETS[sheetName];

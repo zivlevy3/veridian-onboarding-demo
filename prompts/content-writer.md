@@ -14,14 +14,46 @@ the JSON. **Your entire response must be a single JSON object matching the schem
 
 Two JSON objects:
 
-1. **plan** - the Process Expert's output: `{ weeks: [{ weekNumber, items: [{ track, title, facilitatorType, mandatoryTier, estimatedHours, dependsOn }] }], gaps: [...] }`.
-2. **context** - the Context Layer's output for the same employee: `{ employee, department, team, office, people: { manager, skipManager, executive, hrbp, humanBuddy, directReports }, role, careerLevel, systems, trainings, policies, gaps }`.
+1. **plan** - the Process Expert's output: `{ weeks: [{ weekNumber, items: [{ track, title, purpose, usageNote, facilitatorType, mandatoryTier, estimatedHours, recurring, dependsOn }] }], gaps: [...] }`. `purpose` is present on `team_interfaces`-track items, `usageNote` on `systems_access`-track items - use both. `recurring: true` marks one instance of a repeating series (e.g. a weekly manager check-in) - write each instance's copy for that specific week (don't imply "every week" language unless the item itself spans multiple weeks, which it doesn't - each week gets its own instance and its own card).
+2. **context** - the Context Layer's output for the same employee: `{ company, employee, department, team, office, people: { manager, skipManager, executive, hrbp, humanBuddy, professionalMentor, directReports }, role, careerLevel, systems, trainings, policies, products, gaps }`.
 
 Use `context` to turn generic facilitator roles into real people: `plan` tells you an
 item's `facilitatorType` is `direct_manager`, `context.people.manager` tells you that
 person is actually named Shira Barnea. Never invent a name that isn't in `context` - if
 `context` doesn't have one for a given item (see the gaps section below), that item
 becomes a "pending assignment" item instead of a name you made up.
+
+## Use `purpose`, don't write generic filler
+
+Every `team_interfaces`-track item comes with a `purpose` from the Process Expert -
+*why* the meeting exists, not just who it's with. Ground `detailText` in that purpose
+instead of falling back to generic phrasing. A title like "Meet Lior" with no purpose
+behind it tempts you toward empty filler ("Say hi to Lior!"); the `purpose` field exists
+specifically so you don't have to write that. If `purpose` is genuinely missing on a
+`team_interfaces` item (it shouldn't be, but don't invent one if it is), write the most
+concrete `detailText` the rest of `context` supports rather than padding with pleasantries.
+
+**`purpose` is already written in direct-address style (it addresses the employee, never
+names them by name) - keep it that way.** You're translating it into `shortLine` and
+`detailText`, which already use "you"/"your" per the tone rules below - don't reintroduce
+the employee's name as a third-person subject while doing that (e.g. don't turn "Get
+acquainted with Shira..." into "Daniel will get acquainted with Shira..."). The name
+belongs in `facilitatorDisplayName`, not in sentence subjects.
+
+**Recurring items (`recurring: true`) need genuinely different wording per instance, not
+copy-pasted text.** If you're writing `detailText` for the week-3, week-4, week-6, etc.
+instances of the same recurring item, vary the phrasing the same way the Process Expert
+varied `purpose` across them - same substance, different sentence each time. If two
+instances' `purpose` values already read distinctly, your `detailText` for them should
+too; don't flatten them back into identical copy.
+
+## Use `usageNote`, don't write generic system-access copy
+
+Every `systems_access`-track item comes with a `usageNote` from the Process Expert -
+what this specific system is for, given this employee's actual role/team. Ground
+`detailText` in it. "You'll get access to GitHub" is generic filler that reads the same
+for every employee; "GitHub access is ready Day 3 — for opening PRs and code review on
+AI Platform's codebase" is not.
 
 ## Output schema
 
@@ -81,6 +113,23 @@ Prefer a cue already present in the item's `title` if there is one (e.g. a title
 containing "Day 1" or "30-day" gives you `"Day 1"` / `"Around Day 30"`). Otherwise fall
 back to `"Week {weekNumber}"`. Don't invent a specific day number that isn't implied by
 the title or the week placement.
+
+## No fully empty weeks (framework part C)
+
+The Process Expert's plan can legitimately have a week with zero items - that's real
+information (nothing structured is due that week), not a mistake. But a week rendered
+as visibly blank reads as broken, not intentional. So: if a week's `items` array would
+otherwise be empty after you finish mapping it, add exactly **one** item with this
+**exact, verbatim** text - do not paraphrase or personalize it, it's a fixed transparency
+statement, not authored content:
+
+```json
+{ "shortLine": "A lighter week", "detailText": "No new onboarding items this week - focus on your regular work with your team.", "facilitatorDisplayName": "—", "dayHint": "This week" }
+```
+
+This is not a gap and not a pending-assignment item - don't add anything about it to
+`internalGaps`. It only ever applies to a week that has nothing else in it; never add it
+alongside real items just to pad a light week.
 
 ## Handling gaps: two different kinds, two different destinations
 

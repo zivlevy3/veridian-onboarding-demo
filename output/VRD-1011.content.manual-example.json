@@ -4,76 +4,28 @@
       "weekNumber": 1,
       "items": [
         {
-          "shortLine": "Meet Shira for your Day 1 walkthrough",
-          "detailText": "You'll spend part of your first day with Shira Barnea, your manager, walking through your onboarding plan and what to expect over the next few months.",
+          "shortLine": "Meet Shira & walk through your plan",
+          "detailText": "Get acquainted with Shira on your first day, walk through your onboarding plan together, and get clear on what's expected in the first weeks.",
           "facilitatorDisplayName": "Shira Barnea (your manager)",
           "dayHint": "Day 1"
         },
         {
           "shortLine": "Say hi to Lior, your buddy",
-          "detailText": "Lior Biton is your Human Buddy — your go-to person for the everyday questions, introductions, and how things actually work around here.",
+          "detailText": "Meet Lior, your Human Buddy — a low-stakes, always-available contact for the everyday questions that don't need to go through your manager.",
           "facilitatorDisplayName": "Lior Biton (your buddy)",
           "dayHint": "Day 1"
         },
         {
-          "shortLine": "Welcome session with HR",
-          "detailText": "A short session with HR to get you set up — benefits, logistics, and anything else you need to feel settled in.",
-          "facilitatorDisplayName": "HR team",
-          "dayHint": "Week 1"
-        },
-        {
-          "shortLine": "Say hello to Noa, your skip-level",
-          "detailText": "A quick intro with Noa Levi, Director of AI Engineering, who leads the broader group your team sits in.",
-          "facilitatorDisplayName": "Noa Levi (Director, AI Engineering)",
-          "dayHint": "Week 1"
-        },
-        {
-          "shortLine": "Meet the whole AI Platform team",
-          "detailText": "A group meet-and-greet with the full AI Platform team (12 people, so we're doing this together rather than one-by-one) — the easiest way to put faces to names early on.",
-          "facilitatorDisplayName": "AI Platform team",
-          "dayHint": "Week 1"
-        },
-        {
-          "shortLine": "Google Workspace ready before Day 1",
-          "detailText": "Your email, calendar, and shared drive are all set up before you even start — one less thing to sort out on day one.",
-          "facilitatorDisplayName": "IT Operations",
-          "dayHint": "Before Day 1"
-        },
-        {
-          "shortLine": "Get set up on Slack",
-          "detailText": "Slack access lands on Day 1 — it's where the team hangs out and gets things done day to day.",
-          "facilitatorDisplayName": "IT Operations",
+          "shortLine": "Office tour with Lior",
+          "detailText": "Get physically oriented in the Tel Aviv office with Lior — where things are, how the space works, no manager required.",
+          "facilitatorDisplayName": "Lior Biton (your buddy)",
           "dayHint": "Day 1"
         },
         {
-          "shortLine": "Explore the Notion knowledge base",
-          "detailText": "Notion access is ready Day 1 — it's home to Veridian's handbooks, docs, and team knowledge.",
-          "facilitatorDisplayName": "People Operations",
-          "dayHint": "Day 1"
-        },
-        {
-          "shortLine": "Set up your HiBob profile",
-          "detailText": "HiBob is Veridian's HR system — your profile, time off, and the org chart, ready to go on Day 1.",
-          "facilitatorDisplayName": "People Operations",
-          "dayHint": "Day 1"
-        },
-        {
-          "shortLine": "Get access to Jira",
-          "detailText": "Jira access arrives Day 2, once your manager signs off — that's where the team tracks its work.",
-          "facilitatorDisplayName": "Engineering Operations",
-          "dayHint": "Day 2"
-        },
-        {
-          "shortLine": "Get set up on GitHub",
-          "detailText": "GitHub access is ready Day 3, after manager approval and the security training below.",
-          "facilitatorDisplayName": "Engineering",
-          "dayHint": "Day 3"
-        },
-        {
-          "shortLine": "Get a look into Figma",
-          "detailText": "Figma access lands Day 3 — handy for following along on product and design work.",
-          "facilitatorDisplayName": "Design",
-          "dayHint": "Day 3"
+          "shortLine": "Veridian 101",
+          "detailText": "A self-paced session covering Veridian's vision, values, departments, and where we work — Tel Aviv HQ, London, and Austin. The first of six sessions on the company (1 of 6).",
+          "facilitatorDisplayName": "Self-paced (LMS)",
+          "dayHint": "Week 1"
         },
         {
           "shortLine": "Complete Security Awareness training",
@@ -88,34 +40,76 @@
           "dayHint": "By Day 7"
         },
         {
-          "shortLine": "Skim the key company policies",
-          "detailText": "A self-guided read through the handful of policies that matter most day to day — hybrid work, security, code review, deployments, expenses, and customer data.",
-          "facilitatorDisplayName": "Self-paced",
-          "dayHint": "Week 1"
+          "shortLine": "Google Workspace ready before Day 1",
+          "detailText": "Email, calendar, and shared drive for day-to-day company communication — set up before you even start.",
+          "facilitatorDisplayName": "IT Operations",
+          "dayHint": "Before Day 1"
         },
         {
-          "shortLine": "Get to know AI Platform's mission",
-          "detailText": "A short read on what the AI Platform team owns and how it fits into Engineering's broader goals.",
-          "facilitatorDisplayName": "Self-paced",
-          "dayHint": "Week 1"
+          "shortLine": "Get set up on Slack",
+          "detailText": "Slack access lands on Day 1 — where the AI Platform team and cross-functional partners communicate day to day.",
+          "facilitatorDisplayName": "IT Operations",
+          "dayHint": "Day 1"
         },
         {
-          "shortLine": "Review your role profile",
-          "detailText": "Take a look at the Backend Engineer role profile to get a feel for how your role typically collaborates across the team.",
-          "facilitatorDisplayName": "Self-paced",
-          "dayHint": "Week 1"
+          "shortLine": "Explore the Notion knowledge base",
+          "detailText": "Notion access is ready Day 1 — home for Veridian's engineering handbooks and the AI Platform team's own docs.",
+          "facilitatorDisplayName": "People Operations",
+          "dayHint": "Day 1"
         },
         {
-          "shortLine": "Your mentor — coming soon",
-          "detailText": "Your manager will pair you with a Professional Mentor soon to help with deeper technical guidance — we'll let you know as soon as that's set.",
-          "facilitatorDisplayName": "To be assigned",
-          "dayHint": "Coming soon"
+          "shortLine": "Set up your HiBob profile",
+          "detailText": "HiBob is ready Day 1 — your employee profile, time off requests, and the org chart.",
+          "facilitatorDisplayName": "People Operations",
+          "dayHint": "Day 1"
+        },
+        {
+          "shortLine": "Get access to Jira",
+          "detailText": "Jira access arrives Day 2 — for tracking sprint work and tickets on the AI Platform team's board.",
+          "facilitatorDisplayName": "Engineering Operations",
+          "dayHint": "Day 2"
+        },
+        {
+          "shortLine": "Get set up on GitHub",
+          "detailText": "GitHub access is ready Day 3 — for opening PRs and code review on AI Platform's codebase.",
+          "facilitatorDisplayName": "Engineering",
+          "dayHint": "Day 3"
+        },
+        {
+          "shortLine": "Get a look into Figma",
+          "detailText": "Figma access lands Day 3 — handy for following along on product/design work that touches AI Platform's UI surfaces.",
+          "facilitatorDisplayName": "Design",
+          "dayHint": "Day 3"
         }
       ]
     },
     {
       "weekNumber": 2,
       "items": [
+        {
+          "shortLine": "Team deep-dive with Shira",
+          "detailText": "Get the full operating picture of the team from Shira in one sitting — mission, metrics, workflows, key interfaces, and where to find docs and reports.",
+          "facilitatorDisplayName": "Shira Barnea (your manager)",
+          "dayHint": "Week 2"
+        },
+        {
+          "shortLine": "Meet the whole AI Platform team",
+          "detailText": "Meet the 12 people you'll be working alongside day to day, in one sitting rather than waiting weeks for individual intros.",
+          "facilitatorDisplayName": "AI Platform team",
+          "dayHint": "Week 2"
+        },
+        {
+          "shortLine": "Veridian's products",
+          "detailText": "A self-paced look at what Veridian builds: Knowledge Hub, AI Assistant, AI Agents, and Governance. Session 2 of 6 on the company.",
+          "facilitatorDisplayName": "Self-paced (LMS)",
+          "dayHint": "Week 2"
+        },
+        {
+          "shortLine": "Who we serve: market & customers",
+          "detailText": "A self-paced session on Veridian's market and the kinds of customers it serves. Session 3 of 6 on the company.",
+          "facilitatorDisplayName": "Self-paced (LMS)",
+          "dayHint": "Week 2"
+        },
         {
           "shortLine": "Complete GDPR Basics training",
           "detailText": "A short course on data privacy fundamentals, required for everyone at Veridian.",
@@ -134,33 +128,141 @@
       "weekNumber": 3,
       "items": [
         {
+          "shortLine": "Skim the key company policies",
+          "detailText": "A self-guided read through the handful of policies that matter most day to day — hybrid work, security, code review, deployments, expenses, and customer data.",
+          "facilitatorDisplayName": "Self-paced",
+          "dayHint": "Week 3"
+        },
+        {
           "shortLine": "Take Secure Development training",
           "detailText": "A deeper course on writing secure code, tailored for engineers.",
           "facilitatorDisplayName": "Self-paced",
           "dayHint": "By Day 21"
+        },
+        {
+          "shortLine": "How Veridian makes money",
+          "detailText": "A self-paced session on Veridian's business model. Session 4 of 6 on the company.",
+          "facilitatorDisplayName": "Self-paced (LMS)",
+          "dayHint": "Week 3"
+        },
+        {
+          "shortLine": "How we measure success",
+          "detailText": "A self-paced session on the key metrics Veridian tracks. Session 5 of 6 on the company.",
+          "facilitatorDisplayName": "Self-paced (LMS)",
+          "dayHint": "Week 3"
+        },
+        {
+          "shortLine": "Welcome session with HR",
+          "detailText": "Get set up on benefits and logistics, with a direct contact at HR from here on.",
+          "facilitatorDisplayName": "HR team",
+          "dayHint": "Week 3"
+        },
+        {
+          "shortLine": "Weekly check-in with Shira",
+          "detailText": "Stay aligned with Shira this week and flag anything that already feels off track.",
+          "facilitatorDisplayName": "Shira Barnea (your manager)",
+          "dayHint": "Week 3"
         }
       ]
     },
-    { "weekNumber": 4, "items": [] },
+    {
+      "weekNumber": 4,
+      "items": [
+        {
+          "shortLine": "Where we're headed",
+          "detailText": "A self-paced session on Veridian's strategic direction and near-term roadmap — the last of the six company sessions, now that you've got the fuller picture behind you.",
+          "facilitatorDisplayName": "Self-paced (LMS)",
+          "dayHint": "Week 4"
+        },
+        {
+          "shortLine": "Review your role profile",
+          "detailText": "Take a look at the Backend Engineer role profile to get a feel for how your role typically collaborates across the team.",
+          "facilitatorDisplayName": "Self-paced",
+          "dayHint": "Week 4"
+        },
+        {
+          "shortLine": "Say hello to Noa, your skip-level",
+          "detailText": "Meet Noa Levi, Director of AI Engineering — the person who leads the broader group your team sits in.",
+          "facilitatorDisplayName": "Noa Levi (Director, AI Engineering)",
+          "dayHint": "Week 4"
+        },
+        {
+          "shortLine": "Weekly check-in with Shira",
+          "detailText": "A quick sync with Shira this week to catch anything before it piles up.",
+          "facilitatorDisplayName": "Shira Barnea (your manager)",
+          "dayHint": "Week 4"
+        },
+        {
+          "shortLine": "Engineering department overview",
+          "detailText": "A session with Shira on where Engineering fits into Veridian and what it's aiming for this year.",
+          "facilitatorDisplayName": "Shira Barnea (your manager)",
+          "dayHint": "Week 4"
+        }
+      ]
+    },
     {
       "weekNumber": 5,
       "items": [
         {
-          "shortLine": "Check in with Shira at 30 days",
-          "detailText": "A dedicated session with Shira to look back at your first month, flag anything that's off track, and re-prioritize together.",
+          "shortLine": "Check in with Shira — 30-day review",
+          "detailText": "This week's check-in doubles as your 30-day review — stepping back with Shira to see how the first month matched the plan and re-prioritize together.",
           "facilitatorDisplayName": "Shira Barnea (your manager)",
           "dayHint": "Around Day 30"
+        },
+        {
+          "shortLine": "Meet Tal, your HRBP",
+          "detailText": "Build a direct relationship with Tal Harari in People, beyond the initial HR intake session.",
+          "facilitatorDisplayName": "Tal Harari (HRBP)",
+          "dayHint": "Week 5"
+        },
+        {
+          "shortLine": "Your mentor — coming soon",
+          "detailText": "Your manager will pair you with a Professional Mentor soon to help with deeper technical guidance — we'll let you know as soon as that's set.",
+          "facilitatorDisplayName": "To be assigned",
+          "dayHint": "Coming soon"
         }
       ]
     },
-    { "weekNumber": 6, "items": [] },
-    { "weekNumber": 7, "items": [] },
-    { "weekNumber": 8, "items": [] }
+    {
+      "weekNumber": 6,
+      "items": [
+        {
+          "shortLine": "Weekly check-in with Shira",
+          "detailText": "Keep the weekly rhythm going with Shira and raise anything that needs attention.",
+          "facilitatorDisplayName": "Shira Barnea (your manager)",
+          "dayHint": "Week 6"
+        }
+      ]
+    },
+    {
+      "weekNumber": 7,
+      "items": [
+        {
+          "shortLine": "Weekly check-in with Shira",
+          "detailText": "A short sync with Shira to stay in step and catch anything early.",
+          "facilitatorDisplayName": "Shira Barnea (your manager)",
+          "dayHint": "Week 7"
+        }
+      ]
+    },
+    {
+      "weekNumber": 8,
+      "items": [
+        {
+          "shortLine": "Weekly check-in with Shira",
+          "detailText": "Your weekly touchpoint with Shira — stay aligned and clear out any blockers.",
+          "facilitatorDisplayName": "Shira Barnea (your manager)",
+          "dayHint": "Week 8"
+        }
+      ]
+    }
   ],
   "internalGaps": [
-    "No explicit interface map exists for Veridian teams - nothing in this employee's context identifies which specific teams AI Platform interfaces with, so no Local/Global interface-contact meetings could be scheduled. Needs a data source or a manager-intake answer.",
-    "AI Platform has 12 people (6+), so only the mandatory group intro was scheduled per framework part D §11. There's no data indicating which specific teammates are relevant to this employee's ongoing work, so no individual follow-up intros were added - the manager should add any in the edit step.",
-    "Framework part C §9 defines 30/60/90-day check-ins; this plan's schema only covers 8 weeks (56 days), so only the day-30 checkpoint is included. Day-60 and day-90 check-ins need to be scheduled once the plan extends past week 8.",
-    "This plan does not include applied 'doing' work tickets (out of scope by design for this pipeline) - actual work assignments should come from the employee's manager/team backlog."
+    "DEMO ASSUMPTION (see prompts/process-expert.md and README.md): business-track LMS sessions 3-6 (market & customers, business model, key metrics, roadmap) have no real source data anywhere in this dataset - their descriptions are topical only. Must be validated against the real LMS before this assumption ships to production.",
+    "No explicit interface map exists for Veridian teams - nothing in this employee's context identifies which specific teams AI Platform interfaces with, so no Local/Global interface-contact meetings could be scheduled.",
+    "AI Platform has 12 people (6+), so per framework part D §11 only the mandatory group intro was scheduled - no data indicates which specific teammates are relevant to this employee's ongoing work, so no individual follow-ups were added.",
+    "Week 1 has 7 load units against the 6-unit cap - unavoidable given 3 Day-1-anchored people items, LMS session 1 (pinned to week 1), 2 trainings genuinely due by day 7, and the systems bundle. Flagged by the validator, not silently resolved - see plan gaps for the full breakdown.",
+    "The Engineering department overview (week 4) defaults to the direct manager as facilitator since no dedicated 'Trainer' role exists in this dataset.",
+    "This plan does not include applied 'doing' work tickets (out of scope by design for this pipeline)."
   ]
 }

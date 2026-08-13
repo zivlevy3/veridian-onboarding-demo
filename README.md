@@ -21,6 +21,11 @@ AI-generated, personalized (2-month) onboarding plans, built on the Veridian org
 - `prompts/content-writer.md` — system prompt for the Content Writer agent (turns plan items into `{shortLine, detailText, facilitatorDisplayName, dayHint}`; splits gaps into employee-facing "pending assignment" items vs. HR-only `internalGaps`)
 - `lib/content-writer-agent.js`, `scripts/run-content-writer.js` — real Anthropic API call (requires `ANTHROPIC_API_KEY`); not yet run against the live API in this repo
 - `output/*.content.manual-example.json` — hand-generated content-writer output for the same two employees, same manual-example convention
+- `lib/manager-intake.js` — `resolveManagerIntake()` (resolve buddy/mentor emails to real employees for an in-memory merge), `validateMentorSelection()` (primary mentor must be the employee's own manager or same `team_id`; secondary mentor is unrestricted)
+- `lib/orchestrator.js` — `runOrchestrator(db, employeeId, intakeInput)`: Context Layer → merge manager intake → Process Expert → validate (halts on failure) → Content Writer → persist
+- `scripts/run-orchestrator.js` — CLI: `node scripts/run-orchestrator.js <employee_id> [--buddy=email] [--mentor=email] [--notes=...] [--jobPostingText=...]`
+- `db/persistence-schema.sql`, `lib/persistence.js` — app-state tables (`manager_intake`, `plans`, `plan_item_status`) living in the same `veridian.sqlite` file but never touched by `scripts/import-veridian.js` (which now drops/recreates only the org-data tables by name, not the whole file). `savePlan` / `getPlan` / `approvePlan` / `toggleItemStatus` / `saveManagerIntake`. Item ids are assigned positionally (`w{week}-i{index}`) the first time a plan is saved.
+- `server.js` — dashboard v1: `GET /plan/:planId`, `POST /plan/:planId/item/:itemId/toggle`, `POST /plan/:planId/approve`. Fully server-rendered, reads/writes the real persistence layer on every request — no static JSON, no client-side state. Run with `npm run dashboard`, open `http://localhost:3000/plan/2`.
 
 ## Setup
 
@@ -33,11 +38,18 @@ Requires Node 22.5+ (uses the built-in `node:sqlite` module — no native build 
 
 ## Status
 
-Repo/schema/import, Context Layer, Process Expert, and Content Writer are all done —
-demonstrated end-to-end against real data for two employees (an IC and a manager), with
-the real `ANTHROPIC_API_KEY` calls in `lib/process-expert-agent.js` and
-`lib/content-writer-agent.js` written and ready but not yet exercised in this
-environment (no key here) — see `output/*.manual-example.json` / `*.content.manual-example.json`.
+Repo/schema/import, Context Layer, Process Expert, Content Writer, Orchestrator, and the
+persistence layer are all done — demonstrated end-to-end against real data for two
+employees (an IC and a manager), with the real `ANTHROPIC_API_KEY` calls in
+`lib/process-expert-agent.js` and `lib/content-writer-agent.js` written and ready but not
+yet exercised in this environment (no key here) — see
+`output/*.manual-example.json` / `*.content.manual-example.json`. Running the orchestrator
+end-to-end confirms the pipeline works right up to that same API call.
+
+Persistence was verified across an actual process restart (two separate `node` processes,
+not just closing/reopening a handle in the same script): saved a plan, marked two items
+complete, and read it back in a fresh process with the right items still marked complete.
+`approvePlan` was verified to refuse a second approval once a plan is no longer `draft`.
 
 **The "ops agent" from the original 3-agent design was dropped, not deferred** — its job
 (assigning real people, enforcing scheduling/sequencing rules) turned out to already be
@@ -45,7 +57,46 @@ covered by the Context Layer + Process Expert (see `docs/PROJECT-README.md` for 
 rationale, and commit `95fb82d` for where that logic actually lives). There are only two
 content-generating agents now: Process Expert and Content Writer.
 
-Next: the **Orchestrator** — running Context Layer → Process Expert → Content Writer in
-sequence in code, including the manager-intake step (Buddy/Mentor/free-text JD, framework
-part D §13) that has to happen *before* that sequence runs. After that: the AI Buddy (RAG)
-agent, untouched so far.
+**Known gap, documented not built**: there's no real trigger for manager intake yet (new
+hire enters the system → automated email to the manager with a form link). It's entered
+manually via CLI flags for now. See `docs/PROJECT-README.md` for what that needs
+(`onboarding_requests` table, email integration, a web form) — all dashboard-stage work.
+
+The **dashboard (v1)** is live and connected to real persistence — verified in an actual
+browser, not just the terminal: toggled 3 items via real checkbox clicks (full POST +
+redirect round-trips), then did a hard page reload and confirmed via the DOM
+(`checkbox.checked`) that all 3 stayed checked and the header's completion count updated
+from real DB state (`5 / 22 completed`). Color tags (purple=role, turquoise=team_interfaces,
+coral=business, amber=systems_access) and the click-to-expand detail view were both
+verified rendering correctly too.
+
+**Known gap, by design for v1**: there is **no auth or role separation** — employee,
+manager, and HR all see the exact same shared view at `/plan/:planId`. In particular,
+`internalGaps` (meant to be HR/manager-only per the Content Writer's design) are
+deliberately **not rendered anywhere on the dashboard at all** for now, rather than shown
+to everyone — the safer default until real roles exist. Building actual permissions is
+future dashboard work, not done here.
+
+**Known gap found while building the dashboard**: the Content Writer's approved output
+schema (`shortLine`/`detailText`/`facilitatorDisplayName`/`dayHint`) never carried a
+`track` field, but the dashboard needs one for the color tags. Fixed by attaching `track`
+at the persistence boundary (`lib/orchestrator.js`'s `attachTracks()`, called right before
+`savePlan` — the same place `id` already gets attached), matched positionally against the
+Process Expert's plan rather than by reopening the Content Writer's schema. Pending-
+assignment items the Content Writer appends (which have no Process Expert counterpart)
+default to `team_interfaces`.
+
+**⚠️ DEMO ASSUMPTION — NOT PRODUCTION POLICY**: `prompts/process-expert.md`'s `business`
+track (6 fixed LMS sessions: overview, product, market & customers, business model, key
+metrics, roadmap) is told to **assume all 6 sessions exist in the LMS** and to write a
+plausible title + description for each, even though this dataset has real source data
+for only 2 of them (`company_overview`, `products`) — sessions 3-6 (market/customers,
+business model, metrics, roadmap) have **no real data behind them at all**. This
+overrides the pipeline's normal "flag a GAP instead of inventing content" rule
+(`onboarding-framework.md` rule 3), for demo purposes only. **Before this ships in any
+real deployment, session content must be validated against the actual LMS, and
+GAP-flagging must be re-enabled for any session that turns out not to exist.** Same
+warning is duplicated as a comment in `prompts/process-expert.md` itself, so it can't be
+missed by only reading one of the two files.
+
+Next: the **AI Buddy** (RAG) agent, untouched so far.

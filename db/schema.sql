@@ -5,6 +5,20 @@
 -- during load (employees self-reference by email before all rows exist) and
 -- re-enables it afterwards with a foreign_key_check.
 
+-- Single-row table from the xlsx's "Overview" sheet (Metric/Value pairs, transposed -
+-- imported separately in scripts/import-veridian.js, not via the generic SHEETS loop).
+-- This is genuinely all the company-level data that exists anywhere in the source pack -
+-- no product description, no ICP, no business-model detail. See docs/PROJECT-README.md
+-- for that gap.
+CREATE TABLE company_overview (
+  company_name          TEXT,
+  category               TEXT,
+  employee_count          INTEGER,
+  offices                 TEXT,
+  as_of_date              TEXT,
+  purpose                 TEXT
+);
+
 CREATE TABLE departments (
   department          TEXT PRIMARY KEY,
   headcount            INTEGER,
