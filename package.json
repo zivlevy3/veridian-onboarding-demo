@@ -4,12 +4,14 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "import": "node scripts/import-veridian.js"
+    "import": "node scripts/import-veridian.js",
+    "dashboard": "node server.js"
   },
   "engines": {
     "node": ">=22.5.0"
   },
   "dependencies": {
+    "express": "^5.2.1",
     "xlsx": "^0.18.5"
   }
 }

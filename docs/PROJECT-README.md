@@ -33,16 +33,20 @@ Input → תשאול מנהל/ת מגייס/ת (Buddy/Mentor/JD חופשי) → 
 ## סטטוס נוכחי בפועל (עודכן)
 | שלב | סטטוס |
 |---|---|
-| 1. סכימת נתונים + repo | **הושלם** - `db/schema.sql` + `scripts/import-veridian.js`, מייבא מ-Veridian xlsx (185 עובדים, 12 גיליונות) |
+| 1. סכימת נתונים + repo | **הושלם** - `db/schema.sql` + `scripts/import-veridian.js`, מייבא מ-Veridian xlsx (185 עובדים, 12 גיליונות). `import-veridian.js` מוריד/יוצר מחדש **רק** את טבלאות הארגון - לא נוגע בטבלאות ה-persistence (ראו שלב 4.5) |
 | 2. Context layer | **הושלם** - `lib/context.js` (`buildEmployeeContext`), `lib/dates.js`, `lib/interfaces.js` |
 | 3. מומחה תהליכים | **הושלם** - `prompts/process-expert.md` + `lib/plan-validate.js` (2 בדיקות ולידציה עצמאיות: תקרת 5/שבוע, חלון שבועות 1-2 ל-direct_report). כולל את מה שתוכנן במקור ל"סוכן תפעול" (ראו למעלה) |
 | 3.5. כותב תוכן | **הושלם** - `prompts/content-writer.md` + `lib/content-writer-agent.js`, מפריד pending-assignment מ-internalGaps |
-| 4. Orchestrator | **לא התחיל - זה השלב הבא**: הרצת מומחה תהליכים → כותב תוכן ברצף בקוד, כולל שלב תשאול מנהל/ת מגייס/ת (Buddy/Mentor/JD חופשי, framework חלק D סעיף 13) לפני הריצה - עדיין לא קיים בכלל, כרגע כל סוכן מורץ ידנית בנפרד |
-| 5. AI Buddy (RAG) | **לא התחיל** - סוכן נפרד, לא נגענו בו |
+| 4. Orchestrator | **הושלם** - `lib/orchestrator.js`, `lib/manager-intake.js`: מריץ Context Layer → מיזוג תשאול מנהל/ת מגייס/ת → מומחה תהליכים → ולידציה (עוצר אם נכשל) → כותב תוכן → שמירה |
+| 4.5. Persistence | **הושלם** - `lib/persistence.js` + `db/persistence-schema.sql`: טבלאות `manager_intake`/`plans`/`plan_item_status`, `validateMentorSelection` (primary mentor חייב מנהל/ת ישיר/ה או אותו team_id; secondary ללא הגבלה), נבדק שרד restart אמיתי (תהליכי node נפרדים) |
+| 5. AI Buddy (RAG) | **לא התחיל** - סוכן נפרד, לא נגענו בו. השלב הבא בתוכנית |
 | 6. רובריקת איכות פורמלית | לא רשמי - פזור בתוך ה-Framework |
 | 7-9. דשבורד, DB חי, QA | לא התחילו |
 
-**הערה חשובה**: כל ריצות מומחה התהליכים/כותב התוכן עד כה הן `output/*.manual-example.json` - נוצרו ידנית מול הפרומפט וה-context האמיתיים כי אין `ANTHROPIC_API_KEY` בסביבת הפיתוח הזו. `lib/process-expert-agent.js` ו-`lib/content-writer-agent.js` כתובים ומוכנים לקריאת API אמיתית.
+**הערה חשובה**: כל ריצות מומחה התהליכים/כותב התוכן עד כה הן `output/*.manual-example.json` - נוצרו ידנית מול הפרומפט וה-context האמיתיים כי אין `ANTHROPIC_API_KEY` בסביבת הפיתוח הזו. `lib/process-expert-agent.js` ו-`lib/content-writer-agent.js` כתובים ומוכנים לקריאת API אמיתית. `scripts/run-orchestrator.js VRD-1011 --mentor=...` נבדק עד לאותה נקודה בדיוק - המיזוג עם manager intake עובד, הכישלון היחיד הוא קריאת ה-API עצמה.
+
+## GAP מתועד: אין עדיין טריגר אמיתי ל-manager intake (לא לבנות כרגע)
+הטריגר האמיתי (עובד/ת חדש/ה נכנס/ת למערכת → מייל אוטומטי למנהל/ת עם קישור לטופס) **לא קיים**. `manager_intake` מוזן כרגע ידנית/CLI (`--buddy=`, `--mentor=` ב-`scripts/run-orchestrator.js`, או קריאה ישירה ל-`resolveManagerIntake`/`saveManagerIntake`), לא דרך טופס אמיתי. דורש בהמשך: טבלת `onboarding_requests` (טריגר כניסת עובד/ת חדש/ה), אינטגרציית email, טופס web - כל אלה שייכים לשלב הדשבורד (שלב 7 למעלה), לא לשכבת ה-persistence הנוכחית.
 
 ## המלצה להמשך השיחה הבאה ב-Claude Code
-"קרא את README.md ואת docs/PROJECT-README.md, ובוא נבנה את ה-Orchestrator: שלב תשאול מנהל/ת מגייס/ת (framework חלק D סעיף 13) ואז הרצה ברצף של buildEmployeeContext → מומחה תהליכים → כותב תוכן."
+"קרא את README.md ואת docs/PROJECT-README.md, ובוא נדבר על ה-AI Buddy - סוכן RAG חי על שכבת ידע ארגוני + Glossary/FAQ."
