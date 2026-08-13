@@ -37,9 +37,9 @@
         },
         {
           "track": "team_interfaces",
-          "title": "AI Platform team meet & greet (group intro — team of 12, group format per >6 threshold)",
+          "title": "AI Platform team meet & greet (group intro — team of 12, mandatory per framework part D §11's 6+ rule)",
           "facilitatorType": "team_member",
-          "mandatoryTier": "recommended",
+          "mandatoryTier": "mandatory",
           "estimatedHours": 1,
           "dependsOn": []
         },
@@ -208,6 +208,7 @@
   "gaps": [
     "No Professional Mentor field exists anywhere in the Context Layer output - mentor assignment happens via manager intake (framework part F §13/14), a separate upstream step not yet built. No professional_mentor item was scheduled for anyone until that step exists.",
     "No explicit interface map exists for Veridian teams (no source table lists which teams interface with which). resolveInterfaceScope() can compare two named teams, but nothing in this employee's context identifies which specific teams AI Platform interfaces with, so no interface_contact meetings were scheduled - this needs a data source or a manager-intake answer.",
+    "AI Platform has 12 people (6+), so per the updated framework part D §11 only the mandatory group intro was scheduled. role.core_collaboration (\"Cross-functional partners, manager, immediate team\") doesn't name specific teammates, so no additional context-driven individual team_member follow-ups were added - the manager should add any in the edit step.",
     "Framework part C §9 defines 30/60/90-day check-ins; this plan's schema only covers 8 weeks (56 days), so only the day-30 checkpoint (week 5) fits. Day-60 and day-90 check-ins fall outside this plan's window and need to be scheduled once the plan extends past week 8.",
     "This agent does not generate applied 'doing' work tickets (out of scope by design) - weeks 4, 6, 7 and 8 are correspondingly light; actual work assignments should come from the employee's manager/team backlog, not this plan."
   ]

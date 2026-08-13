@@ -21,8 +21,16 @@
         },
         {
           "track": "team_interfaces",
+          "title": "Intro meeting with Amit Cohen (VP Engineering — skip-level)",
+          "facilitatorType": "skip_manager",
+          "mandatoryTier": "recommended",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
           "title": "1:1 with Emily Morris (direct report)",
-          "facilitatorType": "team_member",
+          "facilitatorType": "direct_report",
           "mandatoryTier": "mandatory",
           "estimatedHours": 0.5,
           "dependsOn": []
@@ -30,7 +38,7 @@
         {
           "track": "team_interfaces",
           "title": "1:1 with Gili Harari (direct report)",
-          "facilitatorType": "team_member",
+          "facilitatorType": "direct_report",
           "mandatoryTier": "mandatory",
           "estimatedHours": 0.5,
           "dependsOn": []
@@ -38,7 +46,31 @@
         {
           "track": "team_interfaces",
           "title": "1:1 with Lior Peretz (direct report)",
-          "facilitatorType": "team_member",
+          "facilitatorType": "direct_report",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Miguel Thomas (direct report)",
+          "facilitatorType": "direct_report",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Roni Levin (direct report)",
+          "facilitatorType": "direct_report",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Yoni Shor (direct report)",
+          "facilitatorType": "direct_report",
           "mandatoryTier": "mandatory",
           "estimatedHours": 0.5,
           "dependsOn": []
@@ -138,32 +170,8 @@
       "items": [
         {
           "track": "team_interfaces",
-          "title": "1:1 with Miguel Thomas (direct report)",
-          "facilitatorType": "team_member",
-          "mandatoryTier": "mandatory",
-          "estimatedHours": 0.5,
-          "dependsOn": []
-        },
-        {
-          "track": "team_interfaces",
-          "title": "1:1 with Roni Levin (direct report)",
-          "facilitatorType": "team_member",
-          "mandatoryTier": "mandatory",
-          "estimatedHours": 0.5,
-          "dependsOn": []
-        },
-        {
-          "track": "team_interfaces",
-          "title": "1:1 with Yoni Shor (direct report)",
-          "facilitatorType": "team_member",
-          "mandatoryTier": "mandatory",
-          "estimatedHours": 0.5,
-          "dependsOn": []
-        },
-        {
-          "track": "team_interfaces",
           "title": "1:1 with Eli Sasson (direct report)",
-          "facilitatorType": "team_member",
+          "facilitatorType": "direct_report",
           "mandatoryTier": "mandatory",
           "estimatedHours": 0.5,
           "dependsOn": []
@@ -171,7 +179,31 @@
         {
           "track": "team_interfaces",
           "title": "1:1 with Elliot Carter (direct report)",
-          "facilitatorType": "team_member",
+          "facilitatorType": "direct_report",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Rachel Clarke (direct report)",
+          "facilitatorType": "direct_report",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Sofia White (direct report)",
+          "facilitatorType": "direct_report",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Yair Shani (direct report)",
+          "facilitatorType": "direct_report",
           "mandatoryTier": "mandatory",
           "estimatedHours": 0.5,
           "dependsOn": []
@@ -197,38 +229,6 @@
     {
       "weekNumber": 3,
       "items": [
-        {
-          "track": "team_interfaces",
-          "title": "1:1 with Rachel Clarke (direct report)",
-          "facilitatorType": "team_member",
-          "mandatoryTier": "mandatory",
-          "estimatedHours": 0.5,
-          "dependsOn": []
-        },
-        {
-          "track": "team_interfaces",
-          "title": "1:1 with Sofia White (direct report)",
-          "facilitatorType": "team_member",
-          "mandatoryTier": "mandatory",
-          "estimatedHours": 0.5,
-          "dependsOn": []
-        },
-        {
-          "track": "team_interfaces",
-          "title": "1:1 with Yair Shani (direct report)",
-          "facilitatorType": "team_member",
-          "mandatoryTier": "mandatory",
-          "estimatedHours": 0.5,
-          "dependsOn": []
-        },
-        {
-          "track": "team_interfaces",
-          "title": "Intro meeting with Amit Cohen (VP Engineering — skip-level)",
-          "facilitatorType": "skip_manager",
-          "mandatoryTier": "recommended",
-          "estimatedHours": 0.5,
-          "dependsOn": []
-        },
         {
           "track": "role",
           "title": "Secure Development training",
@@ -283,7 +283,6 @@
     "No Professional Mentor field exists anywhere in the Context Layer output - mentor assignment happens via manager intake (framework part F §13/14), a separate upstream step not yet built. No professional_mentor item was scheduled until that step exists.",
     "No explicit interface map exists for Veridian teams. Nothing in this employee's context identifies which specific teams Connectors interfaces with, so no interface_contact meetings were scheduled - this needs a data source or a manager-intake answer.",
     "Framework part C §9 defines 30/60/90-day check-ins; this plan's schema only covers 8 weeks (56 days), so only the day-30 checkpoint (week 5) fits. Day-60 and day-90 check-ins fall outside this plan's window.",
-    "This employee manages 11 direct reports - all 11 1:1s are Mandatory per framework part D §11 (manager/IC structural exception) and could not legally be deferred or dropped to satisfy the 5-meetings/week cap. They were spread across weeks 1-3 (3/5/3) by this agent to respect the cap without violating mandatory-never-deferred - this is a scheduling choice, not a framework-mandated split, and should be reviewed by the manager in the edit step.",
-    "This agent does not generate applied 'doing' work tickets (out of scope by design) - weeks 4, 6 and 8 are correspondingly light."
+    "This agent does not generate applied 'doing' work tickets (out of scope by design) - weeks 3, 4, 6 and 8 are correspondingly light."
   ]
 }

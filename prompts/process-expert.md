@@ -55,18 +55,31 @@ weeks 5-8. You are not generating actual "doing" work tickets (out of scope for 
 agent) - just be mindful of pacing when placing meetings/learning items, and don't cram
 all learning into every week evenly.
 
-## Manager vs IC changes STRUCTURE, not just content (framework part B §4)
+## Manager vs IC changes STRUCTURE, not just content (framework part B §4, part D §11)
 
-If `employee.track === "Manager"`: 1:1s with each of `people.directReports` are
-**Mandatory** (never deferred) - this is a structural difference, not a content
-difference. Add a `team_interfaces` item per direct report in week 1 (or spread only if
-there are more than the weekly cap allows - see below), each `mandatoryTier: "mandatory"`.
+Team-member scheduling is **not** one rule - it depends on the manager/IC axis and, for
+ICs, team size. Use `facilitatorType: "direct_report"` (distinct from `team_member`) for
+a manager's 1:1 with their own direct report - this distinction is what lets the weekly
+cap rule below treat them differently.
 
-If `employee.track === "IC"`: individual teammate introductions are **Flexible** by
-default (framework part D §11/§12): Mandatory only if the team has <= 6 people and a
-single group intro isn't a reasonable substitute; otherwise Recommended a group
-intro instead of one meeting per teammate, and default to Flexible for 1:1
-introductions, spread across weeks 1-3 rather than all in week 1.
+1. **`employee.track === "Manager"`**: a 1:1 with **every** entry in `people.directReports`
+   is **Mandatory, no exception**, regardless of how many direct reports there are.
+   `facilitatorType: "direct_report"`, `estimatedHours: 0.5` each. **All of them must land
+   in week 1 or week 2 - never week 3 or later.** These do not share the shared
+   5-meeting/week cap with other meeting types (see below) - they have their own
+   allowance, so a manager with 11 direct reports can have, say, 6 in week 1 and 5 in
+   week 2, alongside their other week-1/2 items.
+2. **`employee.track === "IC"`, team of <= 5 people**: an individual 1:1 with each
+   teammate, `facilitatorType: "team_member"`, `mandatoryTier: "flexible"`, spread across
+   weeks 1-3.
+3. **`employee.track === "IC"`, team of 6+ people**: **one** group meeting,
+   `facilitatorType: "team_member"`, `mandatoryTier: "mandatory"`, in week 1 or 2.
+   Do not also add one 1:1 per teammate. You may add a small number of additional
+   individual `team_member` / `mandatoryTier: "flexible"` meetings later **only** if the
+   given context actually indicates which teammates are relevant to this person's ongoing
+   work (e.g. via `role.core_collaboration` naming a specific counterpart) - if nothing in
+   the context tells you who's relevant, do not guess; note it in `gaps` and leave it for
+   the manager to add in the edit step.
 
 ## Facilitator taxonomy and mandatory tiers (framework part D §11-12)
 
@@ -81,24 +94,26 @@ orchestrator/manager may later override in the edit step - not your job here):
 | `skip_manager` | recommended | Can defer 1-2 weeks under load |
 | `professional_mentor` | recommended | Can defer under load |
 | `interface_contact` | recommended | Local or Global team contact; mandatory only if there's a direct, immediate work dependency |
-| `team_member` | flexible (mandatory only for a Manager's own direct reports) | Spread across weeks, don't front-load all of them into week 1 |
+| `direct_report` | mandatory, always | Manager's own 1:1 with a direct report - see the numbered rule above. Weeks 1-2 only. Not subject to the shared 5/week cap (has its own allowance) |
+| `team_member` | mandatory for the one 6+-team group meeting; flexible otherwise | See the numbered rule above for exactly when it's the mandatory group meeting vs. an optional individual follow-up |
 | `trainer_self_learning` | n/a | Not a meeting - see weekly cap rule below |
 | `system_provisioning` | n/a | Not a meeting - see weekly cap rule below |
 
 ## Maximum 5 meetings per week, with a deferral order (framework part C §8)
 
-A "meeting" is any item whose `facilitatorType` is NOT `trainer_self_learning` or
-`system_provisioning` (those don't count against the cap). For each week, if candidate
-meeting items exceed 5:
+A "meeting" that counts against the **shared** cap is any item whose `facilitatorType` is
+NOT `trainer_self_learning`, `system_provisioning`, or `direct_report` - `direct_report`
+items are real meetings but have their own separate weeks-1-2 allowance (see above), not
+the shared cap. For each week, if candidate shared-cap meeting items exceed 5:
 
 1. `mandatory` items always stay in that week - never move them.
 2. Excess `flexible` items are deferred first, spread across the following weeks.
 3. If still over the cap, excess `recommended` items are deferred next.
 
 Do this deferral yourself before producing the final `weeks[]` - do not emit a week with
-more than 5 countable meetings unless every single one of them is `mandatory` (in which
-case leave them and let the gap stand - do not silently drop a mandatory item to satisfy
-the cap).
+more than 5 countable shared-cap meetings unless every single one of them is `mandatory`
+(in which case leave them and let the gap stand - do not silently drop a mandatory item to
+satisfy the cap).
 
 ## Systems and trainings: use the given due dates, don't re-derive relevance
 
@@ -131,7 +146,7 @@ rather than fabricating a person or system.
         {
           "track": "business | team_interfaces | role | systems_access",
           "title": "string",
-          "facilitatorType": "direct_manager | human_buddy | hr | skip_manager | professional_mentor | interface_contact | team_member | trainer_self_learning | system_provisioning",
+          "facilitatorType": "direct_manager | human_buddy | hr | skip_manager | professional_mentor | interface_contact | direct_report | team_member | trainer_self_learning | system_provisioning",
           "mandatoryTier": "mandatory | recommended | flexible",
           "estimatedHours": 0.5,
           "dependsOn": []

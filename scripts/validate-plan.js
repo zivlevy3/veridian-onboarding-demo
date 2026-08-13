@@ -1,7 +1,8 @@
-// Runs the weekly-meeting-cap validator against an already-generated plan JSON file.
+// Runs both plan validators (shared weekly meeting cap + direct-report 1:1 window)
+// against an already-generated plan JSON file.
 // Usage: node scripts/validate-plan.js <path-to-plan.json>
 const fs = require('node:fs');
-const { reportWeeklyMeetingCapViolations } = require('../lib/plan-validate');
+const { reportPlanViolations } = require('../lib/plan-validate');
 
 const filePath = process.argv[2];
 if (!filePath) {
@@ -10,5 +11,5 @@ if (!filePath) {
 }
 
 const plan = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-const { ok } = reportWeeklyMeetingCapViolations(plan);
+const { ok } = reportPlanViolations(plan);
 process.exit(ok ? 0 : 2);

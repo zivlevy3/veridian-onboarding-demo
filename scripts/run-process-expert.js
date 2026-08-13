@@ -7,7 +7,7 @@ const path = require('node:path');
 const { openDb } = require('../lib/db');
 const { buildEmployeeContext } = require('../lib/context');
 const { runProcessExpert } = require('../lib/process-expert-agent');
-const { reportWeeklyMeetingCapViolations } = require('../lib/plan-validate');
+const { reportPlanViolations } = require('../lib/plan-validate');
 
 async function main() {
   const employeeId = process.argv[2];
@@ -27,7 +27,7 @@ async function main() {
   console.log(`Built context for ${context.employee.full_name} (${employeeId}). Calling process-expert agent...`);
   const plan = await runProcessExpert(context);
 
-  reportWeeklyMeetingCapViolations(plan);
+  reportPlanViolations(plan);
 
   const outDir = path.join(__dirname, '..', 'output');
   fs.mkdirSync(outDir, { recursive: true });
