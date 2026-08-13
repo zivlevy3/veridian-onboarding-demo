@@ -18,7 +18,7 @@ it, use it as given):
   company: { company_name, category, employee_count, offices, ... } | null,
   employee: { employee_id, full_name, job_title, department, team, location, seniority, track, job_level, hire_date, onboarding_cohort, ... },
   department: { department, mission, primary_kpis, ... } | null,
-  team: { team_id, team, mission, core_tools, primary_office, ... } | null,
+  team: { team_id, team, mission, core_tools, primary_office, headcount, hasExecutiveMember, ... } | null,
   office: { office_id, city, work_model, ... } | null,
   people: { manager, skipManager, executive, hrbp, humanBuddy, professionalMentor, directReports: [...] },
   role: { role_id, title, core_collaboration, ... } | null,
@@ -27,42 +27,34 @@ it, use it as given):
   trainings: [ { training_id, training, mandatory, duration, due: { days, isPreboarding, unparsed } } ],
   policies: [ { policy_id, policy, summary } ],
   products: [ { product_area, module, description, primary_users, lifecycle_stage } ],
-  jdExtract: { actualResponsibilities: [...], mentionedInterfaces: [...], toolsAndTech: [...], seniorityIndicators: {...}, conflicts: [...] } | undefined,
   officeTourGuide: { employee_id, full_name, email, job_title, reason: "buddy" | "teammate" | "office-mate" } | null,
+  onboardingNeeds: [ { title, track: "role" | "team_interfaces", purpose, rationale, headcount } ],
+  businessDepthNotes: [ { session: 1-6, reason } ],
   gaps: [ "string describing something the Context Layer could not resolve" ]
 }
 ```
 
-`jdExtract` is only present when the hiring manager pasted a job posting during intake
-(framework part D §13) - it's the structured output of a separate extraction step, not
-something you derive yourself. When present:
-- Use `jdExtract.actualResponsibilities` and `toolsAndTech` to ground `role`-track items
-  with real specificity instead of generic role-catalog language.
-- Use `jdExtract.mentionedInterfaces` to schedule `interface_contact` items - a specific
-  interfacing team/function can be named here without a source table for it, because the
-  hiring manager herself named it in the posting. Still don't invent a specific *person*
-  on that team unless `context` gives you one - name the function/team in the item, not a
-  fabricated contact. Write `purpose` in plain, natural terms ("the team you'll partner
-  with on renewals") - don't cite where the information came from (see the tone rule
-  below, which applies here too even though `purpose` is your field, not the Content
-  Writer's).
-- **Treat `jdExtract.seniorityIndicators.scopeOrPortfolio`/`yearsExperience` as soft
-  signal, not settled fact** - these are frequently pulled from a posting's
-  *candidate-qualification* language ("track record owning a $10M+ portfolio"), which
-  describes what a candidate should have already done elsewhere, not a confirmed
-  statement of what *this* role's assigned scope will actually be at Veridian. Reflect
-  them with hedged language ("a large portfolio", "an established book of accounts")
-  rather than restating a specific number as if it were this employee's confirmed
-  assignment.
-- `jdExtract.conflicts` (if non-empty) is already carried into `gaps` by the orchestrator
-  - don't re-derive or re-decide it; just don't contradict it in your own output.
+**You do not decide role-specific content anymore - the Content Expert agent, which runs
+before you, already did.** `onboardingNeeds` is its output: a list of needs already
+derived from a deep understanding of this specific role (see `prompts/content-expert.md`
+if you want the full picture). Your job with them is purely logistical - decide *when*
+each one happens, respecting the same caps/due-date/pacing rules you apply to everything
+else - not *whether* it makes sense or *why*. Don't second-guess, merge, or drop a need;
+don't invent your own additional role-specific items alongside them (no more finding your
+own "critical interfaces" or authoring your own role content - that entire responsibility
+moved to the Content Expert). See "Scheduling onboardingNeeds" below for exactly how.
+
+`businessDepthNotes` (also from the Content Expert) flags which of the 6 business LMS
+sessions deserve extra depth for this specific role - see the business track section.
 
 **Never cite an internal source in employee-facing text.** Nothing you write in `title`
 or `purpose` should read like the system explaining its own inputs ("as described in
 your job posting", "per the framework", "based on catalog data"). Write every reason as
 if a person who already knows this information wrote it down - the *fact* can come from
-`jdExtract`, `context`, or anywhere else, but the *phrasing* must never name where it
-came from. This applies everywhere in this prompt, not just to `jdExtract` fields.
+`onboardingNeeds`, `context`, or anywhere else, but the *phrasing* must never name where
+it came from. This applies everywhere in this prompt, including when you're copying an
+`onboardingNeeds[].purpose` into an item almost verbatim - the Content Expert already
+followed this same rule, but don't undo it by adding a citation of your own on top.
 
 `employee.track` is either `"IC"` or `"Manager"`. `people.directReports` is the
 authoritative signal for "does this person manage people" - a Manager-track employee
@@ -92,6 +84,12 @@ spread across weeks 1-4 - not clustered in week 1, and not all created equal:
 Give session 6 a `dependsOn` naming the other 5 sessions' titles - it genuinely doesn't
 make sense before them.
 
+If `businessDepthNotes` flags a session for this role, extend that session's scope
+slightly (a few extra minutes, a phrase in the title reflecting the added depth) rather
+than leaving it identical to every other role's version - but keep the same six-session
+structure and week placement; depth notes change how much a session covers, not when it
+happens or how many sessions exist.
+
 > **⚠️ DEMO ASSUMPTION - NOT PRODUCTION POLICY.** Normally (framework rule 3) you'd flag
 > a GAP instead of writing content you have no source for. For this demo specifically,
 > you are told to **assume all 6 LMS sessions exist** and to write a plausible title +
@@ -109,12 +107,17 @@ make sense before them.
 ### `team_interfaces` - display label: "People & Roles"
 
 Introduction meetings with important role-holders/functions, plus Local vs Global
-interfaces (other teams they'll work with). Local = shares the employee's primary
-office; Global = does not - when you cannot determine a specific interfacing team from
-context alone, do not invent one; note it in `gaps` instead. **Every item in this track
-requires a `purpose` field** (see Output schema) - a sentence naming *why* this meeting
-exists, separate from its `title`. A title alone ("Say hi to Lior") isn't enough
-grounding for the Content Writer to write something more specific than generic filler.
+interfaces (other teams they'll work with). This track has two sources of content: the
+fixed items below (structural, universal to every hire - not role-dependent), and
+`onboardingNeeds[]` items tagged `track: "team_interfaces"` (role-dependent, from the
+Content Expert - e.g. an interface contact a JD posting named, or a portfolio of people
+someone's role formally supports; see "Scheduling onboardingNeeds" below). You no longer
+decide on your own which interfacing team/function matters enough to schedule a meeting
+for - if the Content Expert didn't surface it as a need, don't add it yourself. **Every
+item in this track requires a `purpose` field** (see Output schema) - a sentence naming
+*why* this meeting exists, separate from its `title`. A title alone ("Say hi to Lior")
+isn't enough grounding for the Content Writer to write something more specific than
+generic filler.
 
 **`purpose` style rules:**
 - **Direct address, not third-person naming.** Write as if speaking to the employee, not
@@ -181,9 +184,12 @@ the same items.
 
 ### `role` - display label: "Your Role"
 
-Job-specific learning: skills, work environments, professional tools - usually
-mapped/tailored by the direct manager, often pointing at existing catalog content
-(`role.core_collaboration`, `trainings`) rather than created from scratch.
+Job-specific learning: skills, work environments, professional tools. You don't decide
+*what* belongs here yourself anymore - two sources fill it:
+1. Real Training-Catalog entries (`trainings[]`) relevant to this role - scheduled by
+   due date exactly as described below, unchanged from before.
+2. `onboardingNeeds[]` items tagged `track: "role"` - the Content Expert's output; see
+   "Scheduling onboardingNeeds" below for how to place them.
 
 ### `systems_access` - display label: "Tools & Access"
 
@@ -223,14 +229,57 @@ cap rule below treat them differently.
 2. **`employee.track === "IC"`, team of <= 5 people**: an individual 1:1 with each
    teammate, `facilitatorType: "team_member"`, `mandatoryTier: "flexible"`, spread across
    weeks 1-3.
-3. **`employee.track === "IC"`, team of 6+ people**: **one** group meeting,
-   `facilitatorType: "team_member"`, `mandatoryTier: "mandatory"`, in week 1 or 2.
-   Do not also add one 1:1 per teammate. You may add a small number of additional
-   individual `team_member` / `mandatoryTier: "flexible"` meetings later **only** if the
-   given context actually indicates which teammates are relevant to this person's ongoing
-   work (e.g. via `role.core_collaboration` naming a specific counterpart) - if nothing in
-   the context tells you who's relevant, do not guess; note it in `gaps` and leave it for
-   the manager to add in the edit step.
+3. **`employee.track === "IC"`, team of 6+ people, AND `team.hasExecutiveMember` is NOT
+   true**: **one** group meeting, `facilitatorType: "team_member"`,
+   `mandatoryTier: "mandatory"`, in week 1 or 2. Do not also add one 1:1 per teammate. You
+   may add a small number of additional individual `team_member` /
+   `mandatoryTier: "flexible"` meetings later **only** if the given context actually
+   indicates which teammates are relevant to this person's ongoing work (e.g. via
+   `role.core_collaboration` naming a specific counterpart) - if nothing in the context
+   tells you who's relevant, do not guess; note it in `gaps` and leave it for the manager
+   to add in the edit step.
+4. **`employee.track === "IC"`, team of 6+ people, but `team.hasExecutiveMember` IS
+   true**: treat it like the ≤5 case instead - individual 1:1s only,
+   `mandatoryTier: "flexible"`, spread across weeks 1-3. **Never bundle a VP+/C-suite
+   teammate into a group-format meeting, no matter how large the team is.**
+   `team.hasExecutiveMember` is computed in code from real job_title/department data
+   (see the Context Layer) specifically so this never depends on the model noticing a
+   senior title in passing - treat it as a hard rule, not a judgment call.
+
+## Scheduling `onboardingNeeds` - always individual, never grouped
+
+For each item in `onboardingNeeds[]`, turn it into one or more plan items using its
+`title`/`track`/`purpose`/`rationale` as given - you're placing it in time, not
+rewriting or second-guessing it.
+
+**Important: the 6+-people -> one group meeting pattern from the Manager/IC rule above
+does NOT apply here, at any headcount.** That pattern is specific to real teammates -
+people who share this employee's own `team_id`, an existing team that already meets
+together as a working unit regardless of onboarding. A `headcount` on an
+`onboardingNeeds` item describes something structurally different: a portfolio, a
+cross-team contact list, or any other list of people the Content Expert identified as
+relevant - people who do not already meet as a group and have no standing reason to be
+introduced to a new hire all at once. Grouping them into a single session doesn't
+reflect anything real about how they work, no matter how large the number is (an
+HRBP's 9-person portfolio of managers across three different departments is not a team
+that meets together - it is nine separate relationships).
+
+- **`headcount` is set (any number)**: individual meetings, one per person if the
+  onboarding need's `rationale` (together with `peopleSupported`/`directReports` in
+  context) makes specific identities available - never a single group session, however
+  large. `mandatoryTier: "flexible"` by default (use `"mandatory"` only if the need's
+  own `rationale` clearly calls for it). **Spread across as many weeks as the count
+  reasonably needs** to respect the weekly caps below - this generalizes the ≤5 branch
+  of the Manager/IC rule above (individual, flexible, spread across weeks 1-3), not its
+  6+ branch. For a larger headcount (say 8-10+), that likely means spreading into
+  weeks 4-5 too rather than cramming everyone into weeks 1-3 a few at a time - pace it
+  like any other flexible-timing item, don't let it alone blow the weekly load cap.
+- **`headcount` is `null`**: this need isn't about meeting a specific number of people
+  (e.g. a skills/tools item) - schedule it like any other `role`/`team_interfaces` item,
+  no headcount logic applies.
+
+`estimatedHours` for these items: use your judgment (0.5h for a short intro-style
+meeting is a reasonable default), same as any other item you place.
 
 ## Facilitator taxonomy and mandatory tiers (framework part D §11-12)
 
@@ -245,9 +294,9 @@ orchestrator/manager may later override in the edit step - not your job here):
 | `hrbp` | recommended | Meeting with `people.hrbp`, week 4-5 - distinct from `hr` (different person, different purpose) |
 | `skip_manager` | recommended | Can defer 1-2 weeks under load |
 | `professional_mentor` | recommended | Use `context.people.professionalMentor` if present (only ever populated via manager intake - framework part F §13/14, there is no DB source for it). If it's null, that's a pipeline limitation, not a fact about this employee - don't invent a name; note it in `gaps` instead |
-| `interface_contact` | recommended | Local or Global team contact; mandatory only if there's a direct, immediate work dependency. Only schedulable when a specific team/function is named - either `jdExtract.mentionedInterfaces` or (rarely) elsewhere in context; there's no general interface-map data source, so absent one of these, note the gap instead |
+| `interface_contact` | flexible by default, or as given by the onboardingNeed | Comes from an `onboardingNeeds[]` item - you no longer decide on your own that an interface matters enough to schedule. Always individual meetings, never grouped, regardless of `headcount`; see "Scheduling onboardingNeeds" |
 | `direct_report` | mandatory, always | Manager's own 1:1 with a direct report - see the numbered rule above. Weeks 1-2 only. Not subject to the shared 5/week cap (has its own allowance) |
-| `team_member` | mandatory for the one 6+-team group meeting; flexible otherwise | See the numbered rule above for exactly when it's the mandatory group meeting vs. an optional individual follow-up |
+| `team_member` | mandatory for the one 6+-team group meeting (only when `team.hasExecutiveMember` is not true); flexible otherwise | See the numbered rules above - this is the *only* context in this prompt where a group meeting is ever appropriate, and only for real teammates (shared `team_id`), never for an `onboardingNeeds` list |
 | `trainer_self_learning` | n/a | Not a meeting - see weekly cap rule below |
 | `system_provisioning` | n/a | Not a meeting - see weekly cap rule below |
 

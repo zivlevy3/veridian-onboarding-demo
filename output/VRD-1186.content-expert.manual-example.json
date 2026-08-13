@@ -1,0 +1,37 @@
+{
+  "roleEssence": "As CS Manager for North America, Anat owns a portfolio of enterprise accounts and leads a small pod of Customer Success Managers, coaching them through pipeline reviews and career growth. Her day-to-day depends heavily on Salesforce data for forecasting NRR and churn, and on close coordination with Sales on renewals/expansion and Product on customer feedback. Expertise in this role looks like balancing hands-on account ownership with people leadership - accountable for her own book and for her team's outcomes.",
+  "onboardingNeeds": [
+    {
+      "title": "Sit in on a live QBR or account review",
+      "track": "role",
+      "purpose": null,
+      "rationale": "roleEssence names coaching CSMs through QBR prep as central to the role - seeing a real QBR run before she's the one coaching others through one is the fastest way to learn what 'good' actually looks like here. This is a genuine shadow-first case, not a default: her accounts and CSMs already have an existing cadence she's stepping into, unlike a role built from scratch.",
+      "headcount": null
+    },
+    {
+      "title": "Intro contact with Sales",
+      "track": "team_interfaces",
+      "purpose": "Connect with the Sales team you'll partner with closely on renewals and expansion.",
+      "rationale": "roleEssence explicitly names Sales coordination on renewals and expansion as a core, ongoing dependency of this role.",
+      "headcount": null
+    },
+    {
+      "title": "Intro contact with Product",
+      "track": "team_interfaces",
+      "purpose": "Connect with the Product team you'll loop customer feedback into.",
+      "rationale": "roleEssence explicitly names Product coordination on customer feedback as a core, ongoing dependency of this role.",
+      "headcount": null
+    },
+    {
+      "title": "Deep-dive on NRR/churn reporting in Salesforce",
+      "track": "role",
+      "purpose": null,
+      "rationale": "roleEssence's central accountability is forecasting NRR and churn - the standard Salesforce CRM Standards catalog training covers data-entry conventions, not manager-level reporting and forecasting mechanics, so this need fills a real gap the catalog doesn't.",
+      "headcount": null
+    }
+  ],
+  "businessDepthNotes": [
+    { "session": 3, "reason": "Customer-facing role - understanding Veridian's market and customer segments in more depth directly supports account conversations." },
+    { "session": 5, "reason": "Her core accountability is NRR/churn reporting - the company-wide metrics session is directly relevant to what she'll be forecasting." }
+  ]
+}

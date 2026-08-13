@@ -1,0 +1,13 @@
+{
+  "roleEssence": "Moran is an HR Business Partner supporting a portfolio of managers across the Executive team and Finance & Operations, coaching them through people decisions - hiring, performance, team structure - on an ongoing basis. The work is relationship-driven and advisory rather than project-based: she's a trusted resource these leaders return to repeatedly, not someone executing a single deliverable. Expertise here looks like sound judgment on people situations plus enough context across very different functions (Executive strategy, Finance operations) to advise leaders credibly in both.",
+  "onboardingNeeds": [
+    {
+      "title": "Meet the leaders in your portfolio",
+      "track": "team_interfaces",
+      "purpose": "Get to know the leaders you'll be supporting, so they have a name and face before their first real ask.",
+      "rationale": "roleEssence is fundamentally about an ongoing portfolio of leadership relationships, not a task or deliverable - meeting them is the single most direct onboarding need this role implies. Portfolio size (9) comes from peopleSupported, not invented.",
+      "headcount": 9
+    }
+  ],
+  "businessDepthNotes": []
+}
