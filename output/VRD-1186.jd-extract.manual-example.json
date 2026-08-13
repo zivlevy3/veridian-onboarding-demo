@@ -1,0 +1,17 @@
+{
+  "actualResponsibilities": [
+    "Own relationships with enterprise accounts, including executive-level stakeholders",
+    "Lead and coach a team of Customer Success Managers - pipeline reviews, QBR prep, career development",
+    "Drive proactive health monitoring and churn-risk mitigation across the portfolio",
+    "Own forecasting and reporting on NRR, churn, and adoption metrics for North America",
+    "Represent the voice of the customer in cross-functional planning"
+  ],
+  "mentionedInterfaces": ["Sales", "Product"],
+  "toolsAndTech": ["Salesforce", "Gainsight"],
+  "seniorityIndicators": {
+    "managesPeople": true,
+    "scopeOrPortfolio": "$10M+ ARR portfolio (stated as a candidate requirement under 'Requirements', not a confirmed statement of this specific role's assigned scope at Veridian)",
+    "yearsExperience": "5+ years in Customer Success or Account Management, 2+ years in a people-leadership role (candidate requirement, not a description of the role itself)"
+  },
+  "conflicts": []
+}

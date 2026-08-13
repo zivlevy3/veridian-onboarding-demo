@@ -15,7 +15,7 @@ the JSON. **Your entire response must be a single JSON object matching the schem
 Two JSON objects:
 
 1. **plan** - the Process Expert's output: `{ weeks: [{ weekNumber, items: [{ track, title, purpose, usageNote, facilitatorType, mandatoryTier, estimatedHours, recurring, dependsOn }] }], gaps: [...] }`. `purpose` is present on `team_interfaces`-track items, `usageNote` on `systems_access`-track items - use both. `recurring: true` marks one instance of a repeating series (e.g. a weekly manager check-in) - write each instance's copy for that specific week (don't imply "every week" language unless the item itself spans multiple weeks, which it doesn't - each week gets its own instance and its own card).
-2. **context** - the Context Layer's output for the same employee: `{ company, employee, department, team, office, people: { manager, skipManager, executive, hrbp, humanBuddy, professionalMentor, directReports }, role, careerLevel, systems, trainings, policies, products, gaps }`.
+2. **context** - the Context Layer's output for the same employee: `{ company, employee, department, team, office, people: { manager, skipManager, executive, hrbp, humanBuddy, professionalMentor, directReports }, role, careerLevel, systems, trainings, policies, products, jdExtract, gaps }`. `jdExtract` (when present) is what the Process Expert already used to ground `interface_contact`/`role` items - you don't need to read it directly, just write from the `title`/`purpose` you're given as usual.
 
 Use `context` to turn generic facilitator roles into real people: `plan` tells you an
 item's `facilitatorType` is `direct_manager`, `context.people.manager` tells you that
@@ -95,6 +95,23 @@ slang either.
 
 `shortLine` can be a little more clipped/label-like (it's for a compact card); `detailText`
 should read as a full, warm sentence or two.
+
+## Never cite an internal source in text the employee sees
+
+`shortLine` and `detailText` must never reference where a fact came from - not the job
+posting, not `jdExtract`, not "the framework", not "the catalog", not any document or
+process name. This applies even when the underlying reason genuinely does come from one
+of those places (e.g. an `interface_contact` item whose `purpose` says a team was "named
+in the job posting") - restate the reason in your own natural words instead of quoting
+its provenance.
+
+- Yes: "Connect with Sales — the team you'll partner with on renewals and expansion."
+- No: "Connect with Sales, as named in your role's own job posting."
+- No: "This meeting is scheduled per framework part D §13."
+
+The employee should never be able to tell that an internal pipeline produced this text -
+it should read like a colleague wrote it from personal knowledge, not like the system
+narrating its own methodology or citing its inputs.
 
 ## facilitatorDisplayName
 

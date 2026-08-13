@@ -27,9 +27,42 @@ it, use it as given):
   trainings: [ { training_id, training, mandatory, duration, due: { days, isPreboarding, unparsed } } ],
   policies: [ { policy_id, policy, summary } ],
   products: [ { product_area, module, description, primary_users, lifecycle_stage } ],
+  jdExtract: { actualResponsibilities: [...], mentionedInterfaces: [...], toolsAndTech: [...], seniorityIndicators: {...}, conflicts: [...] } | undefined,
+  officeTourGuide: { employee_id, full_name, email, job_title, reason: "buddy" | "teammate" | "office-mate" } | null,
   gaps: [ "string describing something the Context Layer could not resolve" ]
 }
 ```
+
+`jdExtract` is only present when the hiring manager pasted a job posting during intake
+(framework part D §13) - it's the structured output of a separate extraction step, not
+something you derive yourself. When present:
+- Use `jdExtract.actualResponsibilities` and `toolsAndTech` to ground `role`-track items
+  with real specificity instead of generic role-catalog language.
+- Use `jdExtract.mentionedInterfaces` to schedule `interface_contact` items - a specific
+  interfacing team/function can be named here without a source table for it, because the
+  hiring manager herself named it in the posting. Still don't invent a specific *person*
+  on that team unless `context` gives you one - name the function/team in the item, not a
+  fabricated contact. Write `purpose` in plain, natural terms ("the team you'll partner
+  with on renewals") - don't cite where the information came from (see the tone rule
+  below, which applies here too even though `purpose` is your field, not the Content
+  Writer's).
+- **Treat `jdExtract.seniorityIndicators.scopeOrPortfolio`/`yearsExperience` as soft
+  signal, not settled fact** - these are frequently pulled from a posting's
+  *candidate-qualification* language ("track record owning a $10M+ portfolio"), which
+  describes what a candidate should have already done elsewhere, not a confirmed
+  statement of what *this* role's assigned scope will actually be at Veridian. Reflect
+  them with hedged language ("a large portfolio", "an established book of accounts")
+  rather than restating a specific number as if it were this employee's confirmed
+  assignment.
+- `jdExtract.conflicts` (if non-empty) is already carried into `gaps` by the orchestrator
+  - don't re-derive or re-decide it; just don't contradict it in your own output.
+
+**Never cite an internal source in employee-facing text.** Nothing you write in `title`
+or `purpose` should read like the system explaining its own inputs ("as described in
+your job posting", "per the framework", "based on catalog data"). Write every reason as
+if a person who already knows this information wrote it down - the *fact* can come from
+`jdExtract`, `context`, or anywhere else, but the *phrasing* must never name where it
+came from. This applies everywhere in this prompt, not just to `jdExtract` fields.
 
 `employee.track` is either `"IC"` or `"Manager"`. `people.directReports` is the
 authoritative signal for "does this person manage people" - a Manager-track employee
@@ -93,8 +126,15 @@ grounding for the Content Writer to write something more specific than generic f
 
 Fixed items in this track, beyond the manager cluster (next section):
 
-- **Day 1, ~30 min**: office tour with the Human Buddy (`facilitatorType: "human_buddy"`)
-  - in addition to the buddy intro meeting, not a replacement for it.
+- **Day 1, ~30 min**: office tour. This is a **fixed item that always gets scheduled**,
+  regardless of whether a Human Buddy is assigned - use `context.officeTourGuide`
+  (resolved in code, not something you compute yourself: it's the Buddy only if they're
+  actually at the employee's own office, otherwise a teammate or other colleague at that
+  office, checked against real location data). Set `facilitatorType: "human_buddy"` only
+  when `officeTourGuide.reason === "buddy"`; otherwise use `facilitatorType: "team_member"`.
+  If `context.officeTourGuide` is `null` (no one else found at that office), skip the item
+  and note the gap - don't invent a guide. This item is in addition to the buddy intro
+  meeting, not a replacement for it.
 - **Week 4-5**: "meet your department/area" - vision, structure, this year's goals. This
   is delivered by a person, **not** self-guided: use a specific Trainer from context if
   one fits, otherwise default to `facilitatorType: "direct_manager"` (there is no
@@ -205,7 +245,7 @@ orchestrator/manager may later override in the edit step - not your job here):
 | `hrbp` | recommended | Meeting with `people.hrbp`, week 4-5 - distinct from `hr` (different person, different purpose) |
 | `skip_manager` | recommended | Can defer 1-2 weeks under load |
 | `professional_mentor` | recommended | Use `context.people.professionalMentor` if present (only ever populated via manager intake - framework part F §13/14, there is no DB source for it). If it's null, that's a pipeline limitation, not a fact about this employee - don't invent a name; note it in `gaps` instead |
-| `interface_contact` | recommended | Local or Global team contact; mandatory only if there's a direct, immediate work dependency |
+| `interface_contact` | recommended | Local or Global team contact; mandatory only if there's a direct, immediate work dependency. Only schedulable when a specific team/function is named - either `jdExtract.mentionedInterfaces` or (rarely) elsewhere in context; there's no general interface-map data source, so absent one of these, note the gap instead |
 | `direct_report` | mandatory, always | Manager's own 1:1 with a direct report - see the numbered rule above. Weeks 1-2 only. Not subject to the shared 5/week cap (has its own allowance) |
 | `team_member` | mandatory for the one 6+-team group meeting; flexible otherwise | See the numbered rule above for exactly when it's the mandatory group meeting vs. an optional individual follow-up |
 | `trainer_self_learning` | n/a | Not a meeting - see weekly cap rule below |
