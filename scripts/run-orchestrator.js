@@ -32,7 +32,7 @@ async function main() {
     jobPostingText: flags.jobPostingText || null,
   };
 
-  const db = openDb();
+  const db = openDb({ writable: true });
   let result;
   try {
     result = await runOrchestrator(db, employeeId, intakeInput);

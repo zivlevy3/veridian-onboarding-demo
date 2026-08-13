@@ -89,14 +89,21 @@ const SHEETS = {
 // employees FK to itself is handled by disabling foreign_keys during load.
 const LOAD_ORDER = ['Departments', 'Offices', 'Teams', 'Employees', 'Products', 'Systems', 'Training Catalog', 'Policies', 'Glossary', 'FAQ', 'Career Levels', 'Roles'];
 
+// Only these tables are ever dropped/recreated here - app-state tables (manager_intake,
+// plans, plan_item_status - see db/persistence-schema.sql) live in the same file but are
+// never touched by this script, so re-importing an updated xlsx doesn't wipe saved plans.
+const ORG_TABLES = Object.values(SHEETS).map((spec) => spec.table);
+
 function main() {
   if (!fs.existsSync(XLSX_PATH)) {
     throw new Error(`Source workbook not found: ${XLSX_PATH}`);
   }
 
-  if (fs.existsSync(DB_PATH)) fs.unlinkSync(DB_PATH);
   const db = new DatabaseSync(DB_PATH);
   db.exec('PRAGMA foreign_keys = OFF');
+  for (const table of ORG_TABLES) {
+    db.exec(`DROP TABLE IF EXISTS ${table}`);
+  }
   db.exec(fs.readFileSync(SCHEMA_PATH, 'utf8'));
 
   const workbook = XLSX.readFile(XLSX_PATH, { cellDates: true });
