@@ -1,0 +1,289 @@
+{
+  "weeks": [
+    {
+      "weekNumber": 1,
+      "items": [
+        {
+          "track": "team_interfaces",
+          "title": "Day 1 1:1 with Tamar Navon — onboarding plan walkthrough & expectations",
+          "facilitatorType": "direct_manager",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 1,
+          "dependsOn": []
+        },
+        {
+          "track": "business",
+          "title": "HR welcome & intake session",
+          "facilitatorType": "hr",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 1,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Emily Morris (direct report)",
+          "facilitatorType": "team_member",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Gili Harari (direct report)",
+          "facilitatorType": "team_member",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Lior Peretz (direct report)",
+          "facilitatorType": "team_member",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "systems_access",
+          "title": "Google Workspace access (provisioned pre-start)",
+          "facilitatorType": "system_provisioning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.25,
+          "dependsOn": []
+        },
+        {
+          "track": "systems_access",
+          "title": "Slack access",
+          "facilitatorType": "system_provisioning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.25,
+          "dependsOn": []
+        },
+        {
+          "track": "systems_access",
+          "title": "Notion access",
+          "facilitatorType": "system_provisioning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.25,
+          "dependsOn": []
+        },
+        {
+          "track": "systems_access",
+          "title": "HiBob access",
+          "facilitatorType": "system_provisioning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.25,
+          "dependsOn": []
+        },
+        {
+          "track": "systems_access",
+          "title": "Jira access",
+          "facilitatorType": "system_provisioning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.25,
+          "dependsOn": []
+        },
+        {
+          "track": "systems_access",
+          "title": "GitHub access",
+          "facilitatorType": "system_provisioning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.25,
+          "dependsOn": []
+        },
+        {
+          "track": "systems_access",
+          "title": "Figma access",
+          "facilitatorType": "system_provisioning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.25,
+          "dependsOn": []
+        },
+        {
+          "track": "business",
+          "title": "Security Awareness training",
+          "facilitatorType": "trainer_self_learning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.75,
+          "dependsOn": []
+        },
+        {
+          "track": "business",
+          "title": "Code of Conduct training",
+          "facilitatorType": "trainer_self_learning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "business",
+          "title": "Self-guided: review key company policies (Hybrid Work, Information Security, Code Review, Production Deployment, Expense, Customer Data Handling)",
+          "facilitatorType": "trainer_self_learning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 1,
+          "dependsOn": []
+        },
+        {
+          "track": "business",
+          "title": "Self-guided: Connectors team mission (\"Owns connectors capabilities for the Veridian platform\") & Engineering department mission",
+          "facilitatorType": "trainer_self_learning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "weekNumber": 2,
+      "items": [
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Miguel Thomas (direct report)",
+          "facilitatorType": "team_member",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Roni Levin (direct report)",
+          "facilitatorType": "team_member",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Yoni Shor (direct report)",
+          "facilitatorType": "team_member",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Eli Sasson (direct report)",
+          "facilitatorType": "team_member",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Elliot Carter (direct report)",
+          "facilitatorType": "team_member",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "business",
+          "title": "Data Privacy & GDPR Basics training",
+          "facilitatorType": "trainer_self_learning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.67,
+          "dependsOn": []
+        },
+        {
+          "track": "role",
+          "title": "GitHub & Code Review Standards training",
+          "facilitatorType": "trainer_self_learning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 1,
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "weekNumber": 3,
+      "items": [
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Rachel Clarke (direct report)",
+          "facilitatorType": "team_member",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Sofia White (direct report)",
+          "facilitatorType": "team_member",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "1:1 with Yair Shani (direct report)",
+          "facilitatorType": "team_member",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
+          "title": "Intro meeting with Amit Cohen (VP Engineering — skip-level)",
+          "facilitatorType": "skip_manager",
+          "mandatoryTier": "recommended",
+          "estimatedHours": 0.5,
+          "dependsOn": []
+        },
+        {
+          "track": "role",
+          "title": "Secure Development training",
+          "facilitatorType": "trainer_self_learning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 1.5,
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "weekNumber": 4,
+      "items": []
+    },
+    {
+      "weekNumber": 5,
+      "items": [
+        {
+          "track": "team_interfaces",
+          "title": "30-day check-in with Tamar Navon: review progress against plan, identify gaps, re-prioritize",
+          "facilitatorType": "direct_manager",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 1,
+          "dependsOn": ["Day 1 1:1 with Tamar Navon — onboarding plan walkthrough & expectations"]
+        }
+      ]
+    },
+    {
+      "weekNumber": 6,
+      "items": []
+    },
+    {
+      "weekNumber": 7,
+      "items": [
+        {
+          "track": "role",
+          "title": "Manager Essentials training",
+          "facilitatorType": "trainer_self_learning",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 3,
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "weekNumber": 8,
+      "items": []
+    }
+  ],
+  "gaps": [
+    "human_buddy_email is not set - Human Buddy has not been assigned yet for this hire (per framework part D §13, this is always a fresh per-hire decision from manager intake, not inherited).",
+    "No Professional Mentor field exists anywhere in the Context Layer output - mentor assignment happens via manager intake (framework part F §13/14), a separate upstream step not yet built. No professional_mentor item was scheduled until that step exists.",
+    "No explicit interface map exists for Veridian teams. Nothing in this employee's context identifies which specific teams Connectors interfaces with, so no interface_contact meetings were scheduled - this needs a data source or a manager-intake answer.",
+    "Framework part C §9 defines 30/60/90-day check-ins; this plan's schema only covers 8 weeks (56 days), so only the day-30 checkpoint (week 5) fits. Day-60 and day-90 check-ins fall outside this plan's window.",
+    "This employee manages 11 direct reports - all 11 1:1s are Mandatory per framework part D §11 (manager/IC structural exception) and could not legally be deferred or dropped to satisfy the 5-meetings/week cap. They were spread across weeks 1-3 (3/5/3) by this agent to respect the cap without violating mandatory-never-deferred - this is a scheduling choice, not a framework-mandated split, and should be reviewed by the manager in the edit step.",
+    "This agent does not generate applied 'doing' work tickets (out of scope by design) - weeks 4, 6 and 8 are correspondingly light."
+  ]
+}
