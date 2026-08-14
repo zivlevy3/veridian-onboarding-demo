@@ -257,6 +257,16 @@
         },
         {
           "track": "team_interfaces",
+          "title": "Weekly check-in with Neta Lavi",
+          "purpose": "Quick weekly sync with Neta to catch blockers before they pile up.",
+          "facilitatorType": "direct_manager",
+          "mandatoryTier": "mandatory",
+          "estimatedHours": 0.5,
+          "recurring": true,
+          "dependsOn": []
+        },
+        {
+          "track": "team_interfaces",
           "title": "People department overview with Neta — vision, structure & this year's goals",
           "purpose": "Understand where People fits into Veridian and what it's aiming for this year.",
           "facilitatorType": "direct_manager",
