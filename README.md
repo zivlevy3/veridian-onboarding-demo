@@ -2,6 +2,9 @@
 
 AI-generated, personalized (2-month) onboarding plans, built on the Veridian org data.
 
+**Before any significant change, read `MEMORY.md` and `docs/onboarding-framework.md`
+first.**
+
 ## Structure
 
 - `docs/PROJECT-README.md` — project seed / decisions from the discovery phase
