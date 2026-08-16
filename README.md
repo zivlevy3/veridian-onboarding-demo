@@ -102,4 +102,12 @@ GAP-flagging must be re-enabled for any session that turns out not to exist.** S
 warning is duplicated as a comment in `prompts/process-expert.md` itself, so it can't be
 missed by only reading one of the two files.
 
+**Known gap, documented not fixed**: Veridian's dataset has no data on organizational
+rituals (All Hands, a new-hire Kickoff) - an earlier reference org used for prompt
+testing (LuminaFlow) apparently had some. This matters because the senior-contact writing
+rule (`prompts/content-writer.md` - don't frame meeting a VP+/C-suite person as a first
+introduction) assumes employees already have general awareness of senior leaders, which
+is reasonable for a ~185-person company but isn't actually backed by real ritual/
+visibility data in this dataset. See `MEMORY.md` §4.
+
 Next: the **AI Buddy** (RAG) agent, untouched so far.

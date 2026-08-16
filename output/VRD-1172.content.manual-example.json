@@ -5,61 +5,61 @@
       "items": [
         {
           "shortLine": "Meet Neta & walk through your plan",
-          "detailText": "Meet Neta on Day 1. You'll walk through your onboarding plan together — what to expect these first few weeks, and how the two of you will work together.",
+          "detailText": "Meet Neta on Day 1. You'll walk through your onboarding plan together - what to expect these first few weeks, and how the two of you will work together.",
           "facilitatorDisplayName": "Neta Lavi (your manager)",
           "dayHint": "Day 1"
         },
         {
           "shortLine": "Office tour with Tal",
-          "detailText": "A walk around the Tel Aviv office with Tal, one of your teammates — where things are and how the space works, from someone who isn't your manager.",
+          "detailText": "A walk around the Tel Aviv office with Tal, one of your teammates - where things are and how the space works, from someone who isn't your manager.",
           "facilitatorDisplayName": "Tal Harari (teammate)",
           "dayHint": "Day 1"
         },
         {
           "shortLine": "Veridian 101",
-          "detailText": "A self-paced session on Veridian's vision, values, departments, and the three offices — Tel Aviv, London, and Austin. First of six sessions on the company.",
+          "detailText": "A self-paced session on Veridian's vision, values, departments, and the three offices - Tel Aviv, London, and Austin. First of six sessions on the company.",
           "facilitatorDisplayName": "Self-paced (LMS)",
           "dayHint": "Week 1"
         },
         {
           "shortLine": "Complete Security Awareness training",
-          "detailText": "A short self-paced course on the security basics everyone at Veridian needs to know — due by Day 7.",
+          "detailText": "A short self-paced course on the security basics everyone at Veridian needs to know. Due by Day 7.",
           "facilitatorDisplayName": "Self-paced",
           "dayHint": "By Day 7"
         },
         {
           "shortLine": "Review the Code of Conduct",
-          "detailText": "A quick read on how people work together at Veridian and what's expected of everyone — due by Day 7.",
+          "detailText": "A quick read on how people work together at Veridian and what's expected of everyone. Due by Day 7.",
           "facilitatorDisplayName": "Self-paced",
           "dayHint": "By Day 7"
         },
         {
           "shortLine": "Google Workspace ready before Day 1",
-          "detailText": "Email, calendar, and shared drive — set up before you even start, so it's waiting for you on Day 1.",
+          "detailText": "Email, calendar, and shared drive, set up before you even start so it's waiting for you on Day 1.",
           "facilitatorDisplayName": "IT Operations",
           "dayHint": "Before Day 1"
         },
         {
           "shortLine": "Get set up on Slack",
-          "detailText": "Slack access lands Day 1 — where the People Partners team and the managers you support communicate day to day.",
+          "detailText": "Slack access lands Day 1. It's where the People Partners team and the managers you support communicate day to day.",
           "facilitatorDisplayName": "IT Operations",
           "dayHint": "Day 1"
         },
         {
           "shortLine": "Explore the Notion knowledge base",
-          "detailText": "Notion access is ready Day 1 — home for Veridian's People policies, playbooks, and internal HR documentation.",
+          "detailText": "Notion access is ready Day 1, home for Veridian's People policies, playbooks, and internal HR documentation.",
           "facilitatorDisplayName": "People Operations",
           "dayHint": "Day 1"
         },
         {
           "shortLine": "Set up your HiBob profile",
-          "detailText": "HiBob is ready Day 1 — the HRIS you'll work in daily on behalf of the managers you support, plus your own employee profile and time off.",
+          "detailText": "HiBob is ready Day 1, the HRIS you'll work in daily on behalf of the managers you support, plus your own employee profile and time off.",
           "facilitatorDisplayName": "People Operations",
           "dayHint": "Day 1"
         },
         {
-          "shortLine": "Your buddy — coming soon",
-          "detailText": "No buddy assigned yet — your manager will pair you with one soon. They're your go-to for the everyday questions.",
+          "shortLine": "Your buddy - coming soon",
+          "detailText": "No buddy assigned yet. Your manager will pair you with one soon - they're your go-to for the everyday questions.",
           "facilitatorDisplayName": "To be assigned",
           "dayHint": "Coming soon"
         }
@@ -70,19 +70,19 @@
       "items": [
         {
           "shortLine": "Team deep-dive with Neta",
-          "detailText": "Neta walks you through the full operating picture of the People function in one sitting — mission, metrics, workflows, key interfaces, and where to find docs and reports.",
+          "detailText": "Neta walks you through the full operating picture of the People function in one sitting: mission, metrics, workflows, key interfaces, and where to find docs and reports.",
           "facilitatorDisplayName": "Neta Lavi (your manager)",
           "dayHint": "Week 2"
         },
         {
           "shortLine": "Meet Rachel Cooper",
-          "detailText": "Connect with a fellow HRBP on the team to compare notes on how the portfolio model works day to day.",
+          "detailText": "Connect with a fellow HRBP on the team to compare notes on what supporting your own set of managers looks like day to day.",
           "facilitatorDisplayName": "Rachel Cooper (teammate, HRBP)",
           "dayHint": "Week 2"
         },
         {
           "shortLine": "Meet Tal Harari",
-          "detailText": "Connect with the team's senior HRBP — a good resource once you're navigating trickier portfolio situations.",
+          "detailText": "Connect with the team's senior HRBP, a good resource once you're navigating trickier situations with the managers you support.",
           "facilitatorDisplayName": "Tal Harari (teammate, Senior HRBP)",
           "dayHint": "Week 2"
         },
@@ -94,13 +94,13 @@
         },
         {
           "shortLine": "Veridian's products",
-          "detailText": "A self-paced look at what Veridian builds: Knowledge Hub, AI Assistant, AI Agents, and Governance. Second of six sessions on the company.",
+          "detailText": "A self-paced look at what Veridian builds: Knowledge Hub, AI Assistant, AI Agents, and Governance. Session 2 of 6 on the company.",
           "facilitatorDisplayName": "Self-paced (LMS)",
           "dayHint": "Week 2"
         },
         {
           "shortLine": "Complete GDPR Basics training",
-          "detailText": "A short course on data privacy fundamentals, required for everyone at Veridian — due by Day 14.",
+          "detailText": "A short course on data privacy fundamentals, required for everyone at Veridian. Due by Day 14.",
           "facilitatorDisplayName": "Self-paced",
           "dayHint": "By Day 14"
         }
@@ -111,32 +111,32 @@
       "items": [
         {
           "shortLine": "Who we serve: market & customers",
-          "detailText": "A self-paced session on Veridian's market and the kinds of customers it serves. Third of six sessions on the company.",
+          "detailText": "A self-paced session on Veridian's market and the kinds of customers it serves. Session 3 of 6 on the company.",
           "facilitatorDisplayName": "Self-paced (LMS)",
           "dayHint": "Week 3"
         },
         {
           "shortLine": "How Veridian makes money",
-          "detailText": "A self-paced session on Veridian's business model. Fourth of six sessions on the company.",
+          "detailText": "A self-paced session on Veridian's business model. Session 4 of 6 on the company.",
           "facilitatorDisplayName": "Self-paced (LMS)",
           "dayHint": "Week 3"
         },
         {
           "shortLine": "How we measure success",
-          "detailText": "A self-paced session on the key metrics Veridian tracks. Fifth of six sessions on the company.",
+          "detailText": "A self-paced session on the key metrics Veridian tracks. Session 5 of 6 on the company.",
           "facilitatorDisplayName": "Self-paced (LMS)",
           "dayHint": "Week 3"
         },
         {
-          "shortLine": "Meet Emma Carter",
-          "detailText": "One of the leaders in your portfolio, and the person who runs Product — a first conversation to start building that relationship.",
-          "facilitatorDisplayName": "Emma Carter (Chief Product Officer)",
+          "shortLine": "Shadow a real advisory conversation",
+          "detailText": "Sit in with Tal Harari on a real conversation with one of the managers she supports. It's the fastest way to see what a strong advisory conversation actually sounds like.",
+          "facilitatorDisplayName": "Tal Harari (Senior HRBP)",
           "dayHint": "Week 3"
         },
         {
-          "shortLine": "Meet Michal Shani",
-          "detailText": "One of the leaders in your portfolio, on the Finance team — a chance to get a first sense of how her team works.",
-          "facilitatorDisplayName": "Michal Shani (Finance Manager)",
+          "shortLine": "Meet Emma Carter",
+          "detailText": "Emma runs Product. Get aligned on how People will support her team going forward, now that you're the one she'll come to.",
+          "facilitatorDisplayName": "Emma Carter (Chief Product Officer)",
           "dayHint": "Week 3"
         },
         {
@@ -152,19 +152,19 @@
       "items": [
         {
           "shortLine": "Where we're headed",
-          "detailText": "A self-paced session on Veridian's strategic direction and near-term roadmap — the last of the six company sessions.",
+          "detailText": "A self-paced session on Veridian's strategic direction and near-term roadmap, the last of the six company sessions.",
           "facilitatorDisplayName": "Self-paced (LMS)",
           "dayHint": "Week 4"
         },
         {
           "shortLine": "Meet Roi Ben-David",
-          "detailText": "Another leader in your portfolio, on the Finance team — a name and a face before his first real ask.",
+          "detailText": "Roi directs Finance, one of the teams you'll be supporting. Worth a name and a face before his first real ask.",
           "facilitatorDisplayName": "Roi Ben-David (Director Finance)",
           "dayHint": "Week 4"
         },
         {
           "shortLine": "Say hello to Yael, your skip-level",
-          "detailText": "Meet Yael Shalev, VP People — the leader of the whole People function you're now part of.",
+          "detailText": "Meet Yael Shalev, VP People, the leader of the whole People function you're now part of.",
           "facilitatorDisplayName": "Yael Shalev (VP People)",
           "dayHint": "Week 4"
         },
@@ -182,7 +182,7 @@
         },
         {
           "shortLine": "Skim the key company policies",
-          "detailText": "A self-guided read through the policies that matter most day to day — hybrid work, security, and expenses.",
+          "detailText": "A self-guided read through the policies that matter most day to day: hybrid work, security, and expenses.",
           "facilitatorDisplayName": "Self-paced",
           "dayHint": "Week 4"
         }
@@ -192,27 +192,33 @@
       "weekNumber": 5,
       "items": [
         {
-          "shortLine": "Check in with Neta — 30-day review",
-          "detailText": "This week's check-in doubles as your 30-day review — stepping back with Neta to see how the first month matched the plan and re-prioritize together.",
+          "shortLine": "Check in with Neta - 30-day review",
+          "detailText": "This week's check-in doubles as your 30-day review. Step back with Neta to see how the first month matched the plan and re-prioritize together.",
           "facilitatorDisplayName": "Neta Lavi (your manager)",
           "dayHint": "Around Day 30"
         },
         {
           "shortLine": "Meet Maya Stern",
-          "detailText": "The CEO, and one of the leaders in your portfolio — a chance to put a face to the name early on.",
+          "detailText": "A working conversation with Maya on how People supports the executive team's people needs, and where you fit into that.",
           "facilitatorDisplayName": "Maya Stern (CEO)",
           "dayHint": "Week 5"
         },
         {
           "shortLine": "Meet Michael Bennett",
-          "detailText": "One of the leaders in your portfolio, and the person who runs Revenue at Veridian.",
+          "detailText": "Get aligned with Michael on how People supports Revenue's team needs going forward.",
           "facilitatorDisplayName": "Michael Bennett (Chief Revenue Officer)",
           "dayHint": "Week 5"
         },
         {
           "shortLine": "Meet Ben Harari",
-          "detailText": "One of the leaders in your portfolio, on the IT team — a chance to get a first sense of his day-to-day priorities.",
+          "detailText": "Ben manages IT, one of the teams you'll be supporting. A first sense of his day-to-day priorities.",
           "facilitatorDisplayName": "Ben Harari (IT Manager)",
+          "dayHint": "Week 5"
+        },
+        {
+          "shortLine": "Meet Michal Shani",
+          "detailText": "Michal manages Finance, one of the teams you'll be supporting. A first sense of how her team works.",
+          "facilitatorDisplayName": "Michal Shani (Finance Manager)",
           "dayHint": "Week 5"
         }
       ]
@@ -228,19 +234,19 @@
         },
         {
           "shortLine": "Meet Yael Shalev",
-          "detailText": "A direct working relationship with Yael as one of the leaders in your portfolio — separate from the skip-level conversation you already had.",
+          "detailText": "A direct working conversation with Yael as one of the leaders you support, separate from the skip-level relationship you already have with her.",
           "facilitatorDisplayName": "Yael Shalev (VP People)",
           "dayHint": "Week 6"
         },
         {
           "shortLine": "Meet Nathan Edwards",
-          "detailText": "One of the leaders in your portfolio, on the Legal team — a first sense of what he'll come to you for.",
+          "detailText": "Nathan manages Legal, one of the teams you'll be supporting. A first sense of what he'll come to you for.",
           "facilitatorDisplayName": "Nathan Edwards (Legal Manager)",
           "dayHint": "Week 6"
         },
         {
           "shortLine": "Meet Hannah King",
-          "detailText": "One of the leaders in your portfolio, leading Business Operations — a chance to get a first sense of her priorities.",
+          "detailText": "Hannah leads Business Operations, one of the teams you'll be supporting. A first sense of her priorities.",
           "facilitatorDisplayName": "Hannah King (Head of Business Operations)",
           "dayHint": "Week 6"
         }
@@ -262,7 +268,7 @@
       "items": [
         {
           "shortLine": "Weekly check-in with Neta",
-          "detailText": "Your weekly touchpoint with Neta — stay aligned and clear out any blockers.",
+          "detailText": "Your weekly touchpoint with Neta. Stay aligned and clear out any blockers.",
           "facilitatorDisplayName": "Neta Lavi (your manager)",
           "dayHint": "Week 8"
         }
@@ -270,13 +276,14 @@
     }
   ],
   "internalGaps": [
-    "human_buddy_email is not set for this hire. Office tour used a fallback guide (Tal Harari, teammate at the same Tel Aviv office) rather than the buddy.",
+    "The office tour used a fallback guide (Tal Harari, a Tel Aviv teammate) - see the pending Human Buddy assignment already reflected in week 1's plan, this is not a separate gap.",
     "hrbp_email is not set for this employee, so no 'meeting with your HRBP' item exists in this plan. Plausibly intentional since she's part of the HRBP function herself, but that's not confirmed in the data - flagged rather than assumed.",
     "The Teams catalog has no entry for 'People Partners' - team mission and core_tools are unknown. The team-member intros (Rachel Cooper, Tal Harari) and the department overview used real employee-table records and department.mission/primary_kpis directly instead.",
     "company_overview only has basic summary fields (name, category, employee count, offices) - no product description, ICP, or business-model detail exists anywhere in the source data.",
     "DEMO ASSUMPTION (see prompts/process-expert.md and README.md): business-track LMS sessions 3-6 have no real source data behind them - descriptions are topical only.",
-    "No manager intake was supplied for this run, so no Professional Mentor data exists - no mentor item was written, and this is a pipeline limitation for this test run, not a fact about the employee.",
-    "Her 9-person portfolio is scheduled as 9 separate individual 1:1s across weeks 3-6, not a group session - the CEO, CPO and CRO are never bundled into a shared session with each other or with the Finance/IT/Legal/Ops managers in her portfolio.",
+    "No manager intake was supplied for this run, so professionalMentor is null - no mentor item was written, and this is a pipeline limitation for this test run, not a fact about the employee.",
+    "Her 9 supported managers are scheduled as 9 separate individual 1:1s across weeks 3-6, not a group session - the CEO, CPO and CRO are never bundled into a shared session with each other or with the Finance/IT/Legal/Ops managers she supports.",
+    "The 'Shadow a real advisory conversation' item (week 3) names Tal Harari as facilitator - she's the team's senior HRBP and the natural real candidate, but the manager should confirm this assignment explicitly before the plan ships, since the underlying plan item itself didn't name a specific person.",
     "This plan does not include applied 'doing' work tickets (out of scope by design for this pipeline)."
   ]
 }

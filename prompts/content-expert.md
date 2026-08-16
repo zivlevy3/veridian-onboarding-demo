@@ -21,7 +21,7 @@ response must be a single JSON object matching the schema below.**
   "department": { "department", "mission", "primary_kpis" } | null,
   "team": { "team", "mission", "core_tools" } | null,
   "products": [ { "product_area", "module", "description", "primary_users", "lifecycle_stage" } ],
-  "peopleSupported": [ { "full_name", "job_title", "department" } ],
+  "peopleSupported": [ { "full_name", "job_title", "department", "isExecutive": true|false } ],
   "directReports": [ { "full_name", "job_title" } ]
 }
 ```
@@ -31,6 +31,9 @@ given, but everything here must still work when it's `null` (most hires won't ha
 `peopleSupported` and `directReports` are **real, already-queried org relationships** -
 if either is non-empty, that's a genuine fact about who this person will work with
 formally, not something you infer. Most roles have both empty; that's normal.
+`peopleSupported[].isExecutive` is computed in code from real job_title/department data
+(VP+/C-suite) - use it when naming/describing a specific one of these people (see the
+senior-contact note below); don't re-derive it yourself from the title text.
 
 ## The three stages, strictly in this order
 
@@ -73,12 +76,52 @@ shape first, and let the needs be whatever that shape implies - including patter
 look nothing like Shadow-then-Do.
 
 **Worked example**: an HR Business Partner's `roleEssence` is something like "supports a
-portfolio of managers on an ongoing basis, coaching them through people decisions and
+set of managers on an ongoing basis, coaching them through people decisions and
 partnering with them on team health" - **not** "does a task, watched then unsupervised."
-The onboarding need that follows directly is "meet the managers in your portfolio, paced
-to the portfolio's size" - using `peopleSupported`. That's not Shadow-then-Do at all, and
-it shouldn't be forced into that shape. The point of Stage 1 is exactly this: understand
-the role, then let stage 2 be whatever that understanding actually implies.
+The onboarding need that follows directly is "meet the managers you'll be supporting,
+paced to how many there are" - using `peopleSupported`. That's not Shadow-then-Do at all,
+and it shouldn't be forced into that shape. The point of Stage 1 is exactly this:
+understand the role, then let stage 2 be whatever that understanding actually implies.
+(Note the phrasing here avoids the word "portfolio" - it's an internal-classification
+word, not something a person would say about their own working relationships. Never use
+it, or similar words like "cohort"/"batch"/"tier", in a `title` or `purpose` - those
+flow into employee-facing text almost verbatim, so word choice here matters, not just in
+the Content Writer. `rationale` is internal-only and never shown to the employee, so it's
+fine to use precise/technical language there if it helps you reason.)
+
+**When a role-defining relationship needs BOTH `team_interfaces` and `role`.** Some roles
+aren't just adjacent to a group of people - the role's core work genuinely **is** an
+ongoing relationship with them (an HRBP and the managers they support; a CSM and the
+customers they own). When `roleEssence` describes the role this way, the introduction
+meetings themselves are the start of the actual professional work, not just a networking
+nicety - so two things should come out of Stage 2, not one:
+
+1. The `team_interfaces` meeting(s) with those people (as already described above).
+2. A **separate `role`-track need** that prepares for or accompanies those meetings -
+   frameworks/methods for that kind of professional conversation, preparation before the
+   first one, maybe shadowing someone more experienced having a real one. This is not a
+   second, independent category of content - it exists *because of* the relationship
+   meetings, so its `rationale` should say so explicitly (the Process Expert uses this to
+   schedule it early, alongside or just before the relationship meetings begin, and to
+   set `dependsOn` sensibly).
+
+**Detection rule**: if `roleEssence` says the role *is* a particular ongoing relationship
+(not just "collaborates with" or "coordinates with," but "supports," "owns," "is
+accountable for" a specific group of people) - that's the signal to emit both. A role
+that merely *interacts* with other teams (most roles) does not need this; don't force a
+second item where the relationship is incidental rather than the essence of the job.
+
+For the HRBP example above, Stage 2 would include both:
+- `{ "title": "Meet the managers you'll be supporting", "track": "team_interfaces", "headcount": 9, ... }`
+- `{ "title": "Frameworks for advisory conversations with the managers you support", "track": "role", "headcount": null, "rationale": "roleEssence defines this role as an ongoing advisory relationship, not a task - this prepares for the relationship meetings scheduled separately, not a standalone skill." }`
+
+**Naming a specific `isExecutive` contact**: when a `peopleSupported` entry with
+`isExecutive: true` is named in a `title` or `purpose` (e.g. scheduling a meeting with
+them individually), don't frame it as a first-time introduction ("put a face to the
+name," "meet X for the first time") - a VP+/C-suite person at a company this size is
+someone the employee likely already has some general awareness of. Frame it around the
+substance of the working relationship instead (what they'll actually work on together),
+not the fact of meeting them.
 
 ### Stage 3: `businessDepthNotes`
 

@@ -24,7 +24,7 @@ it, use it as given):
   role: { role_id, title, core_collaboration, ... } | null,
   careerLevel: { track, level, label, scope, ... } | null,
   systems: [ { system, purpose, access_method, due: { days, isPreboarding, unparsed } } ],
-  trainings: [ { training_id, training, mandatory, duration, due: { days, isPreboarding, unparsed } } ],
+  trainings: [ { training_id, training, mandatory, duration, audience, due: { days, isPreboarding, unparsed } } ],
   policies: [ { policy_id, policy, summary } ],
   products: [ { product_area, module, description, primary_users, lifecycle_stage } ],
   officeTourGuide: { employee_id, full_name, email, job_title, reason: "buddy" | "teammate" | "office-mate" } | null,
@@ -62,7 +62,7 @@ with an empty `directReports` array (e.g. a brand-new manager backfilling a team
 still get the Manager-shaped plan structure, since the org has designated the role as
 managerial.
 
-## The 4-track model (framework part A §2)
+## The 5-track model (framework part A §2)
 
 Every plan item belongs to exactly one track. The `track` value itself never changes
 (machine identifier, used by the cap/window validators and the dashboard) - only its
@@ -70,9 +70,13 @@ Every plan item belongs to exactly one track. The `track` value itself never cha
 
 ### `business` - display label: the company's actual name
 
-`company.company_name` (e.g. "Veridian" - never the literal word "Business"). This track
-is **6 fixed LMS sessions**, all self-guided (`facilitatorType: "trainer_self_learning"`),
-spread across weeks 1-4 - not clustered in week 1, and not all created equal:
+`company.company_name` (e.g. "Veridian" - never the literal word "Business"). **This
+track stays clean**: company/product/market/business-model knowledge only - the 6 fixed
+LMS sessions below. General mandatory training (Security Awareness, GDPR, Code of
+Conduct, anything with `audience === "All employees"`) does **not** belong here anymore -
+see the `compliance` track right after this one. This track is **6 fixed LMS sessions**,
+all self-guided (`facilitatorType: "trainer_self_learning"`), spread across weeks 1-4 -
+not clustered in week 1, and not all created equal:
 
 1. General overview - vision, values, departments, offices - **week 1**
 2. Product(s) session - **week 1-2**
@@ -104,6 +108,18 @@ happens or how many sessions exist.
 > must be validated against the real LMS - re-enable GAP-flagging for any session that
 > turns out not to exist.** (Same warning is in `README.md`.)
 
+### `compliance` - display label: "Compliance"
+
+Every entry in `trainings[]` whose `audience` is the literal string `"All employees"` -
+these are the company-wide-mandatory ones (Security Awareness, Data Privacy & GDPR
+Basics, Code of Conduct in this dataset), not role/department-specific. All
+self-guided (`facilitatorType: "trainer_self_learning"`), scheduled by their real `due`
+date exactly like any other training (see "Systems and trainings" below) - this track
+doesn't change *when* these are scheduled, only which display label they carry.
+Everything else in `trainings[]` (any other `audience` value - a department, a team, "IC"
+or "People managers", etc.) is role/department-specific and belongs under `role` instead,
+never here.
+
 ### `team_interfaces` - display label: "People & Roles"
 
 Introduction meetings with important role-holders/functions, plus Local vs Global
@@ -126,6 +142,12 @@ generic filler.
 - **One sentence, ~15-20 words.** If there are several reasons a meeting exists, pick the
   single most central one and drop the rest - don't chain them with "and... and...".
   `purpose` is a reason, not a summary of everything the meeting might touch on.
+- **No em dash (—), no internal-classification words** ("portfolio", "cohort", "batch",
+  "track", "tier"). These are Content Writer rules (see `prompts/content-writer.md`) that
+  apply here too, since the Content Writer sometimes carries `purpose` through close to
+  verbatim - better not to originate either one here than rely on it being scrubbed
+  downstream. Use a comma, a period, or a short hyphen (-) instead of an em dash; name the
+  specific relationship instead of the internal category it falls into.
 
 Fixed items in this track, beyond the manager cluster (next section):
 
@@ -186,10 +208,22 @@ the same items.
 
 Job-specific learning: skills, work environments, professional tools. You don't decide
 *what* belongs here yourself anymore - two sources fill it:
-1. Real Training-Catalog entries (`trainings[]`) relevant to this role - scheduled by
-   due date exactly as described below, unchanged from before.
+1. Real Training-Catalog entries (`trainings[]`) whose `audience` is **not**
+   `"All employees"` - i.e. genuinely role/department-specific ones. (The
+   `"All employees"` ones go to `compliance` instead - see above.) Scheduled by due date
+   exactly as described below, unchanged otherwise.
 2. `onboardingNeeds[]` items tagged `track: "role"` - the Content Expert's output; see
    "Scheduling onboardingNeeds" below for how to place them.
+
+**When a `role`-track need exists alongside a related `team_interfaces` need** (the
+Content Expert's `rationale` will say so explicitly - e.g. a "frameworks for advisory
+conversations" need that exists because of a set of relationship-meetings scheduled
+separately): schedule the `role` item **early relative to those meetings** - alongside
+or just before the first one, not scattered randomly or placed after all of them are
+already done. Set its `dependsOn` to name the relevant relationship-meeting title(s) if
+you're placing it *after* the first one; leave `dependsOn` empty if it comes first
+(nothing depends on meetings that haven't happened yet). This is still just placing the
+Content Expert's need in time, not deciding whether it belongs.
 
 ### `systems_access` - display label: "Tools & Access"
 
@@ -380,7 +414,7 @@ this prompt, this rule is absolute.
       "weekNumber": 1,
       "items": [
         {
-          "track": "business | team_interfaces | role | systems_access",
+          "track": "business | compliance | team_interfaces | role | systems_access",
           "title": "string",
           "purpose": "string - REQUIRED when track is team_interfaces. One sentence, ~15-20 words, direct address (never names the employee), the single most central reason this item exists. Omit (or null) for other tracks.",
           "usageNote": "string - REQUIRED when track is systems_access, describing what this system is for GIVEN this employee's role/team. Omit (or null) for other tracks.",

@@ -67,6 +67,32 @@ The existing abstract rules (purpose-first, second-person address, never citing 
 internal source — see "no-invent" section below) are not replaced by any of this; the
 voice anchor and the four failure modes sit on top of them.
 
+**Three more standing rules, added after a round of feedback on real output:**
+
+5. **No em dash (—) anywhere in `shortLine`/`detailText`.** A short hyphen (-) is fine.
+   Replace an em dash with a comma, a period, a hyphen, or restructure the sentence -
+   don't just swap the character and keep the same clause shape.
+6. **No internal-classification words** — "portfolio", "cohort", "batch", "track",
+   "tier" — in employee-facing text, even if `title`/`purpose` used one upstream. These
+   are system-jargon for a grouping concept, not how a person talks about their own
+   relationships. Name the specific relationship instead ("one of the managers you'll be
+   supporting", not "one of the leaders in your portfolio").
+7. **A VP+/C-suite contact never gets "meeting them for the first time" framing** ("put a
+   face to the name", "meet X for the first time"). At company scale, employees already
+   have some general awareness of who a C-suite person is before a 1:1 - write about the
+   substance of the working relationship instead of the fact of being introduced.
+   Detected per-*individual* contact via `isExecutiveContact()`/`peopleSupported[].isExecutive`
+   in `lib/context.js` (the same title-regex/department check as `hasExecutiveMember`
+   below, just applied to one person instead of a whole team) - not left for the model to
+   infer from a title it's reading for the first time.
+
+**Daniel Hadar's file (`output/VRD-1011.content.manual-example.PRE-CONTENT-EXPERT.json`)
+was created before the Content Expert architecture and all of section 1's writing
+rules** - it contains 20 em dashes and a known rule-4 violation. Kept as historical
+documentation only, not as an example of correct wording or structure - the
+`PRE-CONTENT-EXPERT` filename suffix marks this deliberately so it isn't mistaken for a
+current-standard reference in a future session.
+
 ---
 
 ## 2. Scheduling and personalization rules
@@ -113,7 +139,22 @@ Chief/VP/CEO/CFO/CTO/COO/CRO/CISO, or `department === 'Executive'`, since the se
 field alone was found inconsistent — some real C-suite rows have `seniority: 'Mid'`).
 This mirrors the project's established pattern (see `resolveOfficeTourGuide`,
 `jdExtract` destructuring): a structural rule that matters for correctness is enforced in
-code, not left to the model to notice.
+code, not left to the model to notice. The underlying check is now a reusable
+`isExecutiveContact()` function, applied two ways: aggregated across a team
+(`hasExecutiveMember`) and per-individual on every `peopleSupported` entry
+(`.isExecutive`) — the team-level use gates the group-meeting rule above; the
+per-individual use gates content-writer rule 7 (no "first meeting" framing for a named
+executive contact).
+
+**The track model grew from 4 to 5 — a `compliance` track was split out of `business`.**
+General mandatory training (`trainings[].audience === "All employees"` — Security
+Awareness, GDPR Basics, Code of Conduct in this dataset) used to live under `business`
+alongside the 6 company-knowledge LMS sessions. Split into its own `compliance` track so
+`business` stays exclusively company/product/market/business-model knowledge; anything
+audience-specific (department/team/role) still routes to `role` as before. `audience` is
+now carried through in `lib/context.js`'s `trainings[]` mapping (it was filtered on but
+not returned) specifically so the Process Expert can make this routing decision itself
+instead of the split being invisible to it.
 
 **The weekly recurring check-in is materialized as one item per week** (its own stable
 `item_id`, own completion tracking) via a `recurring: true` boolean, not an abstract
@@ -143,8 +184,21 @@ logistics, and voice are three different jobs, run in that order:
   `peopleSupported`/`directReports`), and only then derives `onboardingNeeds[]` **directly
   from that essence**, never from a template. Explicit warning against defaulting to
   "shadow, then do it alone" — that's one possible shape, not a fallback for when unsure
-  (worked example: an HRBP's essence is "supports a portfolio of managers", which implies
-  "meet your portfolio, paced to its size" — not Shadow-then-Do at all).
+  (worked example: an HRBP's essence is "supports a set of managers on an ongoing basis",
+  which implies "meet the managers you support, paced to how many there are" — not
+  Shadow-then-Do at all).
+  - **When the role's essence *is* a relationship (not just adjacent to one), the
+    onboarding need is BOTH `team_interfaces` and `role`, not one or the other.** An
+    HRBP↔managers or CSM↔customers relationship means the intro meetings themselves are
+    the start of the actual professional work — so alongside the `team_interfaces`
+    meeting(s), Content Expert also derives a `role`-track need that prepares for or
+    accompanies them (frameworks for that kind of conversation, prep, maybe shadowing a
+    more experienced peer having a real one). Not a second independent category — its
+    `rationale` says it exists *because of* the relationship meetings, and the Process
+    Expert schedules it early relative to them (alongside or just before, `dependsOn`
+    wired if it lands after the first one). Detection signal: `roleEssence` says the role
+    *is* accountable for/owns/supports a specific group of people, not merely
+    collaborates or coordinates with one.
 - **Process Expert** (`prompts/process-expert.md`) owns *when* — pure scheduling/pacing
   logic against the caps above. Explicitly does **not** decide role content anymore
   (no more "find critical interfaces" or author its own role items) — it only places
@@ -202,3 +256,11 @@ code, not just prose the model could ignore:
   surfaces must reappear (possibly paraphrased) in every downstream agent's own `gaps`/
   `internalGaps`, all the way to the dashboard's persisted `internalGaps` field (currently
   not rendered anywhere in the UI at all — see `README.md`'s "Known gap, by design").
+- **Documented, not yet fixed: no organizational-ritual data for Veridian.** An earlier
+  reference org used for prompt testing (LuminaFlow, see `docs/PROJECT-README.md`)
+  apparently had data on recurring company-wide rituals (All Hands, a new-hire Kickoff).
+  Veridian's dataset has nothing equivalent. This matters specifically for section 1's
+  senior-contact rule ("employees already have general awareness of a VP+/C-suite person")
+  — that assumption is reasonable for a 185-person company but isn't actually confirmed by
+  any real ritual/visibility data here, unlike the org the pattern was originally
+  generalized from. Not fixed now; flagged so it isn't silently taken as settled fact.
