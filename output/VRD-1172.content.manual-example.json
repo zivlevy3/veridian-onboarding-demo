@@ -13,7 +13,8 @@
           "shortLine": "Office tour with Tal",
           "detailText": "A walk around the Tel Aviv office with Tal, one of your teammates - where things are and how the space works, from someone who isn't your manager.",
           "facilitatorDisplayName": "Tal Harari (teammate)",
-          "dayHint": "Day 1"
+          "dayHint": "Day 1",
+          "emailContext": "Thanks so much for showing me around when I start - it'll be a great way to get a feel for the office from someone on the team."
         },
         {
           "shortLine": "Veridian 101",
@@ -78,13 +79,15 @@
           "shortLine": "Meet Rachel Cooper",
           "detailText": "Connect with a fellow HRBP on the team to compare notes on what supporting your own set of managers looks like day to day.",
           "facilitatorDisplayName": "Rachel Cooper (teammate, HRBP)",
-          "dayHint": "Week 2"
+          "dayHint": "Week 2",
+          "emailContext": "As a fellow HRBP, I'd love to compare notes on how you approach supporting the managers you work with day to day."
         },
         {
           "shortLine": "Meet Tal Harari",
           "detailText": "Connect with the team's senior HRBP, a good resource once you're navigating trickier situations with the managers you support.",
           "facilitatorDisplayName": "Tal Harari (teammate, Senior HRBP)",
-          "dayHint": "Week 2"
+          "dayHint": "Week 2",
+          "emailContext": "As I'm getting started, I'd love to learn from your experience and understand how you approach supporting the managers you work with."
         },
         {
           "shortLine": "Welcome session with HR",
@@ -131,13 +134,15 @@
           "shortLine": "Shadow a real advisory conversation",
           "detailText": "Sit in with Tal Harari on a real conversation with one of the managers she supports. It's the fastest way to see what a strong advisory conversation actually sounds like.",
           "facilitatorDisplayName": "Tal Harari (Senior HRBP)",
-          "dayHint": "Week 3"
+          "dayHint": "Week 3",
+          "emailContext": "I'd love to sit in on one of your conversations with a manager you support, to see firsthand how you approach it before I'm running my own."
         },
         {
           "shortLine": "Meet Emma Carter",
           "detailText": "Emma is one of the senior leaders you support as part of the Executive team - a first conversation on how that partnership plays out on the Product side.",
           "facilitatorDisplayName": "Emma Carter (Chief Product Officer)",
-          "dayHint": "Week 3"
+          "dayHint": "Week 3",
+          "emailContext": "As one of the leaders I'll be supporting as part of the Executive team, I'd love to hear more about your priorities for your team at Veridian."
         },
         {
           "shortLine": "Weekly check-in with Neta",
@@ -160,13 +165,15 @@
           "shortLine": "Meet Roi Ben-David",
           "detailText": "Finance's director, and one of the teams you'll be supporting. A first sense of how his team runs day to day.",
           "facilitatorDisplayName": "Roi Ben-David (Director Finance)",
-          "dayHint": "Week 4"
+          "dayHint": "Week 4",
+          "emailContext": "As part of my role, I'll be supporting Finance's people needs going forward, and I'd love to understand your team's priorities and how I can help."
         },
         {
           "shortLine": "Say hello to Yael, your skip-level",
           "detailText": "Meet Yael Shalev, VP People, the leader of the whole People function you're now part of.",
           "facilitatorDisplayName": "Yael Shalev (VP People)",
-          "dayHint": "Week 4"
+          "dayHint": "Week 4",
+          "emailContext": "I'd love the chance to introduce myself and hear more about your vision for the People function I'm now part of."
         },
         {
           "shortLine": "Weekly check-in with Neta",
@@ -201,25 +208,29 @@
           "shortLine": "Meet Maya Stern",
           "detailText": "A working conversation with Maya on how People supports the executive team's people needs, and where you fit into that.",
           "facilitatorDisplayName": "Maya Stern (CEO)",
-          "dayHint": "Week 5"
+          "dayHint": "Week 5",
+          "emailContext": "As one of the leaders I'll be supporting as part of the Executive team, I'd love to understand how People can best support you and the team."
         },
         {
           "shortLine": "Meet Michael Bennett",
           "detailText": "Michael is one of the senior leaders you support as part of the Executive team - a first conversation on what that partnership looks like from the Revenue side.",
           "facilitatorDisplayName": "Michael Bennett (Chief Revenue Officer)",
-          "dayHint": "Week 5"
+          "dayHint": "Week 5",
+          "emailContext": "As one of the leaders I'll be supporting as part of the Executive team, I'd love to understand your priorities and how People can best support you."
         },
         {
           "shortLine": "Meet Ben Harari",
           "detailText": "Ben manages IT, one of the teams you'll be supporting. A first sense of his day-to-day priorities.",
           "facilitatorDisplayName": "Ben Harari (IT Manager)",
-          "dayHint": "Week 5"
+          "dayHint": "Week 5",
+          "emailContext": "As part of my role, I'll be supporting IT's people needs going forward, and I'd love to get a sense of your team's day-to-day priorities."
         },
         {
           "shortLine": "Meet Michal Shani",
           "detailText": "Finance, one of the teams you'll be supporting, is run by Michal. A first sense of how her team works.",
           "facilitatorDisplayName": "Michal Shani (Finance Manager)",
-          "dayHint": "Week 5"
+          "dayHint": "Week 5",
+          "emailContext": "As part of my role, I'll be supporting Finance's people needs going forward, and I'd love to understand how your team works day to day."
         }
       ]
     },
@@ -236,13 +247,15 @@
           "shortLine": "Meet Nathan Edwards",
           "detailText": "Nathan manages Legal, one of the teams you'll be supporting. A first sense of what he'll come to you for.",
           "facilitatorDisplayName": "Nathan Edwards (Legal Manager)",
-          "dayHint": "Week 6"
+          "dayHint": "Week 6",
+          "emailContext": "As part of my role, I'll be supporting Legal's people needs going forward, and I'd love to understand what you'll be looking to me for."
         },
         {
           "shortLine": "Meet Hannah King",
           "detailText": "Business Operations, one of the teams you'll be supporting, is led by Hannah. A first sense of her priorities.",
           "facilitatorDisplayName": "Hannah King (Head of Business Operations)",
-          "dayHint": "Week 6"
+          "dayHint": "Week 6",
+          "emailContext": "As part of my role, I'll be supporting Business Operations' people needs going forward, and I'd love to understand your priorities for the team."
         }
       ]
     },

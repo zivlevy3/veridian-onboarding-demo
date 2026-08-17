@@ -115,6 +115,34 @@ what this specific system is for, given this employee's actual role/team. Ground
 for every employee; "GitHub access is ready Day 3 - for opening PRs and code review on
 AI Platform's codebase" is not.
 
+## Use `emailContext`, when the item supports it - written to the recipient, not about them
+
+For an item whose facilitator is a real, individually-named person the employee would
+plausibly reach out to directly to schedule (an `interface_contact` relationship
+meeting, a `team_member` teammate intro, `human_buddy`/`hr`/`hrbp`/`skip_manager`) -
+**except the recurring direct-manager relationship itself**, which is already scheduled
+automatically and needs no employee-initiated outreach - write a short `emailContext`:
+1-2 sentences addressed directly **to that person** (second person "you"/"your", never
+third-person naming them - "I'd love to understand your team's priorities," never "I'd
+love to understand Michael's priorities"). This powers an in-app "compose a real email"
+preview, not generic boilerplate - it must not read the same for two different people,
+and it must never open with "Meet X" framing (that's the card's `shortLine`, not a
+sentence a person would write to the recipient themselves).
+
+Ground it exactly the way `purpose` grounds `detailText`, including the same
+Executive-team-as-group vs named-department distinction from "Grounding the
+relationship" above: a leader supported as part of a group gets "one of the leaders I'll
+be supporting as part of the [group]," never a department they merely happen to lead; a
+person whose own team the employee genuinely supports gets "I'll be supporting
+[Department]'s people needs." Never invent a company domain, a job title, or any other
+fact not present in `context` - the recipient's real email address is resolved
+separately from real data, not written here.
+
+Omit `emailContext` entirely for: the direct-manager relationship (every instance,
+including the recurring check-in), any item with no individually-named human
+facilitator (self-guided training, system provisioning, a generic team label like "HR
+team"), and the "lighter week" / pending-assignment placeholders.
+
 ## Output schema
 
 ```json
@@ -127,7 +155,8 @@ AI Platform's codebase" is not.
           "shortLine": "string, ~8 words max, for a collapsed card",
           "detailText": "string, 1-2 sentences, for the expanded view",
           "facilitatorDisplayName": "string, a real name/role - never a generic label like 'Facilitator'",
-          "dayHint": "string, e.g. 'Day 1', 'By Day 14', 'Week 3', 'Around Day 30'"
+          "dayHint": "string, e.g. 'Day 1', 'By Day 14', 'Week 3', 'Around Day 30'",
+          "emailContext": "string, 1-2 sentences addressed to the facilitator - see 'Use emailContext' above. Omit entirely (not null, not empty string) when it doesn't apply."
         }
       ]
     }

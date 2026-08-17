@@ -166,10 +166,50 @@ function escapeHtml(str) {
   }[c]));
 }
 
-function renderItem(planId, item, trackStyles, activeWeek) {
+// Every real employee's name->email, queried fresh per request - used to resolve a
+// mailto target for an item's facilitator. Deliberately a raw, unfiltered company-wide
+// lookup rather than just context.people's curated subset (manager/hrbp/buddy/etc.):
+// several real facilitators (teammates like Tal Harari, Rachel Cooper) aren't in any of
+// those curated lists, but they ARE real employees with a real email - excluding them
+// would just be an arbitrary gap, not a "never invent" safeguard. The actual safeguard
+// is the match itself: if facilitatorDisplayName's name portion doesn't match a real
+// employee, no email is offered - never guessed or constructed from a pattern.
+function buildNameEmailMap(db) {
+  const rows = db.prepare('SELECT full_name, email FROM employees').all();
+  const map = {};
+  for (const r of rows) {
+    if (r.full_name && r.email) map[r.full_name] = r.email;
+  }
+  return map;
+}
+
+// facilitatorDisplayName is always either "Name (relationship note)" (a real person) or
+// a non-person label ("Self-paced (LMS)", "IT Operations", "HR team", "To be assigned",
+// "—" for the lighter-week placeholder). Splitting on " (" and checking the result
+// against real employee data is what tells these apart - a system/team/placeholder label
+// simply won't match any employee's full_name, so it naturally gets no mailto affordance
+// without needing a stored facilitatorType (not part of the persisted item shape).
+function resolveFacilitatorEmail(facilitatorDisplayName, nameEmailMap) {
+  if (!facilitatorDisplayName) return null;
+  const name = facilitatorDisplayName.split(' (')[0].trim();
+  return nameEmailMap[name] || null;
+}
+
+function renderItem(planId, item, trackStyles, activeWeek, nameEmailMap) {
   const style = trackStyles[item.track] || DEFAULT_TRACK_STYLE;
+  const facilitatorName = (item.facilitatorDisplayName || '').split(' (')[0].trim();
+  const email = resolveFacilitatorEmail(item.facilitatorDisplayName, nameEmailMap);
+  // Mail icon requires BOTH a resolved real email AND a hand-written emailContext - the
+  // email lookup alone isn't enough (see prompts/content-writer.md's "Use emailContext"
+  // rule: the direct-manager relationship resolves to a real email too, but never gets
+  // emailContext, since that meeting is already scheduled and needs no employee-
+  // initiated outreach). No emailContext means no generic fallback text either - the
+  // whole point of this field is real, per-relationship content, not a template.
+  const mailBtn = email && item.emailContext
+    ? `<button type="button" class="icon-btn mail-btn" data-email="${escapeHtml(email)}" title="Email ${escapeHtml(facilitatorName)}" aria-label="Email ${escapeHtml(facilitatorName)}">&#9993;</button>`
+    : '';
   return `
-    <li class="item${item.completed ? ' completed' : ''}">
+    <li class="item${item.completed ? ' completed' : ''}" data-id="${escapeHtml(item.id || '')}" data-track="${escapeHtml(item.track || '')}" data-short-line="${escapeHtml(item.shortLine)}" data-detail-text="${escapeHtml(item.detailText)}" data-facilitator="${escapeHtml(item.facilitatorDisplayName)}" data-day-hint="${escapeHtml(item.dayHint)}" data-email-context="${escapeHtml(item.emailContext || '')}">
       <form class="check-form" method="POST" action="/plan/${planId}/item/${encodeURIComponent(item.id)}/toggle?week=${activeWeek}">
         <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="this.form.submit()" aria-label="Mark ${escapeHtml(item.shortLine)} as done">
       </form>
@@ -179,6 +219,8 @@ function renderItem(planId, item, trackStyles, activeWeek) {
           <span class="short-line">${escapeHtml(item.shortLine)}</span>
           <span class="facilitator">${escapeHtml(item.facilitatorDisplayName)}</span>
           <span class="day-hint">${escapeHtml(item.dayHint)}</span>
+          ${mailBtn}
+          <button type="button" class="icon-btn edit-btn" title="Edit (preview only)" aria-label="Edit ${escapeHtml(item.shortLine)}">&#9998;</button>
         </summary>
         <p class="detail-text">${escapeHtml(item.detailText)}</p>
       </details>
@@ -186,9 +228,9 @@ function renderItem(planId, item, trackStyles, activeWeek) {
   `;
 }
 
-function renderWeekCard(planId, week, trackStyles, dateRangeLabel, activeWeek) {
+function renderWeekCard(planId, week, trackStyles, dateRangeLabel, activeWeek, nameEmailMap) {
   const items = week.items.length
-    ? week.items.map((item) => renderItem(planId, item, trackStyles, activeWeek)).join('')
+    ? week.items.map((item) => renderItem(planId, item, trackStyles, activeWeek, nameEmailMap)).join('')
     : '<li class="empty">Nothing scheduled this week.</li>';
   return `
     <div class="week-card" data-week="${week.weekNumber}">
@@ -198,6 +240,10 @@ function renderWeekCard(planId, week, trackStyles, dateRangeLabel, activeWeek) {
           <span class="week-dates">${escapeHtml(dateRangeLabel)}</span>
         </div>
         <ul class="items">${items}</ul>
+        <div class="week-card-footer">
+          <button type="button" class="add-item-btn" data-week="${week.weekNumber}">+ Add item</button>
+          <span class="demo-badge">Demo mode - changes won't be saved</span>
+        </div>
       </div>
     </div>
   `;
@@ -223,12 +269,12 @@ function renderLegend(trackStyles) {
 // the carousel doesn't change any data, so there's nothing for a server round-trip to
 // verify - a full page reload for something this purely visual would defeat the
 // "smooth" requirement outright.
-function renderCarousel(plan, context, activeWeek, trackStyles) {
+function renderCarousel(plan, context, activeWeek, trackStyles, nameEmailMap) {
   const weeks = plan.content.weeks;
   const dateRanges = computeWeekDateRanges(context.employee.hire_date, context.office);
 
   const cards = weeks
-    .map((week) => renderWeekCard(plan.plan_id, week, trackStyles, formatDateRange(dateRanges[week.weekNumber - 1]), activeWeek))
+    .map((week) => renderWeekCard(plan.plan_id, week, trackStyles, formatDateRange(dateRanges[week.weekNumber - 1]), activeWeek, nameEmailMap))
     .join('');
 
   const dots = weeks
@@ -315,7 +361,7 @@ function renderCarousel(plan, context, activeWeek, trackStyles) {
   `;
 }
 
-function renderPlanPage(plan, context, activeWeek, errorMessage) {
+function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
   const allItems = plan.content.weeks.flatMap((w) => w.items);
   const completedCount = allItems.filter((i) => i.completed).length;
   const statusBadge = plan.status === 'approved'
@@ -327,14 +373,15 @@ function renderPlanPage(plan, context, activeWeek, errorMessage) {
   const errorBanner = errorMessage
     ? `<div class="error-banner">${escapeHtml(errorMessage)}</div>`
     : '';
-  const trackStyles = buildTrackStyles(context.company && context.company.company_name);
+  const companyName = (context.company && context.company.company_name) || 'Veridian';
+  const trackStyles = buildTrackStyles(companyName);
   const subtitle = `${context.employee.job_title}, ${context.employee.department}`;
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Onboarding Plan - ${escapeHtml(context.employee.full_name)}</title>
+<title>${escapeHtml(context.employee.full_name)} · Onboarding Plan · ${escapeHtml(companyName)}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -369,6 +416,7 @@ function renderPlanPage(plan, context, activeWeek, errorMessage) {
     z-index: 20;
     box-shadow: 0 8px 24px rgba(0,0,0,0.45);
   }
+  .eyebrow { margin: 0 0 0.35rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
   header h1 { margin: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em; }
   header .subtitle { margin: 0.2rem 0 0.9rem; color: var(--text-secondary); font-size: 0.95rem; }
   .header-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
@@ -429,6 +477,134 @@ function renderPlanPage(plan, context, activeWeek, errorMessage) {
   .item { display: flex; align-items: flex-start; gap: 0.6rem; }
   .item.empty { color: var(--text-muted); font-size: 0.9rem; padding: 0.4rem 0.3rem; list-style: none; }
   .check-form { padding-top: 0.85rem; flex: none; }
+  .draft-checkbox-wrap { padding-top: 0.85rem; flex: none; }
+
+  .week-card-footer {
+    padding: 0.65rem 1.1rem 0.95rem; flex: none; border-top: 1px solid var(--hairline);
+    display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap;
+  }
+  .add-item-btn {
+    background: transparent; border: 1px dashed var(--text-muted); color: var(--text-secondary);
+    border-radius: 8px; padding: 0.35rem 0.7rem; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: border-color .15s ease, color .15s ease;
+  }
+  .add-item-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+  .demo-badge { font-size: 0.68rem; color: var(--text-muted); font-style: italic; }
+  .demo-item-tag {
+    font-size: 0.58rem; font-weight: 700; color: var(--text-muted); border: 1px solid var(--hairline);
+    border-radius: 4px; padding: 0.05rem 0.35rem; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  .icon-btn {
+    background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+    font-size: 0.9rem; padding: 0.1rem 0.3rem; border-radius: 5px; line-height: 1;
+    margin-left: -0.15rem;
+  }
+  .icon-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.08); }
+
+  .item-form-overlay {
+    position: fixed; inset: 0; background: rgba(5,8,14,0.68); display: flex;
+    align-items: center; justify-content: center; z-index: 100; padding: 1rem;
+  }
+  .item-form-overlay[hidden] { display: none; }
+  .item-form-modal {
+    background: var(--bg-card); border-radius: 14px; padding: 1.4rem; width: 100%;
+    max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); border: 1px solid var(--hairline);
+  }
+  .item-form-modal h3 { margin: 0 0 1rem; font-size: 1.05rem; }
+  .form-field { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.85rem; }
+  .form-field input, .form-field textarea, .form-field select {
+    display: block; width: 100%; margin-top: 0.35rem; padding: 0.5rem 0.6rem; border-radius: 8px;
+    border: 1px solid var(--hairline); background: var(--bg-card-hover); color: var(--text-primary);
+    font-family: inherit; font-size: 0.88rem; resize: vertical;
+  }
+  .form-field input:focus, .form-field textarea:focus, .form-field select:focus { outline: 2px solid var(--accent-1); outline-offset: 1px; }
+  .item-form-actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.4rem; }
+  .item-form-actions button {
+    padding: 0.5rem 1.1rem; border-radius: 8px; border: none; font-weight: 700;
+    cursor: pointer; font-family: inherit; font-size: 0.85rem;
+  }
+  #itemFormCancel { background: transparent; color: var(--text-secondary); border: 1px solid var(--hairline); }
+  #itemFormSave { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: #fff; }
+  .item-form-note { margin: 0.85rem 0 0; font-size: 0.72rem; color: var(--text-muted); text-align: center; }
+
+  /* Gmail-style compose window mockup - deliberately NOT 'Inter' (the rest of the
+     dashboard's font) so it reads as a different app that opened, not another dashboard
+     panel. Colors/sizing are a close visual match to real Gmail compose, not a design
+     system token set - this window is a one-off pastiche, not part of the dashboard's
+     own visual language. */
+  .compose-window {
+    /* The dashboard sets color-scheme:dark on :root, which changes native form-control
+       UA styling (input/textarea backgrounds go dark-by-default) even when every color
+       here is spelled out explicitly - this scopes the subtree back to light so it
+       actually renders as the white Gmail-style window it's styled to be, not a dark
+       one with light-on-dark text fighting the explicit colors below. */
+    color-scheme: light;
+    position: fixed; right: 24px; bottom: 0; width: 450px; max-width: calc(100vw - 32px);
+    background: #fff; border-radius: 8px 8px 0 0; overflow: hidden;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.28), 0 2px 6px rgba(0,0,0,0.18);
+    font-family: 'Google Sans', Roboto, Arial, system-ui, -apple-system, sans-serif;
+    z-index: 300; display: flex; flex-direction: column;
+    transform: translateY(100%); opacity: 0; pointer-events: none;
+    transition: transform .22s cubic-bezier(.2,.8,.2,1), opacity .18s ease;
+  }
+  .compose-window[hidden] { display: none; }
+  .compose-window.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+  .compose-header {
+    background: #3c4043; color: #fff; padding: 10px 8px 10px 16px; flex: none;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 14px; font-weight: 500; cursor: default; user-select: none;
+  }
+  .compose-header-icons { display: flex; align-items: center; gap: 2px; }
+  .compose-header-icons button {
+    background: transparent; border: none; color: #fff; opacity: 0.85; cursor: pointer;
+    width: 28px; height: 28px; border-radius: 4px; font-size: 15px; line-height: 1;
+    display: flex; align-items: center; justify-content: center; font-family: inherit;
+  }
+  .compose-header-icons button:hover { background: rgba(255,255,255,0.14); opacity: 1; }
+
+  .compose-field {
+    display: flex; align-items: center; padding: 9px 16px; border-bottom: 1px solid #e0e0e0;
+    font-size: 14px; color: #202124; flex: none;
+  }
+  .compose-field-label { color: #5f6368; margin-right: 12px; flex: none; }
+  .compose-to { flex-wrap: wrap; row-gap: 4px; }
+  .compose-chip {
+    display: inline-flex; align-items: center; gap: 5px; background: #f1f3f4; border-radius: 16px;
+    padding: 3px 10px; font-size: 13px; color: #202124;
+  }
+  .compose-chip-email { color: #5f6368; }
+  .compose-field input {
+    border: none; outline: none; flex: 1; font-size: 14px; font-family: inherit; color: #202124;
+    background: #fff; min-width: 0;
+  }
+
+  .compose-body {
+    flex: 1; border: none; outline: none; resize: none; padding: 16px; font-size: 14px;
+    line-height: 1.5; color: #202124; font-family: inherit; background: #fff; min-height: 180px;
+  }
+
+  .compose-footer {
+    display: flex; align-items: center; justify-content: space-between; flex: none;
+    padding: 8px 14px 14px 16px;
+  }
+  .compose-footer-left { display: flex; align-items: center; gap: 2px; }
+  .compose-send {
+    background: #0b57d0; color: #fff; border: none; border-radius: 18px; padding: 10px 24px;
+    font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; margin-right: 14px;
+  }
+  .compose-send:hover { background: #0842a0; }
+  .compose-icon {
+    color: #5f6368; font-size: 16px; width: 28px; height: 28px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; cursor: default;
+  }
+  .compose-icon:hover { background: #f1f3f4; }
+  .compose-icon.compose-format { font-weight: 700; text-decoration: underline; font-size: 14px; }
+
+  @media (max-width: 520px) {
+    .compose-window { right: 0; left: 0; width: 100%; max-width: 100%; }
+  }
 
   input[type=checkbox] {
     -webkit-appearance: none; appearance: none;
@@ -488,6 +664,7 @@ function renderPlanPage(plan, context, activeWeek, errorMessage) {
 </head>
 <body>
 <header>
+  <p class="eyebrow">Onboarding Plan</p>
   <h1>${escapeHtml(context.employee.full_name)}</h1>
   <p class="subtitle">${escapeHtml(subtitle)}</p>
   <div class="header-row">
@@ -499,8 +676,277 @@ function renderPlanPage(plan, context, activeWeek, errorMessage) {
 </header>
 ${renderLegend(trackStyles)}
 <main>
-  ${renderCarousel(plan, context, activeWeek, trackStyles)}
+  ${renderCarousel(plan, context, activeWeek, trackStyles, nameEmailMap)}
 </main>
+
+<div class="compose-window" id="composeWindow" hidden>
+  <div class="compose-header">
+    <span>New Message</span>
+    <div class="compose-header-icons">
+      <button type="button" title="Minimize" tabindex="-1">&#8722;</button>
+      <button type="button" title="Full screen" tabindex="-1">&#9744;</button>
+      <button type="button" id="composeClose" title="Close" aria-label="Close compose window">&times;</button>
+    </div>
+  </div>
+  <div class="compose-field compose-to">
+    <span class="compose-field-label">To</span>
+    <span id="composeTo"></span>
+  </div>
+  <div class="compose-field">
+    <input type="text" id="composeSubject" placeholder="Subject">
+  </div>
+  <textarea class="compose-body" id="composeBody"></textarea>
+  <div class="compose-footer">
+    <div class="compose-footer-left">
+      <button type="button" class="compose-send" id="composeSend">Send</button>
+      <span class="compose-icon compose-format" title="Formatting options">A</span>
+      <span class="compose-icon" title="Attach files">&#128206;</span>
+      <span class="compose-icon" title="Insert emoji">&#128512;</span>
+      <span class="compose-icon" title="Insert photo">&#128247;</span>
+    </div>
+    <span class="compose-icon" title="Discard draft">&#128465;</span>
+  </div>
+</div>
+
+<div class="item-form-overlay" id="itemFormOverlay" hidden>
+  <div class="item-form-modal">
+    <h3 id="itemFormHeading">Add item</h3>
+    <label class="form-field">Title
+      <input type="text" id="itemFormShortLine" maxlength="90" placeholder="e.g. Sync with the design team">
+    </label>
+    <label class="form-field">Description
+      <textarea id="itemFormDetailText" rows="3" placeholder="A sentence or two of detail"></textarea>
+    </label>
+    <label class="form-field">Track
+      <select id="itemFormTrack"></select>
+    </label>
+    <div class="item-form-actions">
+      <button type="button" id="itemFormCancel">Cancel</button>
+      <button type="button" id="itemFormSave">Save</button>
+    </div>
+    <p class="item-form-note">Demo mode - changes won't be saved.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var TRACK_STYLES = ${JSON.stringify(trackStyles)};
+  var DEFAULT_TRACK_STYLE = ${JSON.stringify(DEFAULT_TRACK_STYLE)};
+  var EMPLOYEE_NAME = ${JSON.stringify(context.employee.full_name)};
+  var EMPLOYEE_TITLE = ${JSON.stringify(context.employee.job_title)};
+  var COMPANY_NAME = ${JSON.stringify(companyName)};
+
+  function styleFor(track) {
+    return TRACK_STYLES[track] || DEFAULT_TRACK_STYLE;
+  }
+
+  function escapeAttr(str) {
+    var div = document.createElement('div');
+    div.textContent = str == null ? '' : str;
+    return div.innerHTML;
+  }
+
+  // ---- In-app compose window (Gmail-style mockup, not a real mailto: link) ----
+  // mailto: turned out unreliable to verify - it gives zero visible feedback whether it
+  // silently opened a mail client, silently no-opped (no default handler, common on
+  // dev/corporate machines), or never fired at all, so a working click and a broken one
+  // were indistinguishable from the page. This replaces it with a real in-DOM compose
+  // window - 100% reliable for every viewer regardless of local mail client config, since
+  // nothing ever leaves the page. Send is intentionally decorative (closes the window,
+  // doesn't transmit anything) - this is a preview surface, not a real mail client.
+  //
+  // The body's one variable part is emailContext - a real, hand-written sentence per
+  // item (see prompts/content-writer.md's "Use emailContext"), not a phrase mechanically
+  // derived from the item's title. There's no generic fallback: an item with a resolved
+  // email but no emailContext simply gets no mail icon at all (see renderItem in this
+  // file) rather than falling back to templated filler.
+  var composeEl = document.getElementById('composeWindow');
+  var composeTo = document.getElementById('composeTo');
+  var composeSubject = document.getElementById('composeSubject');
+  var composeBody = document.getElementById('composeBody');
+
+  function openComposeWindow(li) {
+    var mailBtn = li.querySelector('.mail-btn');
+    if (!mailBtn) return;
+    var email = mailBtn.getAttribute('data-email');
+    var facilitatorName = (li.getAttribute('data-facilitator') || '').split(' (')[0].trim();
+    var recipientFirstName = facilitatorName.split(' ')[0];
+    var emailContext = li.getAttribute('data-email-context') || '';
+    var subject = 'Introduction - ' + EMPLOYEE_NAME;
+    var body = 'Hi ' + recipientFirstName + ',\\n\\n' +
+      "I'm " + EMPLOYEE_NAME + ', ' + EMPLOYEE_TITLE + ' at ' + COMPANY_NAME + '. ' + emailContext + '\\n\\n' +
+      "Would love to find some time to connect in the next couple of weeks - let me know what works for you.\\n\\n" +
+      'Best,\\n' + EMPLOYEE_NAME;
+
+    composeTo.innerHTML = '<span class="compose-chip">' + escapeAttr(facilitatorName) +
+      ' <span class="compose-chip-email">&lt;' + escapeAttr(email) + '&gt;</span></span>';
+    composeSubject.value = subject;
+    composeBody.value = body;
+
+    // Re-triggering the slide-up when a second meeting is opened while the window is
+    // already visible (not stacked - one instance, content swapped and animation redone
+    // so it still reads as "a new message just opened", per spec).
+    composeEl.classList.remove('visible');
+    // Force a reflow so removing+re-adding the class actually restarts the transition.
+    void composeEl.offsetWidth;
+    composeEl.hidden = false;
+    composeEl.classList.add('visible');
+  }
+
+  function closeComposeWindow() {
+    composeEl.classList.remove('visible');
+    setTimeout(function () {
+      composeEl.hidden = true;
+    }, 200);
+  }
+
+  document.getElementById('composeClose').addEventListener('click', closeComposeWindow);
+  document.getElementById('composeSend').addEventListener('click', closeComposeWindow);
+
+  // ---- Add/Edit item (session-only - never sent to the server) ----
+  var overlay = document.getElementById('itemFormOverlay');
+  var headingEl = document.getElementById('itemFormHeading');
+  var shortLineInput = document.getElementById('itemFormShortLine');
+  var detailTextInput = document.getElementById('itemFormDetailText');
+  var trackSelect = document.getElementById('itemFormTrack');
+  var formState = { mode: null, weekNumber: null, targetLi: null };
+  var draftCounter = 0;
+
+  function populateTrackSelect(selected) {
+    trackSelect.innerHTML = '';
+    Object.keys(TRACK_STYLES).forEach(function (key) {
+      var opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = TRACK_STYLES[key].label;
+      trackSelect.appendChild(opt);
+    });
+    trackSelect.value = selected && TRACK_STYLES[selected] ? selected : 'role';
+  }
+
+  function openAddForm(weekNumber) {
+    formState = { mode: 'add', weekNumber: weekNumber, targetLi: null };
+    headingEl.textContent = 'Add item - Week ' + weekNumber;
+    shortLineInput.value = '';
+    detailTextInput.value = '';
+    populateTrackSelect('role');
+    overlay.hidden = false;
+    shortLineInput.focus();
+  }
+
+  function openEditForm(li) {
+    formState = { mode: 'edit', weekNumber: null, targetLi: li };
+    headingEl.textContent = 'Edit item';
+    shortLineInput.value = li.getAttribute('data-short-line') || '';
+    detailTextInput.value = li.getAttribute('data-detail-text') || '';
+    populateTrackSelect(li.getAttribute('data-track'));
+    overlay.hidden = false;
+    shortLineInput.focus();
+  }
+
+  function closeForm() {
+    overlay.hidden = true;
+    formState = { mode: null, weekNumber: null, targetLi: null };
+  }
+
+  function buildDraftItemHtml(data) {
+    var style = styleFor(data.track);
+    return '' +
+      '<li class="item" data-id="' + data.id + '" data-track="' + data.track +
+      '" data-short-line="' + escapeAttr(data.shortLine) + '" data-detail-text="' + escapeAttr(data.detailText) +
+      '" data-facilitator="' + escapeAttr(data.facilitator) + '" data-day-hint="' + escapeAttr(data.dayHint) + '">' +
+        '<span class="draft-checkbox-wrap"><input type="checkbox" class="draft-checkbox" aria-label="Mark ' + escapeAttr(data.shortLine) + ' as done"></span>' +
+        '<details class="card" style="--track-accent:' + style.accent + '">' +
+          '<summary>' +
+            '<span class="tag" style="background:' + style.chipBg + ';color:' + style.chipFg + '">' + escapeAttr(style.label) + '</span>' +
+            '<span class="demo-item-tag">Draft</span>' +
+            '<span class="short-line">' + escapeAttr(data.shortLine) + '</span>' +
+            '<span class="facilitator">' + escapeAttr(data.facilitator) + '</span>' +
+            '<span class="day-hint">' + escapeAttr(data.dayHint) + '</span>' +
+            '<button type="button" class="icon-btn edit-btn" title="Edit (preview only)">&#9998;</button>' +
+          '</summary>' +
+          '<p class="detail-text">' + escapeAttr(data.detailText) + '</p>' +
+        '</details>' +
+      '</li>';
+  }
+
+  function saveForm() {
+    var shortLine = shortLineInput.value.trim();
+    var detailText = detailTextInput.value.trim() || 'No additional details yet.';
+    var track = trackSelect.value;
+    if (!shortLine) { shortLineInput.focus(); return; }
+
+    if (formState.mode === 'add') {
+      draftCounter += 1;
+      var weekCard = document.querySelector('.week-card[data-week="' + formState.weekNumber + '"]');
+      var list = weekCard.querySelector('.items');
+      var emptyLi = list.querySelector('.item.empty');
+      if (emptyLi) emptyLi.remove();
+      list.insertAdjacentHTML('beforeend', buildDraftItemHtml({
+        id: 'draft-' + draftCounter,
+        track: track,
+        shortLine: shortLine,
+        detailText: detailText,
+        facilitator: 'Added by you (draft)',
+        dayHint: 'Week ' + formState.weekNumber,
+      }));
+    } else if (formState.mode === 'edit') {
+      var li = formState.targetLi;
+      var style = styleFor(track);
+      li.setAttribute('data-track', track);
+      li.setAttribute('data-short-line', shortLine);
+      li.setAttribute('data-detail-text', detailText);
+      var tagEl = li.querySelector('.tag');
+      tagEl.textContent = style.label;
+      tagEl.style.background = style.chipBg;
+      tagEl.style.color = style.chipFg;
+      li.querySelector('.card').style.setProperty('--track-accent', style.accent);
+      li.querySelector('.short-line').textContent = shortLine;
+      li.querySelector('.detail-text').textContent = detailText;
+    }
+    closeForm();
+  }
+
+  document.getElementById('itemFormCancel').addEventListener('click', closeForm);
+  document.getElementById('itemFormSave').addEventListener('click', saveForm);
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeForm();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !overlay.hidden) closeForm();
+    if (e.key === 'Escape' && !composeEl.hidden) closeComposeWindow();
+  });
+
+  // A click inside <summary> normally toggles the parent <details> open/closed - the
+  // buttons nested in there need preventDefault (not just stopPropagation) to suppress
+  // that default action when they're doing something else instead.
+  document.addEventListener('click', function (e) {
+    var mailBtn = e.target.closest('.mail-btn');
+    if (mailBtn) {
+      e.preventDefault();
+      openComposeWindow(mailBtn.closest('.item'));
+      return;
+    }
+    var editBtn = e.target.closest('.edit-btn');
+    if (editBtn) {
+      e.preventDefault();
+      openEditForm(editBtn.closest('.item'));
+      return;
+    }
+    var addBtn = e.target.closest('.add-item-btn');
+    if (addBtn) {
+      openAddForm(addBtn.getAttribute('data-week'));
+    }
+  });
+
+  // Draft items have no real DB row to toggle against, so their checkbox just flips a
+  // local class instead of submitting the real .check-form/toggle endpoint.
+  document.addEventListener('change', function (e) {
+    if (e.target.classList.contains('draft-checkbox')) {
+      e.target.closest('.item').classList.toggle('completed', e.target.checked);
+    }
+  });
+})();
+</script>
 </body>
 </html>`;
 }
@@ -515,7 +961,8 @@ app.get('/plan/:planId', (req, res) => {
   const weekCount = plan.content.weeks.length;
   const requestedWeek = Number(req.query.week) || 1;
   const activeWeek = Math.min(Math.max(requestedWeek, 1), weekCount);
-  res.send(renderPlanPage(plan, context, activeWeek, req.query.error));
+  const nameEmailMap = buildNameEmailMap(db);
+  res.send(renderPlanPage(plan, context, activeWeek, req.query.error, nameEmailMap));
 });
 
 app.post('/plan/:planId/item/:itemId/toggle', (req, res) => {
