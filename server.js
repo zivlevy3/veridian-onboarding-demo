@@ -374,7 +374,12 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
     ? `<div class="error-banner">${escapeHtml(errorMessage)}</div>`
     : '';
   const companyName = (context.company && context.company.company_name) || 'Veridian';
-  const trackStyles = buildTrackStyles(companyName);
+  // Display-only stylized brand form ("Veridian.io") for the eyebrow and the business
+  // track's label/tag - a deliberate branding choice, not a claim about the real email
+  // domain (which is @veridian.ai - see companyName/COMPANY_NAME below, still used
+  // as-is in the page <title> and in the compose window's "at Veridian" body text).
+  const brandLabel = `${companyName}.io`;
+  const trackStyles = buildTrackStyles(brandLabel);
   const subtitle = `${context.employee.job_title}, ${context.employee.department}`;
 
   return `<!doctype html>
@@ -664,7 +669,7 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
 </head>
 <body>
 <header>
-  <p class="eyebrow">Onboarding Plan</p>
+  <p class="eyebrow">Onboarding Plan · ${escapeHtml(brandLabel)}</p>
   <h1>${escapeHtml(context.employee.full_name)}</h1>
   <p class="subtitle">${escapeHtml(subtitle)}</p>
   <div class="header-row">
