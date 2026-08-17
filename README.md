@@ -108,6 +108,17 @@ testing (LuminaFlow) apparently had some. This matters because the senior-contac
 rule (`prompts/content-writer.md` - don't frame meeting a VP+/C-suite person as a first
 introduction) assumes employees already have general awareness of senior leaders, which
 is reasonable for a ~185-person company but isn't actually backed by real ritual/
-visibility data in this dataset. See `MEMORY.md` §4.
+visibility data in this dataset. **Partially relevant update**: the new `culture` table
+(see below) does have real company-ritual rows now (Monday Kickoff, Monthly All Hands,
+etc.) - real data this gap said was missing - but nothing in the pipeline reads
+`culture` yet, so this doesn't close the gap on its own, just makes closing it possible
+without inventing anything. See `MEMORY.md` §4.
 
-Next: the **AI Buddy** (RAG) agent, untouched so far.
+**AI Buddy knowledge base - schema and content are now in place** (`db/schema.sql`'s
+`faq`/`glossary`/`culture` tables, populated from `Veridian_Knowledge_Base_Content_v1.xlsx`
+via `scripts/import-veridian.js`'s `importKnowledgeBase()` - 20/22/16 rows). This
+**replaced** the master data pack's own, much thinner Glossary/FAQ sheets (4/6 columns,
+never read by any app code) rather than extending them - see `MEMORY.md` for the full
+decision, including a separate documented-not-fixed GAP on `job_family` vs
+`departments.department` naming. The AI Buddy **agent itself (prompt + RAG over this
+data) has not been built** - that's still the next, separate step.

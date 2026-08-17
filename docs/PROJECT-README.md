@@ -18,7 +18,7 @@
 Input → תשאול מנהל/ת מגייס/ת (Buddy/Mentor/JD חופשי) → Context Layer → Orchestrator →
   [מומחה תהליכים | כותב תוכן] → Draft → עריכת מנהל/ת → Approve → Activate (חשיפה לעובד + זימוני יומן + פתיחת חומרים בהדרגה)
 
-בנפרד: AI Buddy - agent חי, RAG על שכבת ידע ארגוני + FAQ/Glossary ייעודי. **עדכון**: ל-Veridian יש בפועל Glossary ו-FAQ מלאים ב-master data pack (בניגוד למה שנכתב כאן במקור) - ה-GAP שנותר הוא שעדיין לא נבנה ה-agent עצמו, לא שחסר לו תוכן.
+בנפרד: AI Buddy - agent חי, RAG על שכבת ידע ארגוני + FAQ/Glossary/Culture ייעודיים. **עדכון (סגר GAP קודם)**: שכבת הידע הייעודית ל-Buddy **קיימת עכשיו בפועל** - `Veridian_Knowledge_Base_Content_v1.xlsx` יובא ל-3 טבלאות (`faq`: 20 שורות, `glossary`: 22 שורות - 10 Acronym + 12 Internal Term, `culture`: 16 שורות - Core Value/Feedback Culture/Decision Making/Company Ritual). זו **החליפה** את ה-Glossary/FAQ הכלליים והדלים יותר שהיו ב-master data pack (4/6 עמודות, לא נקראו משום קוד) - לא הרחבה שלהם, סט תוכן נפרד שנועד במפורש לשמש בסיס ל-Buddy, כולל שדות `audience`/`owner`/`source`/`tags`/`last_reviewed` שלא היו קיימים קודם. ראו `MEMORY.md` לפירוט המלא כולל ה-GAP הנפרד (לא נסגר) על `job_family` מול `departments.department`. **ה-GAP שנותר עכשיו הוא באמת רק שה-agent עצמו (פרומפט + RAG) עדיין לא נבנה** - לא תוכן. `faq.answer` של FAQ-014 ("Who is responsible for my onboarding experience?") מגדיר במפורש את גבולות התפקיד של ה-AI Buddy עצמו ("...should not override your manager or HR policies") - מועמד חזק לשילוב ישיר (לא רק שליפה) בפרומפט המערכת של סוכן ה-Buddy כשייבנה.
 
 ### החלטות ארכיטקטורה מאז מסמך הזרע הזה
 - **"סוכן תפעול" בוטל כתיבה נפרדת** (היה ברשימת 3 הסוכנים במקור). התפקידים שהוא היה אמור למלא - הקצאת אנשי קשר אמיתיים (מנהל/סקיפ/HRBP/באדי) ורצף לוגי/עדיפויות (תקרת 5 פגישות/שבוע, סדר דחייה) - ממומשים בפועל בתוך **Context Layer** (`lib/context.js` - resolveAudienceToken/resolveRole/getByEmail וכו') ו**מומחה התהליכים** (`prompts/process-expert.md` + `lib/plan-validate.js`). ראו commit `95fb82d` שהוסיף את ההפרדה `direct_report`/`team_member` ואת שתי בדיקות הוולידציה העצמאיות - זו בדיוק העבודה שתוכננה ל"סוכן תפעול". התרשים לעיל עודכן בהתאם: 2 סוכני תוכן (מומחה תהליכים, כותב תוכן), לא 3.
@@ -33,13 +33,13 @@ Input → תשאול מנהל/ת מגייס/ת (Buddy/Mentor/JD חופשי) → 
 ## סטטוס נוכחי בפועל (עודכן)
 | שלב | סטטוס |
 |---|---|
-| 1. סכימת נתונים + repo | **הושלם** - `db/schema.sql` + `scripts/import-veridian.js`, מייבא מ-Veridian xlsx (185 עובדים, 12 גיליונות). `import-veridian.js` מוריד/יוצר מחדש **רק** את טבלאות הארגון - לא נוגע בטבלאות ה-persistence (ראו שלב 4.5) |
+| 1. סכימת נתונים + repo | **הושלם** - `db/schema.sql` + `scripts/import-veridian.js`, מייבא משני קבצי xlsx: `Veridian_Master_Data_Pack_v1.xlsx` (185 עובדים, כולל 45 `roles` אחרי סבב Role Catalog Additions) ו-`Veridian_Knowledge_Base_Content_v1.xlsx` (faq/glossary/culture, 20/22/16 שורות). `import-veridian.js` מוריד/יוצר מחדש **רק** את טבלאות הארגון - לא נוגע בטבלאות ה-persistence (ראו שלב 4.5) |
 | 2. Context layer | **הושלם** - `lib/context.js` (`buildEmployeeContext`), `lib/dates.js`, `lib/interfaces.js` |
 | 3. מומחה תהליכים | **הושלם** - `prompts/process-expert.md` + `lib/plan-validate.js` (2 בדיקות ולידציה עצמאיות: תקרת 5/שבוע, חלון שבועות 1-2 ל-direct_report). כולל את מה שתוכנן במקור ל"סוכן תפעול" (ראו למעלה) |
 | 3.5. כותב תוכן | **הושלם** - `prompts/content-writer.md` + `lib/content-writer-agent.js`, מפריד pending-assignment מ-internalGaps |
 | 4. Orchestrator | **הושלם** - `lib/orchestrator.js`, `lib/manager-intake.js`: מריץ Context Layer → מיזוג תשאול מנהל/ת מגייס/ת → מומחה תהליכים → ולידציה (עוצר אם נכשל) → כותב תוכן → שמירה |
 | 4.5. Persistence | **הושלם** - `lib/persistence.js` + `db/persistence-schema.sql`: טבלאות `manager_intake`/`plans`/`plan_item_status`, `validateMentorSelection` (primary mentor חייב מנהל/ת ישיר/ה או אותו team_id; secondary ללא הגבלה), נבדק שרד restart אמיתי (תהליכי node נפרדים) |
-| 5. AI Buddy (RAG) | **לא התחיל** - סוכן נפרד, לא נגענו בו. השלב הבא בתוכנית |
+| 5. AI Buddy (RAG) | **שכבת ידע הושלמה** - `faq`/`glossary`/`culture` (20/22/16 שורות) יובאו מ-`Veridian_Knowledge_Base_Content_v1.xlsx` דרך `importKnowledgeBase()` ב-`scripts/import-veridian.js`. **ה-agent עצמו (פרומפט + RAG) עדיין לא התחיל** - זה עדיין השלב הבא, בכוונה לא נגענו בו בסבב הזה |
 | 6. רובריקת איכות פורמלית | לא רשמי - פזור בתוך ה-Framework |
 | 7-9. דשבורד, DB חי, QA | לא התחילו |
 

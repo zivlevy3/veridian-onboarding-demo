@@ -1,6 +1,8 @@
-// Imports Veridian_Master_Data_Pack_v1.xlsx into db/veridian.sqlite.
-// The xlsx file is the source of truth (see docs/PROJECT-README.md) - this script
-// re-creates the DB from scratch on every run rather than diffing/upserting.
+// Imports Veridian_Master_Data_Pack_v1.xlsx (org data) and
+// Veridian_Knowledge_Base_Content_v1.xlsx (AI Buddy knowledge base) into
+// db/veridian.sqlite. Both xlsx files are the source of truth (see
+// docs/PROJECT-README.md) - this script re-creates the DB from scratch on every run
+// rather than diffing/upserting.
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -9,6 +11,7 @@ const XLSX = require('xlsx');
 
 const ROOT = path.join(__dirname, '..');
 const XLSX_PATH = path.join(ROOT, 'data', 'Veridian_Master_Data_Pack_v1.xlsx');
+const KNOWLEDGE_BASE_XLSX_PATH = path.join(ROOT, 'data', 'Veridian_Knowledge_Base_Content_v1.xlsx');
 const SCHEMA_PATH = path.join(ROOT, 'db', 'schema.sql');
 const DB_PATH = path.join(ROOT, 'db', 'veridian.sqlite');
 
@@ -63,16 +66,6 @@ const SHEETS = {
     columns: ['Policy ID', 'Policy', 'Owner', 'Applies To', 'Summary', 'Source'],
     dbColumns: ['policy_id', 'policy', 'owner', 'applies_to', 'summary', 'source'],
   },
-  Glossary: {
-    table: 'glossary',
-    columns: ['Term', 'Type', 'Definition', 'Related Area'],
-    dbColumns: ['term', 'type', 'definition', 'related_area'],
-  },
-  FAQ: {
-    table: 'faq',
-    columns: ['FAQ ID', 'Category', 'Question', 'Answer', 'Audience', 'Source'],
-    dbColumns: ['faq_id', 'category', 'question', 'answer', 'audience', 'source'],
-  },
   'Career Levels': {
     table: 'career_levels',
     columns: ['Track', 'Level', 'Label', 'Scope', 'Typical Titles'],
@@ -83,16 +76,23 @@ const SHEETS = {
 // Load order matters: departments/offices before teams/employees;
 // employees FK to itself is handled by disabling foreign_keys during load.
 // Roles is NOT here - it's handled by importRoles() below, not the generic loop (see
-// that function for why).
-const LOAD_ORDER = ['Departments', 'Offices', 'Teams', 'Employees', 'Products', 'Systems', 'Training Catalog', 'Policies', 'Glossary', 'FAQ', 'Career Levels'];
+// that function for why). Glossary/FAQ are NOT here either, despite still existing as
+// sheets in the master pack - those tables are now populated exclusively from the
+// separate Knowledge Base workbook (see importKnowledgeBase() and the comment above
+// the glossary/faq tables in db/schema.sql for why the master pack's own versions of
+// these two sheets are no longer imported at all).
+const LOAD_ORDER = ['Departments', 'Offices', 'Teams', 'Employees', 'Products', 'Systems', 'Training Catalog', 'Policies', 'Career Levels'];
 
 // Only these tables are ever dropped/recreated here - app-state tables (manager_intake,
 // plans, plan_item_status - see db/persistence-schema.sql) live in the same file but are
 // never touched by this script, so re-importing an updated xlsx doesn't wipe saved plans.
 // company_overview and roles aren't in SHEETS (company_overview's sheet is a transposed
 // Metric/Value layout, not a normal row-per-record sheet - see importOverview; roles
-// needs a second sheet joined in - see importRoles) but both still need dropping/recreating.
-const ORG_TABLES = [...Object.values(SHEETS).map((spec) => spec.table), 'company_overview', 'roles'];
+// needs a second sheet joined in - see importRoles); glossary/faq/culture come from the
+// separate Knowledge Base workbook entirely (see importKnowledgeBase) - all still need
+// dropping/recreating here since this is the one place every org/knowledge table gets
+// torn down before the full rebuild.
+const ORG_TABLES = [...Object.values(SHEETS).map((spec) => spec.table), 'company_overview', 'roles', 'glossary', 'faq', 'culture'];
 
 // Overview is a transposed Metric/Value sheet (one row per field), not a row-per-record
 // table like everything else - handled separately rather than forced into the SHEETS shape.
@@ -171,6 +171,75 @@ function importRoles(db, workbook) {
   console.log(`Imported ${count} rows into roles (from "Roles" + "Role Catalog Additions", ${additionsByRoleId.size} matched)`);
 }
 
+// Converts a raw Excel date serial number to an ISO 'YYYY-MM-DD' string. The Knowledge
+// Base workbook's `last_reviewed` column is a plain numeric cell with no date number
+// format applied in the source file - confirmed directly (cellDates:true only
+// auto-converts cells whose format code marks them as a date; these don't have one), so
+// it comes through as a raw integer (e.g. 46251) rather than a JS Date, unlike hire_date
+// elsewhere in this project. 25569 is the day-count between the Excel epoch (1900-01-01,
+// with Excel's fictitious 1900-02-29 baked in) and the Unix epoch - the standard
+// correction, valid for any real date (serial >= 60).
+function excelSerialToISODate(v) {
+  if (v == null) return null;
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v !== 'number') return v;
+  return new Date(Math.round((v - 25569) * 86400 * 1000)).toISOString().slice(0, 10);
+}
+
+// sheet name -> { table, columns } for the AI Buddy knowledge base workbook - a second,
+// separate xlsx (not the master org data pack). Column names here are already
+// snake_case, matching their DB columns 1:1 (this source file's own headers, unlike the
+// master pack's Title Case headers), so there's no separate columns/dbColumns split like
+// SHEETS above.
+const KNOWLEDGE_BASE_SHEETS = {
+  FAQ: {
+    table: 'faq',
+    columns: ['faq_id', 'category', 'question', 'answer', 'audience', 'owner', 'source', 'tags', 'last_reviewed'],
+  },
+  Glossary: {
+    table: 'glossary',
+    columns: ['term_id', 'section', 'term', 'definition', 'related_area', 'audience', 'owner', 'source', 'tags', 'last_reviewed'],
+  },
+  Culture: {
+    table: 'culture',
+    columns: ['culture_id', 'section', 'item_name', 'description', 'cadence', 'audience', 'owner', 'source', 'tags', 'last_reviewed'],
+  },
+};
+
+// Imported from its own workbook (opened separately from the master pack) into its own
+// function rather than folded into the generic SHEETS loop, for two reasons: (1) it's a
+// genuinely different source file; (2) last_reviewed needs the explicit serial->ISO
+// conversion above, which the generic loop's plain `v instanceof Date` check doesn't
+// cover for this workbook's un-formatted date cells.
+function importKnowledgeBase(db) {
+  if (!fs.existsSync(KNOWLEDGE_BASE_XLSX_PATH)) {
+    throw new Error(`Knowledge base workbook not found: ${KNOWLEDGE_BASE_XLSX_PATH}`);
+  }
+  const workbook = XLSX.readFile(KNOWLEDGE_BASE_XLSX_PATH, { cellDates: true });
+
+  for (const [sheetName, spec] of Object.entries(KNOWLEDGE_BASE_SHEETS)) {
+    const sheet = workbook.Sheets[sheetName];
+    if (!sheet) throw new Error(`Sheet "${sheetName}" not found in knowledge base workbook`);
+
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: null });
+    const placeholders = spec.columns.map(() => '?').join(', ');
+    const insert = db.prepare(`INSERT INTO ${spec.table} (${spec.columns.join(', ')}) VALUES (${placeholders})`);
+
+    let count = 0;
+    for (const row of rows) {
+      const values = spec.columns.map((col) => {
+        const v = row[col];
+        if (v === undefined || v === '') return null;
+        if (col === 'last_reviewed') return excelSerialToISODate(v);
+        return v;
+      });
+      insert.run(...values);
+      count++;
+    }
+    console.log(`Imported ${count} rows into ${spec.table} (from knowledge base "${sheetName}")`);
+  }
+}
+
 function main() {
   if (!fs.existsSync(XLSX_PATH)) {
     throw new Error(`Source workbook not found: ${XLSX_PATH}`);
@@ -213,6 +282,7 @@ function main() {
   }
 
   importRoles(db, workbook);
+  importKnowledgeBase(db);
 
   db.exec('PRAGMA foreign_keys = ON');
   const violations = db.prepare('PRAGMA foreign_key_check').all();

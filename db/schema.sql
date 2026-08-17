@@ -126,11 +126,30 @@ CREATE TABLE policies (
   source                TEXT
 );
 
+-- AI Buddy knowledge base (Veridian_Knowledge_Base_Content_v1.xlsx) - replaces the
+-- original, narrower glossary/faq tables that came from the master org data pack's own
+-- Glossary/FAQ sheets (4/6 columns, general company terms - e.g. "AI Assistant",
+-- "Connector" - and general company FAQ, e.g. "When can engineering deploy to
+-- production?"). That data was never read by any app code (confirmed before dropping
+-- it), and this richer set is specifically curated onboarding-Buddy content - not an
+-- extension of the old rows, a distinct dataset that happens to overlap on some terms
+-- (ARR, QBR, Human Buddy, Knowledge Hub, ... appear in both, under different primary
+-- keys: the old table keyed by the term text itself, this one by a stable term_id).
+-- `last_reviewed` is stored as an ISO date string (YYYY-MM-DD), same convention as
+-- employees.hire_date - the source xlsx cell is a plain Excel date serial with no date
+-- number format applied (confirmed: cellDates:true does not auto-convert it), so
+-- scripts/import-veridian.js converts it explicitly rather than storing the raw serial.
 CREATE TABLE glossary (
-  term                  TEXT PRIMARY KEY,
-  type                  TEXT,
-  definition             TEXT,
-  related_area           TEXT
+  term_id               TEXT PRIMARY KEY,
+  section               TEXT,
+  term                  TEXT,
+  definition            TEXT,
+  related_area          TEXT,
+  audience              TEXT,
+  owner                 TEXT,
+  source                TEXT,
+  tags                  TEXT,
+  last_reviewed         TEXT
 );
 
 CREATE TABLE faq (
@@ -139,7 +158,26 @@ CREATE TABLE faq (
   question              TEXT,
   answer                TEXT,
   audience              TEXT,
-  source                TEXT
+  owner                 TEXT,
+  source                TEXT,
+  tags                  TEXT,
+  last_reviewed         TEXT
+);
+
+-- New table (no v1 equivalent) - Core Values / Feedback Culture / Decision Making /
+-- Company Ritual content, same provenance and last_reviewed handling as glossary/faq
+-- above.
+CREATE TABLE culture (
+  culture_id            TEXT PRIMARY KEY,
+  section               TEXT,
+  item_name             TEXT,
+  description           TEXT,
+  cadence               TEXT,
+  audience              TEXT,
+  owner                 TEXT,
+  source                TEXT,
+  tags                  TEXT,
+  last_reviewed         TEXT
 );
 
 CREATE TABLE career_levels (

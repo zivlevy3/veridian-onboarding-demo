@@ -375,3 +375,44 @@ code, not just prose the model could ignore:
   any future code that string-matches the two would silently fail for this one
   department. Not fixed now; flagged so it isn't mistaken for something this round
   introduced.
+- **AI Buddy knowledge base: schema + real content landed (`faq`/`glossary`/`culture`),
+  the agent itself did not.** `Veridian_Knowledge_Base_Content_v1.xlsx` (a separate
+  workbook from the master org data pack) adds 20 FAQ / 22 Glossary (10 Acronym + 12
+  Internal Term) / 16 Culture (Core Value / Feedback Culture / Decision Making / Company
+  Ritual) rows, each carrying `audience`/`owner`/`source`/`tags`/`last_reviewed` -
+  richer than the schema originally sketched for this layer, used as given rather than
+  trimmed to match an earlier, smaller plan.
+  - **Real naming collision found and resolved by full replacement, not merge or
+    rename** — checked before assuming anything: the master data pack already had its
+    own `faq` (10 rows, 6 columns) and `glossary` (12 rows, 4 columns, keyed by `term`
+    text) tables, populated from that pack's own FAQ/Glossary sheets. Confirmed via
+    `grep` that neither was read by any app code before touching either. Content
+    overlaps but isn't identical (7 of the old 12 glossary terms - ARR, QBR, PR, Human
+    Buddy, Knowledge Hub, AI Assistant, Connector - reappear in the new 22, under a
+    different key shape: `term_id` like `TERM-001`, not the term text). User decision:
+    DROP+CREATE full replacement, not a side-by-side `buddy_faq`/`buddy_glossary` rename
+    - the new set supersedes the old one as this table's purpose, it doesn't extend it.
+  - **`last_reviewed` needed an explicit serial-to-ISO-date conversion, not automatic
+    parsing.** The source cells are plain numeric (Excel serial `46251`) with no date
+    number-format applied - confirmed directly on the raw cell object (`{"t":"n"}`, no
+    `.z` format code), so `XLSX.readFile(..., {cellDates:true})` correctly declines to
+    treat it as a date (unlike `employees.hire_date`, whose cells *are* formatted as
+    dates in that sheet). `scripts/import-veridian.js`'s `excelSerialToISODate()`
+    converts explicitly (`(serial - 25569) * 86400 * 1000`, the standard Excel-epoch
+    correction). Every row in this content pack shares the identical value, which
+    converts to today's real date - a uniform "content pack generated on this date"
+    stamp, not 58 independently-reviewed dates; noted so it isn't mistaken for that.
+  - **`importKnowledgeBase()` is its own function**, not folded into the generic
+    per-sheet `SHEETS` loop - same reasoning as `importRoles()`/`importOverview()`: a
+    genuinely different source workbook, opened with its own `XLSX.readFile` call, plus
+    the `last_reviewed` conversion the generic loop doesn't do.
+  - Result, verified after import: 185 employees and plan_id 2–5 unaffected (same
+    `ORG_TABLES`-only drop/recreate boundary as the Role Catalog Additions round above);
+    exact row counts (20/22/16, glossary 10 Acronym + 12 Internal Term); `last_reviewed`
+    confirmed stored as `TEXT` ISO date, not the raw serial.
+  - **`FAQ-014`'s answer is a strong candidate for direct inclusion in the future Buddy
+    agent's system prompt, not just retrieval** - it explicitly states the Buddy's own
+    scope boundary ("...can help you navigate the knowledge base, but it should not
+    override your manager or HR policies"). Flagged here for whoever builds that prompt
+    next; not acted on now - building the Buddy agent is explicitly the next, separate
+    step, not part of this round.
