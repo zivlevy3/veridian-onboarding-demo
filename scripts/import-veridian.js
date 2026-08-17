@@ -78,23 +78,21 @@ const SHEETS = {
     columns: ['Track', 'Level', 'Label', 'Scope', 'Typical Titles'],
     dbColumns: ['track', 'level', 'label', 'scope', 'typical_titles'],
   },
-  Roles: {
-    table: 'roles',
-    columns: ['Role ID', 'Job Family', 'Title', 'Track', 'Typical Level Range', 'Core Collaboration', 'Mandatory Role Training'],
-    dbColumns: ['role_id', 'job_family', 'title', 'track', 'typical_level_range', 'core_collaboration', 'mandatory_role_training'],
-  },
 };
 
 // Load order matters: departments/offices before teams/employees;
 // employees FK to itself is handled by disabling foreign_keys during load.
-const LOAD_ORDER = ['Departments', 'Offices', 'Teams', 'Employees', 'Products', 'Systems', 'Training Catalog', 'Policies', 'Glossary', 'FAQ', 'Career Levels', 'Roles'];
+// Roles is NOT here - it's handled by importRoles() below, not the generic loop (see
+// that function for why).
+const LOAD_ORDER = ['Departments', 'Offices', 'Teams', 'Employees', 'Products', 'Systems', 'Training Catalog', 'Policies', 'Glossary', 'FAQ', 'Career Levels'];
 
 // Only these tables are ever dropped/recreated here - app-state tables (manager_intake,
 // plans, plan_item_status - see db/persistence-schema.sql) live in the same file but are
 // never touched by this script, so re-importing an updated xlsx doesn't wipe saved plans.
-// company_overview isn't in SHEETS (its sheet is a transposed Metric/Value layout, not a
-// normal row-per-record sheet - see importOverview) but still needs dropping/recreating.
-const ORG_TABLES = [...Object.values(SHEETS).map((spec) => spec.table), 'company_overview'];
+// company_overview and roles aren't in SHEETS (company_overview's sheet is a transposed
+// Metric/Value layout, not a normal row-per-record sheet - see importOverview; roles
+// needs a second sheet joined in - see importRoles) but both still need dropping/recreating.
+const ORG_TABLES = [...Object.values(SHEETS).map((spec) => spec.table), 'company_overview', 'roles'];
 
 // Overview is a transposed Metric/Value sheet (one row per field), not a row-per-record
 // table like everything else - handled separately rather than forced into the SHEETS shape.
@@ -115,6 +113,62 @@ function importOverview(db, workbook) {
     values.get('Purpose') ?? null
   );
   console.log('Imported 1 row into company_overview (from "Overview")');
+}
+
+// Roles needs one field for each of the 7 real Roles-sheet columns, PLUS three free-text
+// fields (purpose, responsibilities, data_boundary_notes) that live in a SEPARATE "Role
+// Catalog Additions" sheet, joined by Role ID - not a generic row-per-sheet import like
+// everything in SHEETS, so it gets its own function (same reason Overview does).
+// "Role Catalog Additions" rows only exist for the roles actually added in that round
+// (ROLE-036-045 in this data pack) - any Roles-sheet row with no match in that sheet
+// (every pre-existing role) correctly gets NULL for all three columns, not an invented
+// value copied from a neighboring row.
+//
+// Deliberately keeps `typical_level_range` from the Roles sheet's own "Typical Level
+// Range" column (e.g. "IC4"), NOT the Additions sheet's differently-formatted "Level /
+// Seniority" column (e.g. "IC4 / Senior") - format consistency across all 45 rows matters
+// more than adopting a new format for only 10 of them.
+//
+// Deliberately does NOT import the Additions sheet's Headcount / Employees / Manager(s) /
+// Manager Email(s) / Has Direct Reports / Direct Report Scope / Group / Core Tools columns
+// at all - see the comment above the `roles` table in db/schema.sql for why (that data is
+// already live in employees/teams and would go stale here immediately).
+function importRoles(db, workbook) {
+  const rolesSheet = workbook.Sheets.Roles;
+  if (!rolesSheet) throw new Error('Sheet "Roles" not found in workbook');
+  const rows = XLSX.utils.sheet_to_json(rolesSheet, { defval: null });
+
+  const additionsSheet = workbook.Sheets['Role Catalog Additions'];
+  const additionsByRoleId = new Map();
+  if (additionsSheet) {
+    for (const row of XLSX.utils.sheet_to_json(additionsSheet, { defval: null })) {
+      additionsByRoleId.set(row['Role ID'], row);
+    }
+  }
+
+  const insert = db.prepare(
+    `INSERT INTO roles (role_id, job_family, title, track, typical_level_range, core_collaboration, mandatory_role_training, purpose, responsibilities, data_boundary_notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  );
+
+  let count = 0;
+  for (const row of rows) {
+    const addition = additionsByRoleId.get(row['Role ID']) || null;
+    insert.run(
+      row['Role ID'] ?? null,
+      row['Job Family'] ?? null,
+      row['Title'] ?? null,
+      row['Track'] ?? null,
+      row['Typical Level Range'] ?? null,
+      row['Core Collaboration'] ?? null,
+      row['Mandatory Role Training'] ?? null,
+      addition ? addition['Purpose'] ?? null : null,
+      addition ? addition['Responsibilities'] ?? null : null,
+      addition ? addition['Data Boundary Notes'] ?? null : null
+    );
+    count++;
+  }
+  console.log(`Imported ${count} rows into roles (from "Roles" + "Role Catalog Additions", ${additionsByRoleId.size} matched)`);
 }
 
 function main() {
@@ -157,6 +211,8 @@ function main() {
     }
     console.log(`Imported ${count} rows into ${spec.table} (from "${sheetName}")`);
   }
+
+  importRoles(db, workbook);
 
   db.exec('PRAGMA foreign_keys = ON');
   const violations = db.prepare('PRAGMA foreign_key_check').all();

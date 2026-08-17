@@ -335,3 +335,43 @@ code, not just prose the model could ignore:
   be invisible to every agent). Not fixed now — worth wiring `notes` into the Content
   Expert's input as an additional grounding source in a future change, rather than
   continuing to rely on inference-from-structured-fields alone.
+- **Data pack v2's "Role Catalog Additions" round: 10 new `roles` rows (ROLE-036–045),
+  covering the 25 most common of the 57 real employees whose `job_title` matched no
+  catalog entry even after prefix-stripping** (found by literally running
+  `lib/context.js`'s `resolveRole()` against all 185 employees, not estimating). Chosen in
+  two passes: the 5 highest-headcount titles (Senior/Integration Engineer, Marketing
+  Manager, Full Stack Engineer, Implementation Consultant — headcount 2–6), then 5 more
+  picked deliberately for demo plausibility (Customer/Technical Support Specialist,
+  Demand Generation Specialist, Marketing Analyst, Site Reliability Engineer — all
+  headcount 1, all IC, all names that read as a plausible *new hire* role) over the
+  next-most-frequent alternative (executive/C-suite titles - CEO, CFO, CPO, CRO, VP
+  People - correctly headcount=1 each but nobody demos "hire a new CEO").
+  `db/schema.sql`'s `roles` table gained three new nullable columns for this -
+  `purpose`, `responsibilities`, `data_boundary_notes` - populated only for these 10 rows
+  (`scripts/import-veridian.js`'s `importRoles()` joins a second sheet, "Role Catalog
+  Additions", onto the base Roles-sheet row by Role ID; no match means NULL, never an
+  invented value for the other 35). The source data pack's Additions sheet also carried
+  Headcount/Employees/Manager(s)/Manager Email(s)/Has Direct Reports/Direct Report
+  Scope/Group/Core Tools per role - deliberately **not** imported anywhere: all of that
+  is already live, queryable fact in `employees`/`teams` (the same real-query discipline
+  as `peopleSupported`/`directReports` elsewhere in this file) and would silently go
+  stale the moment someone joins, leaves, or changes manager. Also deliberately kept the
+  Roles sheet's own `typical_level_range` format ("IC4") over the Additions sheet's
+  differently-formatted "Level / Seniority" ("IC4 / Senior") for these 10 rows -
+  consistency with the 35 existing rows' format outweighed adopting the new one.
+  Result, verified after import: 185 employees and plan_id 2–5 unaffected (this script
+  only ever drops/recreates `ORG_TABLES`, never `plans`/`plan_item_status` - see
+  `db/persistence-schema.sql`); 45 roles total; 25 of the original 57 unmatched employees
+  now resolve, leaving 32 (mostly Director/Head/Chief/VP/Manager-track titles, out of
+  scope for this round).
+- **Documented, not yet fixed: `roles.job_family` says "Customer Success", real
+  `departments.department` says "Customer Success & Support".** Found while cross-
+  checking the new ROLE-040/041/045 rows against the Additions sheet's "Department"
+  column (which correctly says "Customer Success & Support") - but this mismatch is
+  **not new**: all 35 pre-existing roles already used the shorter "Customer Success" in
+  `job_family`, so the 3 new rows just followed the established (if inconsistent)
+  convention rather than introducing a fresh bug. `job_family` isn't a SQL foreign key
+  against `departments.department` (just a TEXT column), so nothing breaks today - but
+  any future code that string-matches the two would silently fail for this one
+  department. Not fixed now; flagged so it isn't mistaken for something this round
+  introduced.

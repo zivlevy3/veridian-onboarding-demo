@@ -151,6 +151,16 @@ CREATE TABLE career_levels (
   PRIMARY KEY (track, level)
 );
 
+-- purpose/responsibilities/data_boundary_notes added in the "Role Catalog Additions"
+-- round (data pack v2): free text from that sheet, joined onto the base Roles-sheet row
+-- by Role ID in scripts/import-veridian.js's importRoles(). Only the 10 roles actually
+-- present in that sheet (ROLE-036-045) get real values - every other role's three new
+-- columns are NULL, never backfilled with an invented value. Deliberately excludes that
+-- sheet's Headcount/Employees/Manager(s)/Manager Email(s)/Has Direct Reports/Direct
+-- Report Scope/Group/Core Tools columns - all of that is already live, queryable data in
+-- employees/teams and would go stale the moment headcount changes; storing a snapshot
+-- here would be exactly the kind of invented/duplicated fact this project's real-query
+-- discipline exists to avoid (see MEMORY.md section 4).
 CREATE TABLE roles (
   role_id               TEXT PRIMARY KEY,
   job_family            TEXT,
@@ -158,7 +168,10 @@ CREATE TABLE roles (
   track                 TEXT,
   typical_level_range   TEXT,
   core_collaboration    TEXT,
-  mandatory_role_training TEXT
+  mandatory_role_training TEXT,
+  purpose               TEXT,
+  responsibilities      TEXT,
+  data_boundary_notes   TEXT
 );
 
 CREATE INDEX idx_employees_manager ON employees(manager_email);
