@@ -3,10 +3,10 @@
   "onboardingNeeds": [
     {
       "title": "Meet the managers you support",
-      "track": "team_interfaces",
+      "track": "role",
       "purpose": "Get to know the leaders you'll be supporting, so they have a name and face before their first real ask.",
-      "rationale": "roleEssence is fundamentally about an ongoing portfolio of leadership relationships, not a task or deliverable - meeting them is the single most direct onboarding need this role implies. Portfolio size (9) comes from peopleSupported, not invented.",
-      "headcount": 9
+      "rationale": "roleEssence is fundamentally about an ongoing portfolio of leadership relationships - these meetings ARE the core hands-on work of the role, not an introduction adjacent to it. Portfolio size (8) comes from peopleSupported, not invented - Yael Shalev (skip_manager_email) is excluded by lib/context.js's management-chain filter, since her hrbp_email pointing here is an organizational contradiction, not a real second relationship.",
+      "headcount": 8
     },
     {
       "title": "Shadow a senior HRBP in a real advisory conversation",

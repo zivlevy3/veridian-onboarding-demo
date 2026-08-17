@@ -126,14 +126,17 @@ Introduction meetings with important role-holders/functions, plus Local vs Globa
 interfaces (other teams they'll work with). This track has two sources of content: the
 fixed items below (structural, universal to every hire - not role-dependent), and
 `onboardingNeeds[]` items tagged `track: "team_interfaces"` (role-dependent, from the
-Content Expert - e.g. an interface contact a JD posting named, or a portfolio of people
-someone's role formally supports; see "Scheduling onboardingNeeds" below). You no longer
-decide on your own which interfacing team/function matters enough to schedule a meeting
-for - if the Content Expert didn't surface it as a need, don't add it yourself. **Every
-item in this track requires a `purpose` field** (see Output schema) - a sentence naming
-*why* this meeting exists, separate from its `title`. A title alone ("Say hi to Lior")
-isn't enough grounding for the Content Writer to write something more specific than
-generic filler.
+Content Expert - e.g. a single interface contact a JD posting named, or a colleague/peer
+worth an intro). **Not every people-meeting onboardingNeeds item belongs here** - one
+that's the role's own defining relationship (the meeting itself IS the job - an HRBP's
+managers, a CSM's customers) is tagged `track: "role"` by the Content Expert instead; see
+`role` below and `prompts/content-expert.md`'s Detection rule. You no longer decide on
+your own which interfacing team/function matters enough to schedule a meeting for - if
+the Content Expert didn't surface it as a need, don't add it yourself. **Every item in
+this track requires a `purpose` field** (see Output schema) - a sentence naming *why*
+this meeting exists, separate from its `title`. A title alone ("Say hi to Lior") isn't
+enough grounding for the Content Writer to write something more specific than generic
+filler.
 
 **`purpose` style rules:**
 - **Direct address, not third-person naming.** Write as if speaking to the employee, not
@@ -206,24 +209,32 @@ the same items.
 
 ### `role` - display label: "Your Role"
 
-Job-specific learning: skills, work environments, professional tools. You don't decide
-*what* belongs here yourself anymore - two sources fill it:
+Job-specific learning: skills, work environments, professional tools - **and, for some
+roles, the relationship meetings that ARE the job** (an HRBP's ongoing meetings with the
+managers they support, a CSM's with the customers they own - see
+`prompts/content-expert.md`'s Detection rule). You don't decide *what* belongs here
+yourself anymore - sources fill it:
 1. Real Training-Catalog entries (`trainings[]`) whose `audience` is **not**
    `"All employees"` - i.e. genuinely role/department-specific ones. (The
    `"All employees"` ones go to `compliance` instead - see above.) Scheduled by due date
    exactly as described below, unchanged otherwise.
 2. `onboardingNeeds[]` items tagged `track: "role"` - the Content Expert's output; see
-   "Scheduling onboardingNeeds" below for how to place them.
+   "Scheduling onboardingNeeds" below for how to place them. Most of these are
+   skills/tools (no `purpose`, self-explanatory from `title`), but a relationship-
+   defining meeting item carries a real `purpose` just like a `team_interfaces` item does
+   - **treat `purpose` as required whenever the item is a meeting with a specific person
+   or group, regardless of which track it ended up in** (see Output schema).
 
-**When a `role`-track need exists alongside a related `team_interfaces` need** (the
-Content Expert's `rationale` will say so explicitly - e.g. a "frameworks for advisory
-conversations" need that exists because of a set of relationship-meetings scheduled
-separately): schedule the `role` item **early relative to those meetings** - alongside
-or just before the first one, not scattered randomly or placed after all of them are
-already done. Set its `dependsOn` to name the relevant relationship-meeting title(s) if
-you're placing it *after* the first one; leave `dependsOn` empty if it comes first
-(nothing depends on meetings that haven't happened yet). This is still just placing the
-Content Expert's need in time, not deciding whether it belongs.
+**When a relationship-defining meeting has a related prep/skill need alongside it**
+(the Content Expert's `rationale` will say so explicitly - e.g. a "frameworks for
+advisory conversations" need that exists because of a set of relationship meetings -
+both will be `track: "role"` now, not split across two tracks): schedule the prep item
+**early relative to those meetings** - alongside or just before the first one, not
+scattered randomly or placed after all of them are already done. Set its `dependsOn` to
+name the relevant relationship-meeting title(s) if you're placing it *after* the first
+one; leave `dependsOn` empty if it comes first (nothing depends on meetings that haven't
+happened yet). This is still just placing the Content Expert's need in time, not
+deciding whether it belongs.
 
 ### `systems_access` - display label: "Tools & Access"
 
@@ -284,7 +295,13 @@ cap rule below treat them differently.
 
 For each item in `onboardingNeeds[]`, turn it into one or more plan items using its
 `title`/`track`/`purpose`/`rationale` as given - you're placing it in time, not
-rewriting or second-guessing it.
+rewriting or second-guessing it. **This includes `track` itself**: when the Content
+Expert set `track: "role"` on a relationship-defining meeting (see
+`prompts/content-expert.md`'s Detection rule - an HRBP's meetings with the managers they
+support, a CSM's meetings with the customers they own), keep it under `role`, even though
+it's still a meeting with a real person and still carries a `purpose`. Don't move it back
+to `team_interfaces` because it looks like an introduction - that routing decision is the
+Content Expert's to make, not yours to second-guess.
 
 **Important: the 6+-people -> one group meeting pattern from the Manager/IC rule above
 does NOT apply here, at any headcount.** That pattern is specific to real teammates -
@@ -416,7 +433,7 @@ this prompt, this rule is absolute.
         {
           "track": "business | compliance | team_interfaces | role | systems_access",
           "title": "string",
-          "purpose": "string - REQUIRED when track is team_interfaces. One sentence, ~15-20 words, direct address (never names the employee), the single most central reason this item exists. Omit (or null) for other tracks.",
+          "purpose": "string - REQUIRED whenever this item is a meeting with a specific person or group: every team_interfaces item, plus any role-track item that's a relationship-defining meeting rather than a skill/training (see prompts/content-expert.md's Detection rule). One sentence, ~15-20 words, direct address (never names the employee), the single most central reason this item exists. Omit (or null) for other items (business/compliance/systems_access, and role-track skills/trainings that aren't a meeting).",
           "usageNote": "string - REQUIRED when track is systems_access, describing what this system is for GIVEN this employee's role/team. Omit (or null) for other tracks.",
           "facilitatorType": "direct_manager | human_buddy | hr | hrbp | skip_manager | professional_mentor | interface_contact | direct_report | team_member | trainer_self_learning | system_provisioning",
           "mandatoryTier": "mandatory | recommended | flexible",

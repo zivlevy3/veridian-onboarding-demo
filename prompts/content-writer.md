@@ -68,7 +68,7 @@ rules with a vibe.
 
 Two JSON objects:
 
-1. **plan** - the Process Expert's output: `{ weeks: [{ weekNumber, items: [{ track, title, purpose, usageNote, facilitatorType, mandatoryTier, estimatedHours, recurring, dependsOn }] }], gaps: [...] }`. `purpose` is present on `team_interfaces`-track items, `usageNote` on `systems_access`-track items - use both. `recurring: true` marks one instance of a repeating series (e.g. a weekly manager check-in) - write each instance's copy for that specific week (don't imply "every week" language unless the item itself spans multiple weeks, which it doesn't - each week gets its own instance and its own card).
+1. **plan** - the Process Expert's output: `{ weeks: [{ weekNumber, items: [{ track, title, purpose, usageNote, facilitatorType, mandatoryTier, estimatedHours, recurring, dependsOn }] }], gaps: [...] }`. `purpose` is present on every item that's a meeting with a specific person or group - that's every `team_interfaces`-track item, and also some `role`-track items: a role can be job-specific *learning* (no `purpose`, the `title` is self-explanatory - a skill, a training) or it can be a relationship-defining meeting that IS the job itself (an HRBP's ongoing meetings with the managers they support, a CSM's with the customers they own - these carry a real `purpose`, exactly like a `team_interfaces` item does). Use `purpose` whenever it's present, regardless of which of the two tracks the item is in. `usageNote` is present on `systems_access`-track items - use it the same way. `recurring: true` marks one instance of a repeating series (e.g. a weekly manager check-in) - write each instance's copy for that specific week (don't imply "every week" language unless the item itself spans multiple weeks, which it doesn't - each week gets its own instance and its own card).
 2. **context** - the Context Layer's output for the same employee: `{ company, employee, department, team, office, people: { manager, skipManager, executive, hrbp, humanBuddy, professionalMentor, directReports, peopleSupported }, role, careerLevel, systems, trainings, policies, products, jdExtract, gaps }`. `jdExtract` (when present) is what the Process Expert already used to ground `interface_contact`/`role` items - you don't need to read it directly, just write from the `title`/`purpose` you're given as usual. `peopleSupported` entries carry `isExecutive` (real job_title/department signal, VP+/C-suite) - use it when an item names one of these people (see "Senior contacts" below).
 
 Use `context` to turn generic facilitator roles into real people: `plan` tells you an
@@ -79,13 +79,19 @@ becomes a "pending assignment" item instead of a name you made up.
 
 ## Use `purpose`, don't write generic filler
 
-Every `team_interfaces`-track item comes with a `purpose` from the Process Expert -
-*why* the meeting exists, not just who it's with. Ground `detailText` in that purpose
-instead of falling back to generic phrasing. A title like "Meet Lior" with no purpose
-behind it tempts you toward empty filler ("Say hi to Lior!"); the `purpose` field exists
-specifically so you don't have to write that. If `purpose` is genuinely missing on a
-`team_interfaces` item (it shouldn't be, but don't invent one if it is), write the most
-concrete `detailText` the rest of `context` supports rather than padding with pleasantries.
+Every item that's a meeting with a specific person or group comes with a `purpose` from
+the Process Expert - *why* the meeting exists, not just who it's with. This includes
+every `team_interfaces`-track item, and also any `role`-track item that's a
+relationship-defining meeting rather than a skill or training (an HRBP's meetings with
+the managers they support, a CSM's with the customers they own - see
+`process-expert.md`). Ground `detailText` in that purpose instead of falling back to
+generic phrasing, whichever of the two tracks the item is in. A title like "Meet Lior"
+with no purpose behind it tempts you toward empty filler ("Say hi to Lior!"); the
+`purpose` field exists specifically so you don't have to write that. If `purpose` is
+genuinely missing on an item that clearly is a meeting with someone (it shouldn't be, but
+don't invent one if it is), write the most concrete `detailText` the rest of `context`
+supports rather than padding with pleasantries. A `role`-track item with no `purpose` is
+normal when it's a skill/training, not a meeting - don't force one there.
 
 **`purpose` is already written in direct-address style (it addresses the employee, never
 names them by name) - keep it that way.** You're translating it into `shortLine` and
@@ -213,6 +219,38 @@ introduced.
 
 This is about framing, not about withholding warmth - a senior contact still gets a
 grounded, specific `detailText` like anyone else, just not a "meeting a stranger" angle.
+
+## Grounding the relationship: don't imply department ownership
+
+A `peopleSupported` contact's title (e.g. "Chief Product Officer", "Chief Revenue
+Officer") names the department *they* run - don't let that imply the employee supports
+*that department*. The real basis for the relationship is the group `roleEssence`
+actually describes the employee as supporting, and it can differ per contact within the
+same portfolio:
+
+- **A contact who's part of a group the employee supports as a whole** (e.g.
+  `peopleSupported[].department === "Executive"`, when `roleEssence` frames "the
+  Executive team" as one relationship, not department-by-department): frame them as one
+  of the senior leaders the employee supports **as part of that group** - never name the
+  department they happen to lead as the basis for the relationship. Their own function
+  can still flavor *what the conversation is about*, just not *why the relationship
+  exists*.
+  - No: "Emma runs Product. Get aligned on how People will support her team going forward." (implies the employee supports Product as a department)
+  - Yes: "Emma is one of the senior leaders you support as part of the Executive team - a first conversation on how that partnership plays out on the Product side."
+- **A contact whose own team the employee genuinely does support directly** (not a
+  group-level relationship - e.g. a Finance/IT/Legal/Operations manager in a portfolio
+  built from "Finance & Operations"): naming their specific team as the basis is
+  accurate here, because the relationship really is with that team, not a broader group
+  they happen to belong to.
+  - Yes: "Roi directs Finance, one of the teams you'll be supporting."
+
+Real example: Moran Peleg (HRBP supporting "the Executive team and Finance &
+Operations") had her CPO/CRO/VP People contacts worded as if she individually supported
+Product, Revenue, and People as departments - three departments she has no actual
+relationship with. She supports Finance/IT/Legal/Operations directly (by team), and the
+Executive team as a group (which happens to include people who lead those other
+departments) - a narrower relationship than "runs Product" implies, and the wording has
+to reflect which of the two is actually true for each contact.
 
 ## facilitatorDisplayName
 

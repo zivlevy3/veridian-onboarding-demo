@@ -135,7 +135,7 @@
         },
         {
           "shortLine": "Meet Emma Carter",
-          "detailText": "Emma runs Product. Get aligned on how People will support her team going forward, now that you're the one she'll come to.",
+          "detailText": "Emma is one of the senior leaders you support as part of the Executive team - a first conversation on how that partnership plays out on the Product side.",
           "facilitatorDisplayName": "Emma Carter (Chief Product Officer)",
           "dayHint": "Week 3"
         },
@@ -158,7 +158,7 @@
         },
         {
           "shortLine": "Meet Roi Ben-David",
-          "detailText": "Roi directs Finance, one of the teams you'll be supporting. Worth a name and a face before his first real ask.",
+          "detailText": "Finance's director, and one of the teams you'll be supporting. A first sense of how his team runs day to day.",
           "facilitatorDisplayName": "Roi Ben-David (Director Finance)",
           "dayHint": "Week 4"
         },
@@ -205,7 +205,7 @@
         },
         {
           "shortLine": "Meet Michael Bennett",
-          "detailText": "Get aligned with Michael on how People supports Revenue's team needs going forward.",
+          "detailText": "Michael is one of the senior leaders you support as part of the Executive team - a first conversation on what that partnership looks like from the Revenue side.",
           "facilitatorDisplayName": "Michael Bennett (Chief Revenue Officer)",
           "dayHint": "Week 5"
         },
@@ -217,7 +217,7 @@
         },
         {
           "shortLine": "Meet Michal Shani",
-          "detailText": "Michal manages Finance, one of the teams you'll be supporting. A first sense of how her team works.",
+          "detailText": "Finance, one of the teams you'll be supporting, is run by Michal. A first sense of how her team works.",
           "facilitatorDisplayName": "Michal Shani (Finance Manager)",
           "dayHint": "Week 5"
         }
@@ -233,12 +233,6 @@
           "dayHint": "Week 6"
         },
         {
-          "shortLine": "Meet Yael Shalev",
-          "detailText": "A direct working conversation with Yael as one of the leaders you support, separate from the skip-level relationship you already have with her.",
-          "facilitatorDisplayName": "Yael Shalev (VP People)",
-          "dayHint": "Week 6"
-        },
-        {
           "shortLine": "Meet Nathan Edwards",
           "detailText": "Nathan manages Legal, one of the teams you'll be supporting. A first sense of what he'll come to you for.",
           "facilitatorDisplayName": "Nathan Edwards (Legal Manager)",
@@ -246,7 +240,7 @@
         },
         {
           "shortLine": "Meet Hannah King",
-          "detailText": "Hannah leads Business Operations, one of the teams you'll be supporting. A first sense of her priorities.",
+          "detailText": "Business Operations, one of the teams you'll be supporting, is led by Hannah. A first sense of her priorities.",
           "facilitatorDisplayName": "Hannah King (Head of Business Operations)",
           "dayHint": "Week 6"
         }
@@ -282,7 +276,8 @@
     "company_overview only has basic summary fields (name, category, employee count, offices) - no product description, ICP, or business-model detail exists anywhere in the source data.",
     "DEMO ASSUMPTION (see prompts/process-expert.md and README.md): business-track LMS sessions 3-6 have no real source data behind them - descriptions are topical only.",
     "No manager intake was supplied for this run, so professionalMentor is null - no mentor item was written, and this is a pipeline limitation for this test run, not a fact about the employee.",
-    "Her 9 supported managers are scheduled as 9 separate individual 1:1s across weeks 3-6, not a group session - the CEO, CPO and CRO are never bundled into a shared session with each other or with the Finance/IT/Legal/Ops managers she supports.",
+    "Yael Shalev has hrbp_email pointing to this employee but is also her skip_manager_email - an organizational contradiction in the source data (an HRBP formally 'supporting' someone above them in their own reporting line). Excluded from peopleSupported by a code-level filter in lib/context.js; her existing skip-level relationship (week 4) is unaffected.",
+    "Her 8 supported managers are scheduled as 8 separate individual 1:1s across weeks 3-6, not a group session - the CEO, CPO and CRO are never bundled into a shared session with each other or with the Finance/IT/Legal/Ops managers she supports.",
     "The 'Shadow a real advisory conversation' item (week 3) names Tal Harari as facilitator - she's the team's senior HRBP and the natural real candidate, but the manager should confirm this assignment explicitly before the plan ships, since the underlying plan item itself didn't name a specific person.",
     "This plan does not include applied 'doing' work tickets (out of scope by design for this pipeline)."
   ]

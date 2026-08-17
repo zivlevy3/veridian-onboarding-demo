@@ -56,7 +56,7 @@ wrote - never from a fixed template. Each item:
 {
   "title": "string",
   "track": "role | team_interfaces",
-  "purpose": "string - required if track is team_interfaces (same style rules as the Process Expert's purpose field: direct address, no employee name, ~15-20 words, one central reason)",
+  "purpose": "string - required whenever this item is a meeting with a specific person or group: every team_interfaces item, and also a role-track item that IS a relationship-defining meeting (see the Detection rule below - same style rules as the Process Expert's purpose field: direct address, no employee name, ~15-20 words, one central reason). Omit/null for a role-track item that's a skill or training, not a meeting.",
   "rationale": "string, REQUIRED - explain how this connects to roleEssence. If you can't articulate a real connection, the item doesn't belong here - delete it, don't force a weak rationale.",
   "headcount": <number> | null
 }
@@ -89,31 +89,45 @@ flow into employee-facing text almost verbatim, so word choice here matters, not
 the Content Writer. `rationale` is internal-only and never shown to the employee, so it's
 fine to use precise/technical language there if it helps you reason.)
 
-**When a role-defining relationship needs BOTH `team_interfaces` and `role`.** Some roles
-aren't just adjacent to a group of people - the role's core work genuinely **is** an
-ongoing relationship with them (an HRBP and the managers they support; a CSM and the
-customers they own). When `roleEssence` describes the role this way, the introduction
-meetings themselves are the start of the actual professional work, not just a networking
-nicety - so two things should come out of Stage 2, not one:
+**When a relationship-defining meeting belongs under `role`, not `team_interfaces`.**
+Some roles aren't just adjacent to a group of people - the role's core work genuinely
+**is** an ongoing relationship with them (an HRBP and the managers they support; a CSM
+and the customers they own). When `roleEssence` describes the role this way, meeting
+those people isn't networking - it's the hands-on work of the role itself, the exact
+thing the `role` track's own definition already covers ("Learning and hands-on
+practice"). So the meeting(s) with those people get **`track: "role"`, not
+`track: "team_interfaces"`**, even though the item shape is otherwise identical (still a
+`purpose`, still a `headcount` when it's about a specific number of people). Don't invent
+a separate category or a second flag for this - the track value itself carries the
+distinction.
 
-1. The `team_interfaces` meeting(s) with those people (as already described above).
-2. A **separate `role`-track need** that prepares for or accompanies those meetings -
-   frameworks/methods for that kind of professional conversation, preparation before the
-   first one, maybe shadowing someone more experienced having a real one. This is not a
-   second, independent category of content - it exists *because of* the relationship
-   meetings, so its `rationale` should say so explicitly (the Process Expert uses this to
-   schedule it early, alongside or just before the relationship meetings begin, and to
-   set `dependsOn` sensibly).
+You may still, separately, emit an **additional `role`-track need** that prepares for or
+accompanies those meetings - frameworks/methods for that kind of professional
+conversation, preparation before the first one, maybe shadowing someone more experienced
+having a real one. That's a genuinely different need (skill-building, not the meeting
+itself), so give it its own `rationale` explaining it exists *because of* the
+relationship meetings (the Process Expert uses this to schedule it early, alongside or
+just before the relationship meetings begin, and to set `dependsOn` sensibly) - but it is
+not required just because the relationship meetings exist; only add it if there's a real
+skill/prep need, not as a reflex.
 
 **Detection rule**: if `roleEssence` says the role *is* a particular ongoing relationship
 (not just "collaborates with" or "coordinates with," but "supports," "owns," "is
-accountable for" a specific group of people) - that's the signal to emit both. A role
-that merely *interacts* with other teams (most roles) does not need this; don't force a
-second item where the relationship is incidental rather than the essence of the job.
+accountable for" a specific group of people) - that's the signal to route the meeting(s)
+with that group to `track: "role"` instead of `team_interfaces`. A role that merely
+*interacts* with other teams (most roles) does not need this; an ordinary introduction
+stays `team_interfaces` even if it's useful or interesting - don't reroute a meeting
+just because meeting people is involved. The test is whether the meeting itself *is* the
+job, not whether it's with someone important or means something to the employee.
 
-For the HRBP example above, Stage 2 would include both:
-- `{ "title": "Meet the managers you'll be supporting", "track": "team_interfaces", "headcount": 9, ... }`
-- `{ "title": "Frameworks for advisory conversations with the managers you support", "track": "role", "headcount": null, "rationale": "roleEssence defines this role as an ongoing advisory relationship, not a task - this prepares for the relationship meetings scheduled separately, not a standalone skill." }`
+For the HRBP example above, Stage 2 would include:
+- `{ "title": "Meet the managers you'll be supporting", "track": "role", "purpose": "Get to know the leaders you'll be supporting, so they have a name and face before their first real ask.", "headcount": 9, "rationale": "roleEssence is fundamentally about an ongoing portfolio of leadership relationships - these meetings ARE the core hands-on work of the role, not an introduction adjacent to it." }`
+- optionally: `{ "title": "Frameworks for advisory conversations with the managers you support", "track": "role", "purpose": null, "headcount": null, "rationale": "roleEssence defines this role as an ongoing advisory relationship, not a task - this prepares for the relationship meetings above, not a standalone skill." }`
+
+Contrast this with an ordinary `team_interfaces` item in the same plan, e.g. "meet a
+fellow HRBP on your own team" - that's a real, useful intro, but it isn't *this* role's
+defining relationship (it's a peer, not someone the role supports/owns), so it stays
+`team_interfaces` as usual.
 
 **Naming a specific `isExecutive` contact**: when a `peopleSupported` entry with
 `isExecutive: true` is named in a `title` or `purpose` (e.g. scheduling a meeting with

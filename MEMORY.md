@@ -85,6 +85,19 @@ voice anchor and the four failure modes sit on top of them.
    in `lib/context.js` (the same title-regex/department check as `hasExecutiveMember`
    below, just applied to one person instead of a whole team) - not left for the model to
    infer from a title it's reading for the first time.
+8. **A contact's own title/department is not automatically the basis of the
+   relationship - `roleEssence` is.** A portfolio can mix two different kinds of
+   relationship: some contacts are supported *as a group* (e.g. "the Executive team," one
+   relationship, regardless of which department each member individually runs), others
+   are supported *by their own specific team* (e.g. a named Finance/IT/Legal/Operations
+   manager). Wording a group-relationship contact around the department they personally
+   lead ("Emma runs Product, get aligned on how People will support her team") silently
+   claims the employee supports that department too - wrong, and a real instance of it
+   shipped before being caught. Ground each contact in whichever of the two is actually
+   true for them (`prompts/content-writer.md`'s "Grounding the relationship" section) -
+   never default to "their title names a department, so that's the relationship."
+   - Before: *"Emma runs Product. Get aligned on how People will support her team going forward."*
+   - After: *"Emma is one of the senior leaders you support as part of the Executive team - a first conversation on how that partnership plays out on the Product side."*
 
 **Daniel Hadar's file (`output/VRD-1011.content.manual-example.PRE-CONTENT-EXPERT.json`)
 was created before the Content Expert architecture and all of section 1's writing
@@ -129,7 +142,7 @@ team is people who already work together; a portfolio is a list of separate rela
 that happen to share a number. Fixed by removing the group branch entirely from
 `onboardingNeeds` scheduling — any `onboardingNeeds` item with a `headcount` is now
 **always individual meetings**, spread across as many weeks as the count needs (weeks 3–6
-for Moran Peleg's 9-person portfolio, not crammed into weeks 1–3).
+for Moran Peleg's 8-person portfolio, not crammed into weeks 1–3).
 
 **`team.hasExecutiveMember` — a hard code-level safety net, not a prompt instruction.**
 Even in the one legitimate case for a group meeting (a real 6+-person team), if any
@@ -145,6 +158,23 @@ code, not left to the model to notice. The underlying check is now a reusable
 (`.isExecutive`) — the team-level use gates the group-meeting rule above; the
 per-individual use gates content-writer rule 7 (no "first meeting" framing for a named
 executive contact).
+
+**`peopleSupported` excludes anyone in the employee's own management chain — same
+pattern, a different structural issue.** Found via a real case: Moran Peleg (HRBP)'s
+raw `hrbp_email`-reverse-lookup included Yael Shalev, who is simultaneously Moran's
+`skip_manager_email` — an HRBP formally "supporting" someone above her in her own
+reporting line, an organizational contradiction in the source data, not a query bug.
+Left unhandled, this produced a second "Meet Yael Shalev" portfolio item alongside the
+already-scheduled skip-level meeting, effectively double-booking one relationship as two.
+`lib/context.js` now filters `peopleSupported` to drop any candidate whose `email`
+matches `employee.manager_email` or `employee.skip_manager_email`, logging a `gaps` entry
+per exclusion rather than silently dropping them (same never-silently-drop discipline as
+section 4). This is a permanent structural guard, not a one-off patch for Moran — the
+same contradiction could recur for any future HRBP/manager-support relationship in this
+dataset (real or synthetic), so it's checked in code the same way `hasExecutiveMember`
+is, rather than corrected per-employee when it's next noticed. Verified against an
+isolated in-memory reproduction with entirely different synthetic people/emails - the
+filter generalizes, it isn't special-cased to VRD-1172/Yael by name or id.
 
 **The track model grew from 4 to 5 — a `compliance` track was split out of `business`.**
 General mandatory training (`trainings[].audience === "All employees"` — Security
@@ -199,6 +229,33 @@ logistics, and voice are three different jobs, run in that order:
     wired if it lands after the first one). Detection signal: `roleEssence` says the role
     *is* accountable for/owns/supports a specific group of people, not merely
     collaborates or coordinates with one.
+  - **That same detection signal routes the meeting(s) to `track: "role"` directly,
+    instead of `team_interfaces`** — not a second flag or a badge layered on top of
+    `team_interfaces`, a different track value. Tried a dual-tag approach first
+    (`team_interfaces` + a boolean `isCoreRoleWork` + a secondary dashboard badge) and
+    reverted it: `role`'s own display label is already "Your Role - Learning and
+    hands-on practice", which is *exactly* what a relationship-defining meeting is for
+    the person having it — routing there directly says the same thing the badge was
+    trying to say, without a second field, a second pass-through hop (Content Expert →
+    Process Expert → `attachTracks()`), or a second visual element crowding the card.
+    Content Expert alone decides the track (Detection rule, same as before); Process
+    Expert places `onboardingNeeds[]` items using `track` as given, same as every other
+    field — no special-cased pass-through logic needed, since track was already
+    copied through verbatim. One knock-on effect this required: `purpose` (the "why
+    this meeting" field) used to be required only when `track === "team_interfaces"`;
+    that's now required whenever an item is *a meeting with a specific person or
+    group*, regardless of which of the two tracks it landed in — a `role`-track item is
+    otherwise ambiguous between "a skill/training" (no `purpose`, `title` alone is
+    enough) and "a relationship meeting" (needs `purpose` or the Content Writer falls
+    back to generic filler, exactly the failure `purpose` exists to prevent). Updated in
+    all three prompts (`content-expert.md`, `process-expert.md`, `content-writer.md`),
+    not just the one that changed track.
+    Real example: Moran Peleg (HRBP, `VRD-1172`) — her 9 portfolio meetings (Maya Stern,
+    Emma Carter, Michael Bennett, Yael Shalev, Michal Shani, Roi Ben-David, Ben Harari,
+    Nathan Edwards, Hannah King) are `track: "role"`; her fixed/universal
+    `team_interfaces` items (office tour, manager cluster, HRBP-of-her-own meeting) and
+    ordinary same-team-HRBP intros (Rachel Cooper, Tal Harari — colleagues, not
+    portfolio) stay `team_interfaces`.
 - **Process Expert** (`prompts/process-expert.md`) owns *when* — pure scheduling/pacing
   logic against the caps above. Explicitly does **not** decide role content anymore
   (no more "find critical interfaces" or author its own role items) — it only places
@@ -241,7 +298,8 @@ code, not just prose the model could ignore:
   many people someone "probably" supports. When a portfolio needed a real test case, a
   brand-new fictional HRBP was deliberately *not* created, because a day-1 hire has no
   established portfolio yet — invented headcount would have violated this rule at its
-  root; a real existing HRBP (Moran Peleg, 9 real managers) was used instead.
+  root; a real existing HRBP (Moran Peleg, 8 real managers after the management-chain
+  filter — section 2 above) was used instead.
 - **One explicit, labeled exception**: the `business` track's 6 LMS sessions are allowed
   to have plausible-but-ungrounded titles/descriptions for sessions 3–6 (no real source
   data exists for them in this dataset) — marked "⚠️ DEMO ASSUMPTION — NOT PRODUCTION
@@ -264,3 +322,16 @@ code, not just prose the model could ignore:
   — that assumption is reasonable for a 185-person company but isn't actually confirmed by
   any real ritual/visibility data here, unlike the org the pattern was originally
   generalized from. Not fixed now; flagged so it isn't silently taken as settled fact.
+- **Documented, not yet fixed: `employees.notes` is real, accurate signal that reaches no
+  agent at all.** Moran Peleg's row has `notes: "Supports Finance, Operations and
+  Executive team"` — a correct, human-written description of exactly the relationship
+  `roleEssence` needed to characterize. But `personSummary()` and the `employee:` object
+  `buildEmployeeContext()` returns (`lib/context.js`) both explicitly enumerate their
+  fields, and `notes` isn't among them — the Content Expert never saw this sentence: it
+  independently arrived at "Executive team and Finance & Operations" by reading the
+  `department` field across nine raw `peopleSupported` rows. That happened to match `notes`
+  exactly this time; nothing guarantees it will next time (a `notes` field with more
+  specific or additional detail than what `department` values alone imply would currently
+  be invisible to every agent). Not fixed now — worth wiring `notes` into the Content
+  Expert's input as an additional grounding source in a future change, rather than
+  continuing to rely on inference-from-structured-fields alone.
