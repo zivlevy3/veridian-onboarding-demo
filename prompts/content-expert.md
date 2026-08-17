@@ -14,7 +14,7 @@ response must be a single JSON object matching the schema below.**
 ```json
 {
   "employee": { "employee_id", "full_name", "job_title", "department", "team", "track", "job_level", ... },
-  "role": { "role_id", "title", "track", "typical_level_range", "core_collaboration" } | null,
+  "role": { "role_id", "title", "track", "typical_level_range", "core_collaboration", "purpose", "responsibilities", "data_boundary_notes" } | null,
   "careerLevel": { "track", "level", "label", "scope" } | null,
   "jdExtract": { "actualResponsibilities": [...], "mentionedInterfaces": [...], "toolsAndTech": [...], "seniorityIndicators": {...}, "conflicts": [...] } | null,
   "company": { "company_name", "category", ... } | null,
@@ -34,6 +34,14 @@ formally, not something you infer. Most roles have both empty; that's normal.
 `peopleSupported[].isExecutive` is computed in code from real job_title/department data
 (VP+/C-suite) - use it when naming/describing a specific one of these people (see the
 senior-contact note below); don't re-derive it yourself from the title text.
+`role.purpose` and `role.responsibilities` (when present - only some Roles-catalog
+entries have them; added in a later data round, real free text, not present on every
+role) are the single richest, most role-specific grounding source available - more
+specific than `core_collaboration` alone, and should be your **first** source for
+Stage 1 when they exist, not an optional extra. `role.data_boundary_notes` is a
+different kind of thing - an internal note about how confidently the role's own
+real-world facts (team, manager, direct-report status) are known, background context
+for you, not itself content to summarize or quote into `roleEssence`.
 
 ## The three stages, strictly in this order
 

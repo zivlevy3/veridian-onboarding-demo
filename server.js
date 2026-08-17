@@ -80,6 +80,11 @@ const DEFAULT_TRACK_STYLE = { accent: '#6b7690', chipBg: 'rgba(107,118,144,0.16)
 // plan - an employee with no role-track items this week should still see what "Your
 // Role" means, since the legend is a standing reference, not a per-week summary.
 const LEGEND_ORDER = ['business', 'team_interfaces', 'role', 'systems_access', 'compliance'];
+// Editing (the pencil icon) is scoped to these two tracks only - see the comment above
+// its use in renderItem for why. Adding a new item still offers all 5 tracks (a manager
+// filling a real gap - e.g. a forgotten system - needs every track available), and the
+// checkbox is untouched on every track; only the edit affordance is narrowed.
+const EDITABLE_TRACKS = new Set(['team_interfaces', 'role']);
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -208,6 +213,15 @@ function renderItem(planId, item, trackStyles, activeWeek, nameEmailMap) {
   const mailBtn = email && item.emailContext
     ? `<button type="button" class="icon-btn mail-btn" data-email="${escapeHtml(email)}" title="Email ${escapeHtml(facilitatorName)}" aria-label="Email ${escapeHtml(facilitatorName)}">&#9993;</button>`
     : '';
+  // Editing is scoped to the two "content" tracks a manager would plausibly want to
+  // adjust wording on (People & Roles, Your Role) - not Veridian/Tools & Access/
+  // Compliance, whose items are either fixed catalog content (systems, mandatory
+  // trainings) or company-wide LMS sessions, not something this demo edit affordance is
+  // meant to touch. See EDITABLE_TRACKS in the client script for the matching rule
+  // applied to freshly-added draft items too.
+  const editBtn = EDITABLE_TRACKS.has(item.track)
+    ? `<button type="button" class="icon-btn edit-btn" title="Edit (preview only)" aria-label="Edit ${escapeHtml(item.shortLine)}">&#9998;</button>`
+    : '';
   return `
     <li class="item${item.completed ? ' completed' : ''}" data-id="${escapeHtml(item.id || '')}" data-track="${escapeHtml(item.track || '')}" data-short-line="${escapeHtml(item.shortLine)}" data-detail-text="${escapeHtml(item.detailText)}" data-facilitator="${escapeHtml(item.facilitatorDisplayName)}" data-day-hint="${escapeHtml(item.dayHint)}" data-email-context="${escapeHtml(item.emailContext || '')}">
       <form class="check-form" method="POST" action="/plan/${planId}/item/${encodeURIComponent(item.id)}/toggle?week=${activeWeek}">
@@ -220,7 +234,7 @@ function renderItem(planId, item, trackStyles, activeWeek, nameEmailMap) {
           <span class="facilitator">${escapeHtml(item.facilitatorDisplayName)}</span>
           <span class="day-hint">${escapeHtml(item.dayHint)}</span>
           ${mailBtn}
-          <button type="button" class="icon-btn edit-btn" title="Edit (preview only)" aria-label="Edit ${escapeHtml(item.shortLine)}">&#9998;</button>
+          ${editBtn}
         </summary>
         <p class="detail-text">${escapeHtml(item.detailText)}</p>
       </details>
