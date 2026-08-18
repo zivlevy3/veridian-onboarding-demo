@@ -13,8 +13,10 @@
 // them to everyone.
 const express = require('express');
 const { openDb } = require('./lib/db');
-const { getPlan, toggleItemStatus, approvePlan } = require('./lib/persistence');
+const { getPlan, toggleItemStatus, approvePlan, saveManagerIntake } = require('./lib/persistence');
 const { buildEmployeeContext } = require('./lib/context');
+const { createEmployee } = require('./lib/employees');
+const { runOrchestrator } = require('./lib/orchestrator');
 
 const PORT = process.env.PORT || 3000;
 
@@ -23,8 +25,16 @@ const PORT = process.env.PORT || 3000;
 // concurrent multi-worker deployment.
 const db = openDb({ writable: true });
 
+// Real company name, queried once at startup - same source/shape context.js uses
+// (SELECT * FROM company_overview LIMIT 1). Used as-is (no .io suffix) for <title> and
+// other prose text; the intake page's eyebrow builds its own .io brandLabel from this,
+// same split already established on the plan page.
+const companyRow = db.prepare('SELECT company_name FROM company_overview LIMIT 1').get();
+const companyName = (companyRow && companyRow.company_name) || 'Veridian';
+
 const app = express();
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 // The "business" track's label is the real company name, not the literal word
 // "Business" - built per-request from context.company rather than hardcoded, since
@@ -970,6 +980,449 @@ ${renderLegend(trackStyles)}
 </html>`;
 }
 
+// Reference data for the /start intake form's cascading Department -> Team -> Role
+// dropdowns and the Manager/Buddy/Mentor people-pickers - embedded into the page as
+// JSON so the cascade filtering runs client-side with no AJAX round-trips (same
+// approach renderPlanPage already uses for TRACK_STYLES). Only Active teams and
+// employees who have actually started are offered as real org context (a "Pending
+// Start" employee - like a previous test hire - can't sensibly be someone's manager,
+// buddy, or mentor before they've started themselves).
+function buildIntakeReferenceData(db) {
+  const departments = db.prepare('SELECT department FROM departments ORDER BY department').all().map((r) => r.department);
+  const teams = db
+    .prepare("SELECT team_id, department, team, primary_office FROM teams WHERE status = 'Active' ORDER BY department, team")
+    .all();
+  const roles = db.prepare('SELECT role_id, job_family, title, track FROM roles ORDER BY title').all();
+  const employees = db
+    .prepare(
+      "SELECT employee_id, full_name, job_title, department, team, track, email, location FROM employees WHERE employment_status != 'Pending Start' ORDER BY full_name"
+    )
+    .all();
+  return { departments, teams, roles, employees };
+}
+
+function renderStartPage(referenceData, companyName, errorMessage) {
+  const brandLabel = `${companyName}.io`;
+  const errorBanner = errorMessage
+    ? `<div class="error-banner" id="errorBanner">${escapeHtml(errorMessage)}</div>`
+    : '<div class="error-banner" id="errorBanner" hidden></div>';
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New Hire Intake · ${escapeHtml(companyName)}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0a0d15;
+    --bg-elevated: #131826;
+    --bg-card: #171e2f;
+    --bg-card-hover: #1c2438;
+    --text-primary: #f2f4fa;
+    --text-secondary: #9aa4bd;
+    --text-muted: #6b7690;
+    --hairline: rgba(255,255,255,0.06);
+    --accent-1: #6366f1;
+    --accent-2: #a855f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: radial-gradient(ellipse at top, #101526 0%, var(--bg) 55%);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 3.5rem 1rem 6rem;
+  }
+  .intake-wrap { max-width: min(640px, 92vw); margin: 0 auto; }
+  .eyebrow { margin: 0 0 0.5rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
+  .intake-heading { margin: 0 0 0.7rem; font-size: 1.9rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.28; }
+  .intake-subtitle { margin: 0 0 2.2rem; color: var(--text-secondary); font-size: 1rem; line-height: 1.55; max-width: 46ch; }
+  .error-banner { background: rgba(248,113,113,0.15); color: #fca5a5; border: 1px solid rgba(248,113,113,0.3); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.3rem; font-size: 0.88rem; }
+  .error-banner[hidden] { display: none; }
+
+  .intake-card { background: var(--bg-card); border-radius: 18px; padding: 2rem; box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 2px 0 rgba(255,255,255,0.04) inset; }
+  .field-group { margin-bottom: 1.45rem; }
+  .field-group:last-of-type { margin-bottom: 0; }
+  .field-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem; }
+  .required { color: #f87171; margin-left: 0.15rem; }
+  .field-hint { font-size: 0.76rem; color: var(--text-muted); margin: -0.15rem 0 0.5rem; }
+  .field-input, select, textarea {
+    width: 100%; padding: 0.65rem 0.8rem; border-radius: 9px; border: 1px solid var(--hairline);
+    background: var(--bg-card-hover); color: var(--text-primary); font-family: inherit; font-size: 0.92rem;
+  }
+  select { appearance: auto; }
+  textarea { resize: vertical; min-height: 90px; }
+  .field-input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-1); outline-offset: 1px; }
+  .other-input { margin-top: 0.55rem; display: none; }
+  .other-input.visible { display: block; }
+
+  .divider { height: 1px; background: var(--hairline); margin: 1.8rem 0; }
+
+  .submit-btn {
+    width: 100%; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: #fff;
+    border: none; padding: 0.9rem 1.3rem; border-radius: 10px; font-family: inherit;
+    font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 0.5rem;
+    transition: transform .15s ease, box-shadow .15s ease;
+    box-shadow: 0 4px 18px rgba(99,102,241,0.4);
+  }
+  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(99,102,241,0.55); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .footnote { font-size: 0.78rem; color: var(--text-muted); text-align: center; margin: 1rem 0 0; line-height: 1.55; }
+
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(5,8,14,0.86); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; z-index: 200; gap: 1.1rem;
+  }
+  .loading-overlay[hidden] { display: none; }
+  .spinner { width: 42px; height: 42px; border-radius: 50%; border: 3px solid var(--hairline); border-top-color: var(--accent-1); animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: var(--text-secondary); font-size: 0.95rem; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="intake-wrap">
+  <p class="eyebrow">New Hire Intake · ${escapeHtml(brandLabel)}</p>
+  <h1 class="intake-heading">Your new teammate is starting soon. Let's build their first two months.</h1>
+  <p class="intake-subtitle">Give us a few details, and we'll put together a personalized onboarding plan - who to meet, what to learn, and when.</p>
+  ${errorBanner}
+  <div class="intake-card">
+    <form id="intakeForm">
+      <div class="field-group">
+        <label class="field-label" for="fldName">Full name<span class="required">*</span></label>
+        <input class="field-input" type="text" id="fldName" autocomplete="off" required>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="fldEmail">Company email<span class="required">*</span></label>
+        <input class="field-input" type="email" id="fldEmail" autocomplete="off" required>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field-group">
+        <label class="field-label" for="fldDepartment">Department<span class="required">*</span></label>
+        <select class="field-input" id="fldDepartment" required></select>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="fldTeam">Team<span class="required">*</span></label>
+        <select class="field-input" id="fldTeam" required></select>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="fldRole">Role / Title<span class="required">*</span></label>
+        <select class="field-input" id="fldRole" required></select>
+        <div class="other-input" id="fldRoleOtherWrap">
+          <input class="field-input" type="text" id="fldRoleOther" placeholder="Job title">
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field-group">
+        <label class="field-label" for="fldManager">Direct manager<span class="required">*</span></label>
+        <select class="field-input" id="fldManager" required></select>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="fldStartDate">Start date<span class="required">*</span></label>
+        <input class="field-input" type="date" id="fldStartDate" required>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field-group">
+        <label class="field-label" for="fldBuddy">Buddy</label>
+        <p class="field-hint">Who's there for the everyday, informal stuff</p>
+        <select class="field-input" id="fldBuddy"></select>
+        <div class="other-input" id="fldBuddyOtherWrap">
+          <input class="field-input" type="text" id="fldBuddyOther" placeholder="Name or email">
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="fldMentor">Mentor<span class="required">*</span></label>
+        <p class="field-hint">Who'll walk them through the professional side of the role</p>
+        <select class="field-input" id="fldMentor" required></select>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="fldMentor2">Additional mentor</label>
+        <p class="field-hint">A second person to loop in, if relevant</p>
+        <select class="field-input" id="fldMentor2"></select>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field-group">
+        <label class="field-label" for="fldJd">Job description</label>
+        <textarea id="fldJd" placeholder="Paste the job posting text, if you have one"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Build onboarding plan</button>
+      <p class="footnote">From there, it's yours to make changes if you'd like - add a meeting, adjust a detail - then approve whenever it's ready.</p>
+    </form>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay" hidden>
+  <div class="spinner"></div>
+  <p class="loading-text">Building your plan...</p>
+</div>
+
+<script>
+(function () {
+  var DEPARTMENTS = ${JSON.stringify(referenceData.departments)};
+  var TEAMS = ${JSON.stringify(referenceData.teams)};
+  var ROLES = ${JSON.stringify(referenceData.roles)};
+  var EMPLOYEES = ${JSON.stringify(referenceData.employees)};
+  var OTHER = '__other__';
+
+  var fldName = document.getElementById('fldName');
+  var fldEmail = document.getElementById('fldEmail');
+  var fldDepartment = document.getElementById('fldDepartment');
+  var fldTeam = document.getElementById('fldTeam');
+  var fldRole = document.getElementById('fldRole');
+  var fldRoleOtherWrap = document.getElementById('fldRoleOtherWrap');
+  var fldRoleOther = document.getElementById('fldRoleOther');
+  var fldManager = document.getElementById('fldManager');
+  var fldStartDate = document.getElementById('fldStartDate');
+  var fldBuddy = document.getElementById('fldBuddy');
+  var fldBuddyOtherWrap = document.getElementById('fldBuddyOtherWrap');
+  var fldBuddyOther = document.getElementById('fldBuddyOther');
+  var fldMentor = document.getElementById('fldMentor');
+  var fldMentor2 = document.getElementById('fldMentor2');
+  var fldJd = document.getElementById('fldJd');
+  var errorBanner = document.getElementById('errorBanner');
+  var loadingOverlay = document.getElementById('loadingOverlay');
+  var submitBtn = document.getElementById('submitBtn');
+
+  function opt(value, label) {
+    var o = document.createElement('option');
+    o.value = value;
+    o.textContent = label;
+    return o;
+  }
+
+  function jobFamilyMatchesDept(jobFamily, department) {
+    if (!department) return true;
+    if (jobFamily === department) return true;
+    // Known naming mismatch between roles.job_family and departments.department (e.g.
+    // "Customer Success" vs "Customer Success & Support") - a prefix match on either
+    // side covers it without inventing a mapping table for a handful of cases.
+    if (department.indexOf(jobFamily) === 0) return true;
+    if (jobFamily.indexOf(department) === 0) return true;
+    return false;
+  }
+
+  // Department and Team are real organizational fact, not something a demo visitor can
+  // invent - createEmployee requires an exact match against teams/departments and throws
+  // otherwise, so there's no "Other" option here (an offered-but-always-broken option
+  // would be misleading). Role is different: an unmatched title degrades gracefully to
+  // a documented GAP, not a failure, so "Other" stays there (see refreshRoles below).
+  function currentDept() {
+    return fldDepartment.value;
+  }
+  function currentTeam() {
+    return fldTeam.value;
+  }
+
+  function refreshDepartments() {
+    fldDepartment.innerHTML = '';
+    DEPARTMENTS.forEach(function (d) { fldDepartment.appendChild(opt(d, d)); });
+  }
+
+  function refreshTeams() {
+    var dept = currentDept();
+    var previous = fldTeam.value;
+    var items = TEAMS.filter(function (t) { return t.department === dept; });
+    fldTeam.innerHTML = '';
+    items.forEach(function (t) { fldTeam.appendChild(opt(t.team, t.team)); });
+    if (items.some(function (t) { return t.team === previous; })) fldTeam.value = previous;
+  }
+
+  function refreshRoles() {
+    var dept = currentDept();
+    var previous = fldRole.value;
+    var filtered = ROLES.filter(function (r) { return jobFamilyMatchesDept(r.job_family, dept); });
+    // "Filtered by department if possible" - job_family/department naming doesn't line
+    // up for every role, so an empty filtered list falls back to the full catalog
+    // rather than leaving the dropdown with nothing but "Other".
+    var items = filtered.length ? filtered : ROLES;
+    fldRole.innerHTML = '';
+    items.forEach(function (r) { fldRole.appendChild(opt(r.title, r.title)); });
+    fldRole.appendChild(opt(OTHER, 'Other'));
+    if (items.some(function (r) { return r.title === previous; })) fldRole.value = previous;
+  }
+
+  function managerCandidates() {
+    var dept = currentDept();
+    var team = currentTeam();
+    var pool = EMPLOYEES.filter(function (e) { return e.track === 'Manager'; });
+    if (dept) {
+      var byDept = pool.filter(function (e) { return e.department === dept; });
+      if (team) {
+        var byTeam = byDept.filter(function (e) { return e.team === team; });
+        if (byTeam.length) return byTeam;
+      }
+      if (byDept.length) return byDept;
+    }
+    return pool;
+  }
+
+  function teamCandidates() {
+    var dept = currentDept();
+    var team = currentTeam();
+    if (dept && team) {
+      var byTeam = EMPLOYEES.filter(function (e) { return e.department === dept && e.team === team; });
+      if (byTeam.length) return byTeam;
+    }
+    if (dept) {
+      var byDept = EMPLOYEES.filter(function (e) { return e.department === dept; });
+      if (byDept.length) return byDept;
+    }
+    return EMPLOYEES;
+  }
+
+  function mentorCandidates() {
+    var pool = teamCandidates().slice();
+    var managerEmail = fldManager.value;
+    if (managerEmail) {
+      var already = pool.some(function (p) { return p.email === managerEmail; });
+      if (!already) {
+        var mgr = EMPLOYEES.filter(function (e) { return e.email === managerEmail; });
+        pool = pool.concat(mgr);
+      }
+    }
+    return pool;
+  }
+
+  function setEmployeeOptions(select, list, opts) {
+    opts = opts || {};
+    var previous = select.value;
+    select.innerHTML = '';
+    if (opts.placeholder) select.appendChild(opt('', opts.placeholder));
+    list.forEach(function (e) { select.appendChild(opt(e.email, e.full_name + ' - ' + e.job_title)); });
+    if (opts.other) select.appendChild(opt(OTHER, 'Other'));
+    if (list.some(function (e) { return e.email === previous; }) || (opts.other && previous === OTHER)) {
+      select.value = previous;
+    }
+  }
+
+  function refreshManager() {
+    setEmployeeOptions(fldManager, managerCandidates(), { placeholder: 'Select a manager' });
+  }
+  function refreshBuddy() {
+    setEmployeeOptions(fldBuddy, teamCandidates(), { placeholder: 'None', other: true });
+  }
+  function refreshMentor() {
+    setEmployeeOptions(fldMentor, mentorCandidates(), { placeholder: 'Select a mentor' });
+  }
+  function refreshMentor2() {
+    setEmployeeOptions(fldMentor2, EMPLOYEES, { placeholder: 'None' });
+  }
+
+  function toggleOther(select, wrap) {
+    wrap.classList.toggle('visible', select.value === OTHER);
+  }
+
+  fldDepartment.addEventListener('change', function () {
+    refreshTeams();
+    refreshRoles();
+    toggleOther(fldRole, fldRoleOtherWrap);
+    refreshManager();
+    refreshBuddy();
+    refreshMentor();
+  });
+  fldTeam.addEventListener('change', function () {
+    refreshManager();
+    refreshBuddy();
+    refreshMentor();
+  });
+  fldRole.addEventListener('change', function () { toggleOther(fldRole, fldRoleOtherWrap); });
+  fldBuddy.addEventListener('change', function () { toggleOther(fldBuddy, fldBuddyOtherWrap); });
+  fldManager.addEventListener('change', refreshMentor);
+
+  // Auto-fills the company email from the name as "firstname.lastname@veridian.ai"
+  // (lowercase, non-letters stripped) - stops the moment the visitor types into the
+  // email field themselves, so a manual edit is never silently overwritten.
+  var emailTouched = false;
+  fldEmail.addEventListener('input', function () { emailTouched = true; });
+  function normalizeToken(s) { return s.toLowerCase().replace(/[^a-z]/g, ''); }
+  fldName.addEventListener('input', function () {
+    if (emailTouched) return;
+    var parts = fldName.value.trim().split(/\\s+/).filter(Boolean);
+    if (parts.length < 2) return;
+    var first = normalizeToken(parts[0]);
+    var last = normalizeToken(parts[parts.length - 1]);
+    if (first && last) fldEmail.value = first + '.' + last + '@veridian.ai';
+  });
+
+  refreshDepartments();
+  refreshTeams();
+  refreshRoles();
+  refreshManager();
+  refreshBuddy();
+  refreshMentor();
+  refreshMentor2();
+
+  function showError(message) {
+    errorBanner.textContent = message;
+    errorBanner.hidden = false;
+  }
+
+  document.getElementById('intakeForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    errorBanner.hidden = true;
+
+    var payload = {
+      name: fldName.value.trim(),
+      email: fldEmail.value.trim(),
+      department: fldDepartment.value,
+      team: fldTeam.value,
+      role: fldRole.value,
+      roleOther: fldRoleOther.value.trim(),
+      managerEmail: fldManager.value,
+      startDate: fldStartDate.value,
+      buddy: fldBuddy.value,
+      buddyOther: fldBuddyOther.value.trim(),
+      mentorEmail: fldMentor.value,
+      secondaryMentorEmail: fldMentor2.value,
+      jobPostingText: fldJd.value.trim(),
+    };
+
+    if (!payload.managerEmail) { showError('Please select a direct manager.'); return; }
+    if (!payload.mentorEmail) { showError('Please select a mentor.'); return; }
+
+    loadingOverlay.hidden = false;
+    submitBtn.disabled = true;
+
+    fetch('/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (result) {
+        if (result.ok && result.data.planId) {
+          window.location.href = '/plan/' + result.data.planId;
+          return;
+        }
+        loadingOverlay.hidden = true;
+        submitBtn.disabled = false;
+        showError((result.data && result.data.error) || 'Something went wrong.');
+      })
+      .catch(function (err) {
+        loadingOverlay.hidden = true;
+        submitBtn.disabled = false;
+        showError(err.message);
+      });
+  });
+})();
+</script>
+</body>
+</html>`;
+}
+
 app.get('/', (req, res) => res.redirect('/plan/2'));
 
 app.get('/plan/:planId', (req, res) => {
@@ -1000,6 +1453,91 @@ app.post('/plan/:planId/approve', (req, res) => {
     return res.redirect(`/plan/${planId}?week=${activeWeek}&error=${encodeURIComponent(err.message)}`);
   }
   res.redirect(`/plan/${planId}?week=${activeWeek}`);
+});
+
+app.get('/start', (req, res) => {
+  const referenceData = buildIntakeReferenceData(db);
+  res.send(renderStartPage(referenceData, companyName));
+});
+
+// Creates the employee, saves the manager's intake answers, then runs the full
+// pipeline (Context Layer -> Content Expert -> Process Expert -> validate -> Content
+// Writer -> Gatekeeper -> save) and returns the new plan_id. No support for creating a
+// new manager - managerEmail must already match a real employee (createEmployee
+// enforces this and throws a clear error otherwise, same as it always has for the CLI/
+// script callers). Department and Team are real organizational fact for the same
+// reason - the form only offers real teams/departments (no "Other"), so these always
+// match an existing teams row here. Role/title is the one field that tolerates a
+// no-catalog-match "Other" (createEmployee already degrades that to a GAP, not a
+// failure), and buddy tolerates its own free-text "Other" (stored as-is, resolved
+// loosely by the orchestrator).
+app.post('/start', async (req, res) => {
+  const body = req.body || {};
+  try {
+    const department = body.department;
+    const team = body.team;
+    const title = body.role === '__other__' ? String(body.roleOther || '').trim() : body.role;
+    const buddyEmail = body.buddy === '__other__' ? String(body.buddyOther || '').trim() || null : body.buddy || null;
+
+    if (!department || !team || !title) {
+      return res.status(400).json({ error: 'Department, team, and role/title are all required.' });
+    }
+    if (!body.managerEmail) {
+      return res.status(400).json({ error: 'Please select a direct manager.' });
+    }
+    if (!body.mentorEmail) {
+      return res.status(400).json({ error: 'Please select a mentor.' });
+    }
+
+    // office isn't a form field - derived from the selected team's real primary_office
+    // (falling back to the manager's own location, defensively, if that lookup ever
+    // came up empty). Both are real, already-known facts about where this hire will
+    // actually sit; there was no need to ask the visitor something the org data already
+    // answers.
+    const teamRow = db.prepare('SELECT * FROM teams WHERE team = ? AND department = ?').get(team, department);
+    const managerRow = db.prepare('SELECT * FROM employees WHERE email = ?').get(body.managerEmail);
+    const office = (teamRow && teamRow.primary_office) || (managerRow && managerRow.location) || null;
+    if (!office) {
+      return res.status(400).json({
+        error: 'Could not determine an office for this hire - no matching team on record and no manager location to fall back on.',
+      });
+    }
+
+    const { employee } = createEmployee(db, {
+      name: body.name,
+      email: body.email,
+      title,
+      department,
+      team,
+      managerEmail: body.managerEmail,
+      office,
+      startDate: body.startDate,
+    });
+
+    saveManagerIntake(db, employee.employee_id, {
+      primaryMentorEmail: body.mentorEmail,
+      secondaryMentorEmail: body.secondaryMentorEmail || null,
+      buddyEmail,
+      jobPostingText: body.jobPostingText || null,
+    });
+
+    const result = await runOrchestrator(db, employee.employee_id, {
+      buddyEmail,
+      mentorEmail: body.mentorEmail,
+      jobPostingText: body.jobPostingText || null,
+    });
+
+    if (result.status === 'blocked') {
+      return res.status(422).json({
+        error: `${employee.full_name}'s employee record and manager intake were saved, but the Gatekeeper blocked this plan from being saved - see server logs for the blocking issue(s).`,
+      });
+    }
+
+    res.json({ planId: result.planId });
+  } catch (err) {
+    console.error('POST /start failed:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(PORT, () => {

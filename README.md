@@ -29,6 +29,7 @@ first.**
 - `scripts/run-orchestrator.js` — CLI: `node scripts/run-orchestrator.js <employee_id> [--buddy=email] [--mentor=email] [--notes=...] [--jobPostingText=...]`
 - `db/persistence-schema.sql`, `lib/persistence.js` — app-state tables (`manager_intake`, `plans`, `plan_item_status`) living in the same `veridian.sqlite` file but never touched by `scripts/import-veridian.js` (which now drops/recreates only the org-data tables by name, not the whole file). `savePlan` / `getPlan` / `approvePlan` / `toggleItemStatus` / `saveManagerIntake`. Item ids are assigned positionally (`w{week}-i{index}`) the first time a plan is saved.
 - `server.js` — dashboard v1: `GET /plan/:planId`, `POST /plan/:planId/item/:itemId/toggle`, `POST /plan/:planId/approve`. Fully server-rendered, reads/writes the real persistence layer on every request — no static JSON, no client-side state. Run with `npm run dashboard`, open `http://localhost:3000/plan/2`.
+- `server.js`'s `GET /start` / `POST /start` — the intake page ("the front door to the demo"): a form for creating a new employee and kicking off the full pipeline (`createEmployee` → `saveManagerIntake` → `runOrchestrator`), auto-redirecting to `/plan/:planId` on success. Department/Team are closed dropdowns of real org data only (no "Other" — `createEmployee` requires an exact `teams`/`departments` match and would always fail otherwise); Role/Title keeps "Other" (a no-catalog-match title already degrades to a documented GAP, not a failure). No support for creating a new manager — always selected from existing employees. See `MEMORY.md` §5 for the full field-by-field design.
 
 ## Setup
 
@@ -122,3 +123,17 @@ never read by any app code) rather than extending them - see `MEMORY.md` for the
 decision, including a separate documented-not-fixed GAP on `job_family` vs
 `departments.department` naming. The AI Buddy **agent itself (prompt + RAG over this
 data) has not been built** - that's still the next, separate step.
+
+**The `/start` intake page is built and verified end-to-end** (real form submission →
+real `createEmployee`/`saveManagerIntake` → real orchestrator run, confirmed in the
+browser to reach and fail cleanly at the Content Expert's `ANTHROPIC_API_KEY` check, the
+same point every other pipeline run stops in this environment). See `MEMORY.md` §5.
+
+**TODO before shipping to real users**: clean up the test employees created while
+developing this platform (e.g. Yuval Barak/VRD-1186 from the Roles-catalog test round,
+Dana Levi/VRD-1187 from `/start`'s own test submission, and anyone else created along
+the way) - a quick query identifies them: `SELECT employee_id, full_name, email,
+hire_date FROM employees WHERE employment_status = 'Pending Start'` (real future new
+hires will also match this filter once the platform is in real use, so don't run this
+query blindly after that point - it's only a clean signal *now*, while every
+"Pending Start" row in this dev database is in fact a manual test).

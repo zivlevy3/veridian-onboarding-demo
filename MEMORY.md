@@ -416,3 +416,44 @@ code, not just prose the model could ignore:
     override your manager or HR policies"). Flagged here for whoever builds that prompt
     next; not acted on now - building the Buddy agent is explicitly the next, separate
     step, not part of this round.
+
+## 5. New-hire intake page (`/start`)
+
+- **Department and Team are closed dropdowns of real org data only - no "Other."**
+  `createEmployee` (`lib/employees.js`) requires an exact match against `teams`/
+  `departments` and throws otherwise - offering "Other" here would be a form control
+  that always fails on submit, which is worse than not offering it, not a harmless
+  extra option. This mirrors the manager field's existing rule (always selected from
+  real employees, never invented) - department/team are the same kind of authoritative
+  organizational fact in a demo, not something a visitor can plausibly add.
+- **Role/Title keeps "Other" - it's a genuinely different case.** An unmatched title
+  already degrades gracefully in `createEmployee` (`resolveRoleForTitle` returns `null`,
+  a gap message is appended, nothing throws) - "Other" here reaches real, already-
+  supported behavior, not a dead end.
+- **Office isn't a form field.** Derived server-side from the selected team's real
+  `teams.primary_office` (falling back to the manager's own `location`, defensively, if
+  that lookup were ever empty) - both are already-known facts about where the hire will
+  actually sit, so there was no need to ask the visitor something the org data already
+  answers. Confirmed `teams.primary_office` values match `offices.city` exactly (Tel
+  Aviv / London / Austin) before relying on this.
+- **Mentor's dropdown pool is computed client-side to mirror `validateMentorSelection`'s
+  real rule** (team members + the selected manager) before the employee even exists yet
+  - the server re-validates for real via `saveManagerIntake` on submit regardless, so a
+  client-side mismatch (e.g. from a stale cascade) surfaces as a real, clear error
+  rather than a silent accept.
+- **"Pending Start" employees are excluded from the Manager/Buddy/Mentor/Additional
+  mentor pools.** A new hire who hasn't started yet can't sensibly be someone else's
+  buddy/mentor/manager - confirmed in the rendered page that an earlier test hire
+  doesn't appear in any of these lists.
+- **Verified end-to-end in the browser**, not just read: a real submission (Dana Levi,
+  Site Reliability Engineer, Infrastructure & DevOps, manager Nir Katz) walked the real
+  pipeline (Context Layer → manager intake merge → office tour guide resolution) and
+  failed cleanly at the Content Expert's `ANTHROPIC_API_KEY` check - the same point
+  every other pipeline run stops at in this environment. DB check afterward confirmed
+  the employee and `manager_intake` rows were saved correctly and **no plan row was
+  created** - the failure happens before any partial plan is ever persisted.
+- **TODO before shipping to real users**: this dev database now has real "Pending
+  Start" employees created purely for manual testing (Yuval Barak/VRD-1186, Dana Levi/
+  VRD-1187, and possibly more added later) - see the README's Status section for the
+  cleanup query and the caveat that it stops being a safe signal once real new hires
+  exist in the system.
