@@ -1,7 +1,9 @@
 // Builds the real Context Layer output for one employee, loads an existing process-expert
 // plan for them, sends both to the content-writer agent (real Anthropic API call -
 // requires ANTHROPIC_API_KEY), and writes the result to output/<employee_id>.content.json.
-// Usage: node scripts/run-content-writer.js <employee_id> [path-to-plan.json]
+// Usage: node --env-file=.env scripts/run-content-writer.js <employee_id> [path-to-plan.json]
+// --env-file is a `node` flag, not something this script can set for itself - it has
+// to be part of the invocation every time, or ANTHROPIC_API_KEY won't be set.
 const fs = require('node:fs');
 const path = require('node:path');
 const { openDb } = require('../lib/db');

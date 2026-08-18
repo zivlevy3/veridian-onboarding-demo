@@ -1,7 +1,9 @@
 // Builds the real Context Layer output for one employee, sends it to the process-expert
 // agent (real Anthropic API call - requires ANTHROPIC_API_KEY), validates the weekly
 // meeting cap, and writes the plan to output/<employee_id>.json.
-// Usage: node scripts/run-process-expert.js <employee_id>
+// Usage: node --env-file=.env scripts/run-process-expert.js <employee_id>
+// --env-file is a `node` flag, not something this script can set for itself - it has
+// to be part of the invocation every time, or ANTHROPIC_API_KEY won't be set.
 const fs = require('node:fs');
 const path = require('node:path');
 const { openDb } = require('../lib/db');

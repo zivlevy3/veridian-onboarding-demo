@@ -1,6 +1,9 @@
 // Runs the full pipeline for one employee: Context Layer -> manager intake merge ->
 // Process Expert -> validation -> Content Writer. Writes output/<employee_id>.orchestrator.json.
-// Usage: node scripts/run-orchestrator.js <employee_id> [--buddy=email] [--mentor=email] [--notes="..."] [--jobPostingText="..."]
+// Usage: node --env-file=.env scripts/run-orchestrator.js <employee_id> [--buddy=email] [--mentor=email] [--notes="..."] [--jobPostingText="..."]
+// --env-file is a `node` flag, not something this script can set for itself - it has
+// to be part of the invocation every time, or ANTHROPIC_API_KEY (needed by the Content
+// Expert/Process Expert/Content Writer/Gatekeeper agents this calls) won't be set.
 const fs = require('node:fs');
 const path = require('node:path');
 const { openDb } = require('../lib/db');
