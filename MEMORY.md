@@ -51,14 +51,44 @@ now written into the prompt as standing rules (not just fixed ad hoc):
    - Thin (fails): *"One sitting, the whole team — no waiting weeks for individual intros."*
    - Full (passes): *"Meet the whole North America Success team in one sitting — the people you'll work alongside day to day, all introduced at once."*
 
-4. **Never explain "why this way and not another way."** Don't justify a scheduling or
-   format decision by naming the alternative it avoided — "...instead of separate 1:1s",
-   "...before you're the one running one", "...rather than waiting weeks". That exposes
-   the pipeline's internal scheduling logic to the employee, the same category of leak as
-   citing an internal source. State the content; don't narrate the reasoning behind its
-   shape or timing.
+4. **Never explain "why this way and not another way" — but only when the "why" exposes
+   a system/pipeline decision.** Don't justify a *scheduling, grouping, or format* choice
+   by naming the alternative it avoided — "...instead of separate 1:1s", "...before
+   you're the one running one", "...rather than waiting weeks", "...easier to place faces
+   and roles together than one at a time". That exposes the pipeline's internal
+   scheduling logic to the employee (why group and not individual, why now and not later,
+   why one session and not several), the same category of leak as citing an internal
+   source. State the content; don't narrate the reasoning behind its shape or timing.
+
+   **This does not ban ordinary contrastive language** — "rather than", "not just",
+   "instead of" — when it describes *content, feeling, or substance* rather than a
+   timing/grouping/format reason. "Feel familiar rather than cold" describes an outcome,
+   not why the meeting is shaped the way it is. "How the team actually handles it, not
+   just how it's documented" contrasts lived experience against documentation, not a
+   scheduling choice. "Making the calls yourself rather than working from someone else's
+   spec" describes the level of ownership the work carries, not why it's scheduled when
+   it is. None of these are violations, even though they share the surface grammar of the
+   banned pattern — flagging them anyway is over-enforcement, not caution.
+
+   **The test:** remove the contrastive clause. If some system decision (why grouped, why
+   this week, why one session instead of several) is left unexplained/unjustified as a
+   result, the original sentence was leaking that reasoning — a violation. If removing it
+   just loses a bit of content nuance (a feeling, a comparison of substance) without ever
+   having exposed a scheduling/format mechanism, it wasn't a violation to begin with.
+
    - Cut from a real QBR item: *"...before you're the one running one"* — the sentence
-     stands on its own without explaining the future sequence it's setting up for.
+     stands on its own without explaining the future sequence it's setting up for; remove
+     the clause and nothing about *why the QBR happens then* is left unexplained, because
+     it was never explaining content, only timing.
+   - Blocked for real (2026-08-18, Daniel Hadar's plan, `plan_id` never saved): *"Easier
+     to place faces and roles together than one at a time"* — directly justifies a
+     group-format decision against its individual-meeting alternative; remove the clause
+     and "why one meeting, not several" is left unexplained. A real violation.
+   - **Not** violations, same date, same plan (`plan_id=10`) — flagged once, then
+     confirmed as false positives and corrected: *"feel familiar rather than cold"*,
+     *"not just how it's documented"*, *"rather than working from someone else's spec"* —
+     all contrast content/substance, not a scheduling or format choice. Removing any of
+     them loses nuance, not an explanation of system behavior.
 
 Also explicit in the Tone section: **no superlatives** ("amazing", "incredible", "exciting
 journey") — warmth comes from precision and directness, not enthusiasm words.
@@ -277,6 +307,15 @@ logistics, and voice are three different jobs, run in that order:
   reader, and must never leak into employee-facing text. Test: "is this something the
   employee is waiting to receive?" (type 1) vs. "is this something about what the system
   doesn't know?" (type 2).
+- **The "don't duplicate" rule is general, not type-1-specific.** It's not just that a
+  pending-assignment item shouldn't also appear in `internalGaps` — *any* gap, of either
+  type, must be checked against the actual `weeks[].items[]` before it's written into
+  `internalGaps`. Caught for real on Daniel Hadar's plan (2026-08-18): an interface
+  meeting scheduled without a named contact (a real, already-scheduled item) was *also*
+  restated as an `internalGaps` entry describing the same missing contact — not a
+  pending-assignment case in the narrow sense, but still a duplicate, since the plan
+  already said everything the gap entry was saying. `internalGaps` is for what the plan
+  says nothing about, not a second copy of what it already covers.
 
 ---
 

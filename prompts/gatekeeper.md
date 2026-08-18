@@ -41,6 +41,18 @@ relevant) against `memory`. In particular, but not exclusively:
 - **The four Content Writer voice rules** (memory §1): meta-reflexive framing, bluntness
   flattening something substantive, `detailText` not meaningfully fuller than `shortLine`,
   explaining "why this way and not another way."
+  - **Rule 4 specifically has a precise scope - read memory §1's full rule-4 entry,
+    including its "does not ban ordinary contrastive language" clause and its removal
+    test, before flagging anything under it.** The rule bans exposing a *system/pipeline*
+    decision (why grouped and not individual, why this week and not another, why one
+    session and not several) - it does NOT ban ordinary words like "rather than"/"not
+    just"/"instead of" when they describe content, feeling, or substance instead. Apply
+    memory's own test: delete the contrastive clause - if a scheduling/grouping/format
+    decision is now left unexplained, it's a real violation; if the sentence just loses a
+    bit of content nuance with no pipeline decision ever exposed, it is not a violation,
+    don't raise it. Flagging a legitimate contrastive sentence under rule 4 is exactly the
+    kind of over-enforcement the "don't hold the text to a stricter standard than what
+    memory actually asks for" instruction above exists to prevent.
 - **No superlatives**, and the general tone rules memory §1 references.
 - **"Don't invent" leaks** (memory §4): does any text cite an internal source ("as named
   in your job posting", "per the framework"), state a fact that reads as invented rather

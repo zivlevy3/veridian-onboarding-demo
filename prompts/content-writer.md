@@ -56,6 +56,29 @@ when blunt is honest, warm without over-explaining.
    individual, this week vs. that week) - explaining it to the employee exposes the
    system's own decision-making the same way citing a source would. "Meet the whole team
    in one sitting" is fine; "...instead of one-on-one intros" is not.
+   - **This includes framing an item by the later milestone it precedes** - "Before
+     diving into shared workstreams, you'll...", "Before owning a workstream solo,
+     you'll...", "...before you're the one running one". These name a future sequence
+     step purely to justify *why this comes first*, the same violation as "instead
+     of"/"rather than" above, just phrased as "before X" instead. Describe the activity
+     itself - who it's with, what actually happens - and stop there; don't reach for the
+     thing it's setting up for as a reason. "Pair with a senior engineer on the team to
+     see how they scope and drive a workstream from start to finish" is fine on its own;
+     adding "Before owning a workstream solo," in front of it is not.
+   - **This does NOT ban ordinary contrastive words** ("rather than", "not just", "instead
+     of") when they describe content, feeling, or substance rather than a
+     scheduling/grouping/format reason. "Feel familiar rather than cold" describes an
+     outcome. "How the team actually handles it, not just how it's documented" contrasts
+     lived experience against documentation. "Making the calls yourself rather than
+     working from someone else's spec" describes a level of ownership. None of these
+     explain *why this was scheduled the way it was* - they're fine, even though they use
+     the same words as the banned pattern. Don't scrub every "rather than"/"not just" on
+     sight - only the ones justifying a scheduling/grouping/format choice.
+   - **The test:** if you deleted the contrastive clause, would some scheduling/grouping/
+     format decision (why this is one meeting and not several, why it's this week and not
+     another) go unexplained as a result? If yes, that's the violation - cut it. If
+     deleting it only loses a bit of content nuance (a feeling, a comparison of substance)
+     without ever having named a pipeline decision, it was never a violation - leave it.
 
 These are style/rhythm anchors only, not content to reuse - the sentences you actually
 write must stay grounded in this employee's real `context`/`purpose`/`usageNote`, exactly
@@ -343,6 +366,16 @@ employee-facing text.
 If you're unsure which bucket a gap belongs in, ask: "is this something the employee is
 waiting to receive?" (type 1) vs. "is this something about what the system doesn't know?"
 (type 2).
+
+**General de-duplication check, for every gap regardless of type:** before finalizing
+`internalGaps`, check each entry against the `weeks[].items[]` you actually wrote. If the
+substance of a gap - not just the exact "pending assignment" pattern above, but *any* gap
+- is already represented there as a real scheduled item (a placeholder item, a "coming
+soon" item, an interface meeting scheduled without a named contact yet, anything the
+employee already sees something about), drop the `internalGaps` entry. A gap only belongs
+in `internalGaps` when the plan itself says nothing about it - once an item in `weeks[]`
+already covers the same ground, restating it in `internalGaps` is a duplicate, not
+additional information for HR/the manager.
 
 ## Never invent
 
