@@ -1045,28 +1045,64 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   .error-banner { background: rgba(248,113,113,0.15); color: #fca5a5; border: 1px solid rgba(248,113,113,0.3); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.3rem; font-size: 0.88rem; }
   .error-banner[hidden] { display: none; }
 
-  .intake-card { background: var(--bg-card); border-radius: 18px; padding: 2rem; box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 2px 0 rgba(255,255,255,0.04) inset; }
+  /* Field cards - same visual language as the plan page's week cards: a shade lighter
+     than the page background, a soft shadow instead of a border, grouped under a small
+     muted uppercase title (matching .eyebrow's treatment). */
+  .field-card { background: var(--bg-card); border-radius: 16px; padding: 1.6rem 1.7rem; box-shadow: 0 12px 34px rgba(0,0,0,0.35); margin-bottom: 1.3rem; }
+  /* Per-card left accent stripe - same 3px border-left-as-identity pattern as an item
+     card's --track-accent, but decorative here (which card you're in), not meaningful
+     (unlike a track color, which tells you what KIND of onboarding item this is). The
+     5 track hues (coral 8°, gold 48°, turquoise 172°, indigo 234°, magenta 292°)
+     already tile most of the wheel at their own >=40 deg spacing, leaving only one
+     ~44 deg gap (88-132, greens) with full 40 deg clearance from every track color -
+     not enough room for 4 mutually distinct new hues. These 4 stay >=40 deg apart from
+     EACH OTHER (87+ deg apart, so no two cards read as the same color) and >=28 deg from
+     the nearest track color - not the full 40, but still a clearly different hue, and
+     never adjacent to a track's own position on the wheel. */
+  .field-card--joining { border-left: 3px solid #f04c83; --card-accent: #f04c83; }
+  .field-card--team-role { border-left: 3px solid #51abec; --card-accent: #51abec; }
+  .field-card--involved { border-left: 3px solid #53c65c; --card-accent: #53c65c; }
+  .field-card--else { border-left: 3px solid #ef8539; --card-accent: #ef8539; }
+  /* Every card is now its own <details> (independent accordion - opening one never
+     closes another, unlike a native radio-style details[name] group). margin-bottom
+     on the title/summary only applies when open, so a closed card doesn't carry dead
+     space below a summary that has no visible content following it. */
+  .field-card-title { margin: 0; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+  .field-card-collapsible summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+  .field-card-collapsible summary::-webkit-details-marker { display: none; }
+  .field-card-collapsible summary::after { content: '+'; color: var(--text-muted); font-size: 1.1rem; font-weight: 400; }
+  .field-card-collapsible[open] summary::after { content: '\\2212'; }
+  .field-card-collapsible[open] summary { margin-bottom: 1.25rem; }
+  .field-card-optional { text-transform: none; font-weight: 400; letter-spacing: 0; font-size: 0.74rem; margin-left: 0.4rem; }
+
   .field-group { margin-bottom: 1.45rem; }
   .field-group:last-of-type { margin-bottom: 0; }
   .field-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem; }
-  .required { color: #f87171; margin-left: 0.15rem; }
+  /* A small accent-colored dot instead of a red asterisk - "required" isn't an error
+     state, so it shouldn't borrow the same red used for real problems (.error-banner). */
+  /* Matches the color of whichever card the field lives in (--card-accent, set per
+     .field-card--* above), not a fixed global color - "required" here is a per-card
+     visual cue, not a separate meaning-carrying system of its own. */
+  .required-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--card-accent, var(--accent-1)); box-shadow: 0 0 6px var(--card-accent, var(--accent-1)); margin-left: 0.4rem; vertical-align: middle; }
   .field-hint { font-size: 0.76rem; color: var(--text-muted); margin: -0.15rem 0 0.5rem; }
   .field-input, select, textarea {
     width: 100%; padding: 0.65rem 0.8rem; border-radius: 9px; border: 1px solid var(--hairline);
     background: var(--bg-card-hover); color: var(--text-primary); font-family: inherit; font-size: 0.92rem;
+    transition: box-shadow .15s ease, border-color .15s ease;
   }
   select { appearance: auto; }
   textarea { resize: vertical; min-height: 90px; }
-  .field-input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-1); outline-offset: 1px; }
+  .field-input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--accent-1);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.28), 0 0 16px rgba(99,102,241,0.22);
+  }
   .other-input { margin-top: 0.55rem; display: none; }
   .other-input.visible { display: block; }
 
-  .divider { height: 1px; background: var(--hairline); margin: 1.8rem 0; }
-
   .submit-btn {
     width: 100%; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: #fff;
-    border: none; padding: 0.9rem 1.3rem; border-radius: 10px; font-family: inherit;
-    font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 0.5rem;
+    border: none; padding: 0.75rem 1.3rem; border-radius: 8px; font-family: inherit;
+    font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 0.2rem;
     transition: transform .15s ease, box-shadow .15s ease;
     box-shadow: 0 4px 18px rgba(99,102,241,0.4);
   }
@@ -1090,48 +1126,48 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   <h1 class="intake-heading">Your new teammate is starting soon. Let's build their first two months.</h1>
   <p class="intake-subtitle">Give us a few details, and we'll put together a personalized onboarding plan - who to meet, what to learn, and when.</p>
   ${errorBanner}
-  <div class="intake-card">
-    <form id="intakeForm">
+  <form id="intakeForm">
+    <details class="field-card field-card-collapsible field-card--joining" open>
+      <summary class="field-card-title">Who's joining</summary>
       <div class="field-group">
-        <label class="field-label" for="fldName">Full name<span class="required">*</span></label>
+        <label class="field-label" for="fldName">Full name<span class="required-dot" title="Required"></span></label>
         <input class="field-input" type="text" id="fldName" autocomplete="off" required>
       </div>
       <div class="field-group">
-        <label class="field-label" for="fldEmail">Company email<span class="required">*</span></label>
+        <label class="field-label" for="fldEmail">Company email<span class="required-dot" title="Required"></span></label>
         <input class="field-input" type="email" id="fldEmail" autocomplete="off" required>
       </div>
-
-      <div class="divider"></div>
-
       <div class="field-group">
-        <label class="field-label" for="fldDepartment">Department<span class="required">*</span></label>
+        <label class="field-label" for="fldStartDate">Start date<span class="required-dot" title="Required"></span></label>
+        <input class="field-input" type="date" id="fldStartDate" required>
+      </div>
+    </details>
+
+    <details class="field-card field-card-collapsible field-card--team-role">
+      <summary class="field-card-title">Team &amp; role</summary>
+      <div class="field-group">
+        <label class="field-label" for="fldDepartment">Department<span class="required-dot" title="Required"></span></label>
         <select class="field-input" id="fldDepartment" required></select>
       </div>
       <div class="field-group">
-        <label class="field-label" for="fldTeam">Team<span class="required">*</span></label>
+        <label class="field-label" for="fldTeam">Team<span class="required-dot" title="Required"></span></label>
         <select class="field-input" id="fldTeam" required></select>
       </div>
       <div class="field-group">
-        <label class="field-label" for="fldRole">Role / Title<span class="required">*</span></label>
+        <label class="field-label" for="fldRole">Role / Title<span class="required-dot" title="Required"></span></label>
         <select class="field-input" id="fldRole" required></select>
         <div class="other-input" id="fldRoleOtherWrap">
           <input class="field-input" type="text" id="fldRoleOther" placeholder="Job title">
         </div>
       </div>
+    </details>
 
-      <div class="divider"></div>
-
+    <details class="field-card field-card-collapsible field-card--involved">
+      <summary class="field-card-title">Who's involved</summary>
       <div class="field-group">
-        <label class="field-label" for="fldManager">Direct manager<span class="required">*</span></label>
+        <label class="field-label" for="fldManager">Direct manager<span class="required-dot" title="Required"></span></label>
         <select class="field-input" id="fldManager" required></select>
       </div>
-      <div class="field-group">
-        <label class="field-label" for="fldStartDate">Start date<span class="required">*</span></label>
-        <input class="field-input" type="date" id="fldStartDate" required>
-      </div>
-
-      <div class="divider"></div>
-
       <div class="field-group">
         <label class="field-label" for="fldBuddy">Buddy</label>
         <p class="field-hint">Who's there for the everyday, informal stuff</p>
@@ -1141,7 +1177,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
         </div>
       </div>
       <div class="field-group">
-        <label class="field-label" for="fldMentor">Mentor<span class="required">*</span></label>
+        <label class="field-label" for="fldMentor">Mentor<span class="required-dot" title="Required"></span></label>
         <p class="field-hint">Who'll walk them through the professional side of the role</p>
         <select class="field-input" id="fldMentor" required></select>
       </div>
@@ -1150,18 +1186,19 @@ function renderStartPage(referenceData, companyName, errorMessage) {
         <p class="field-hint">A second person to loop in, if relevant</p>
         <select class="field-input" id="fldMentor2"></select>
       </div>
+    </details>
 
-      <div class="divider"></div>
-
+    <details class="field-card field-card-collapsible field-card--else">
+      <summary class="field-card-title">Anything else<span class="field-card-optional">(optional)</span></summary>
       <div class="field-group">
         <label class="field-label" for="fldJd">Job description</label>
         <textarea id="fldJd" placeholder="Paste the job posting text, if you have one"></textarea>
       </div>
+    </details>
 
-      <button type="submit" class="submit-btn" id="submitBtn">Build onboarding plan</button>
-      <p class="footnote">From there, it's yours to make changes if you'd like - add a meeting, adjust a detail - then approve whenever it's ready.</p>
-    </form>
-  </div>
+    <button type="submit" class="submit-btn" id="submitBtn">Build onboarding plan</button>
+    <p class="footnote">From there, it's yours to make changes if you'd like - add a meeting, adjust a detail - then approve whenever it's ready.</p>
+  </form>
 </div>
 
 <div class="loading-overlay" id="loadingOverlay" hidden>
