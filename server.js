@@ -1024,13 +1024,12 @@ function buildIntakeReferenceData(db) {
   const teams = allTeams
     .filter((t) => t.realHeadcount > 0 && !EXCLUDED_INTAKE_TEAMS.includes(t.team))
     .map((t) => ({ team_id: t.team_id, department: t.department, team: t.team, primary_office: t.primary_office, manager_email: t.manager_email }));
-  const roles = db.prepare('SELECT role_id, job_family, title, track FROM roles ORDER BY title').all();
   const employees = db
     .prepare(
       "SELECT employee_id, full_name, job_title, department, team, track, email, location FROM employees WHERE employment_status != 'Pending Start' ORDER BY full_name"
     )
     .all();
-  return { teams, roles, employees };
+  return { teams, employees };
 }
 
 function renderStartPage(referenceData, companyName, errorMessage) {
@@ -1129,6 +1128,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   }
   select { appearance: auto; }
   textarea { resize: vertical; min-height: 90px; }
+  .field-input:disabled, select:disabled { opacity: 0.5; cursor: not-allowed; }
   .field-input:focus, select:focus, textarea:focus {
     outline: none; border-color: var(--accent-1);
     box-shadow: 0 0 0 3px rgba(99,102,241,0.28), 0 0 16px rgba(99,102,241,0.22);
@@ -1246,7 +1246,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
 <script>
 (function () {
   var TEAMS = ${JSON.stringify(referenceData.teams)};
-  var ROLES = ${JSON.stringify(referenceData.roles)};
   var EMPLOYEES = ${JSON.stringify(referenceData.employees)};
   var OTHER = '__other__';
 
@@ -1297,17 +1296,17 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     return o;
   }
 
-  function jobFamilyMatchesAnyDept(jobFamily, departments) {
-    for (var i = 0; i < departments.length; i++) {
-      var department = departments[i];
-      if (jobFamily === department) return true;
-      // Known naming mismatch between roles.job_family and departments.department (e.g.
-      // "Customer Success" vs "Customer Success & Support") - a prefix match on either
-      // side covers it without inventing a mapping table for a handful of cases.
-      if (department.indexOf(jobFamily) === 0) return true;
-      if (jobFamily.indexOf(department) === 0) return true;
-    }
-    return false;
+  // A disabled option can still be the initially selected one - the browser shows
+  // its label but won't let the user re-select it from the open dropdown once a real
+  // option has been chosen. That's the whole mechanism: no extra JS needed to "lock out"
+  // going back to the empty placeholder after a real value is picked.
+  function placeholderOpt(label) {
+    var o = document.createElement('option');
+    o.value = '';
+    o.textContent = label;
+    o.disabled = true;
+    o.selected = true;
+    return o;
   }
 
   function currentDisplayDept() {
@@ -1339,13 +1338,24 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   // a documented GAP, not a failure, so "Other" stays there (see refreshRoles below).
   function refreshDepartments() {
     fldDepartment.innerHTML = '';
+    fldDepartment.appendChild(placeholderOpt('Select department...'));
     DEPARTMENT_DISPLAY.forEach(function (d) { fldDepartment.appendChild(opt(d.display, d.display)); });
   }
 
+  // Team and Role both key off Department, so both stay on their own empty placeholder
+  // and disabled until a real department is picked - no department yet means no real
+  // team/role list to filter down to.
   function refreshTeams() {
+    fldTeam.innerHTML = '';
+    if (!currentDisplayDept()) {
+      fldTeam.appendChild(placeholderOpt('Select team...'));
+      fldTeam.disabled = true;
+      return;
+    }
+    fldTeam.disabled = false;
     var matchDepts = currentMatchDepts();
     var previous = fldTeam.value;
-    fldTeam.innerHTML = '';
+    fldTeam.appendChild(placeholderOpt('Select team...'));
     if (matchDepts.length > 1) {
       // Composite display department ("Product") - group by each real department so
       // it's visually clear a Design team is still Design, not secretly Product.
@@ -1365,18 +1375,31 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     if (allNames.indexOf(previous) !== -1) fldTeam.value = previous;
   }
 
+  // Role options are the real, DISTINCT job titles actually held by employees on the
+  // selected TEAM - not the department-level Roles catalog. The catalog has no team
+  // field, only job_family at department granularity, so filtering by it let every
+  // team in a department show the same full department-wide title list regardless of
+  // which titles that specific team actually has. A short or empty list for a small/new
+  // team is correct, not a bug - "Other (new role)" exists precisely for that case.
   function refreshRoles() {
-    var matchDepts = currentMatchDepts();
-    var previous = fldRole.value;
-    var filtered = ROLES.filter(function (r) { return jobFamilyMatchesAnyDept(r.job_family, matchDepts); });
-    // "Filtered by department if possible" - job_family/department naming doesn't line
-    // up for every role, so an empty filtered list falls back to the full catalog
-    // rather than leaving the dropdown with nothing but "Other".
-    var items = filtered.length ? filtered : ROLES;
     fldRole.innerHTML = '';
-    items.forEach(function (r) { fldRole.appendChild(opt(r.title, r.title)); });
-    fldRole.appendChild(opt(OTHER, 'Other'));
-    if (items.some(function (r) { return r.title === previous; })) fldRole.value = previous;
+    var team = currentTeam();
+    if (!team) {
+      fldRole.appendChild(placeholderOpt('Select role...'));
+      fldRole.disabled = true;
+      return;
+    }
+    fldRole.disabled = false;
+    var previous = fldRole.value;
+    var titles = EMPLOYEES
+      .filter(function (e) { return e.team === team && e.job_title; })
+      .map(function (e) { return e.job_title; })
+      .filter(function (title, idx, arr) { return arr.indexOf(title) === idx; })
+      .sort();
+    fldRole.appendChild(placeholderOpt('Select role...'));
+    titles.forEach(function (title) { fldRole.appendChild(opt(title, title)); });
+    fldRole.appendChild(opt(OTHER, 'Other (new role)'));
+    if (titles.indexOf(previous) !== -1 || previous === OTHER) fldRole.value = previous;
   }
 
   // The team's manager is teams.manager_email - real "who manages this team" fact -
@@ -1465,6 +1488,8 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     refreshMentor();
   });
   fldTeam.addEventListener('change', function () {
+    refreshRoles();
+    toggleOther(fldRole, fldRoleOtherWrap);
     refreshManager();
     refreshBuddy();
     refreshMentor();
