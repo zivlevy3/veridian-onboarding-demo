@@ -987,10 +987,43 @@ ${renderLegend(trackStyles)}
 // employees who have actually started are offered as real org context (a "Pending
 // Start" employee - like a previous test hire - can't sensibly be someone's manager,
 // buddy, or mentor before they've started themselves).
+// Teams the picker never offers, even though they're real: all 7 department-level
+// "X Leadership" teams are track=Manager-only by construction - not a plausible team
+// for a new IC hire to land on. This is independent of manager selection: Design's
+// Sivan Kaplan and Product's Yuval Dayan both manage real ordinary teams (Product
+// Design/UX Research; Product Ops & Research) while personally sitting in the very
+// Leadership team hidden here - they still resolve correctly as those teams' managers
+// because managerCandidates() below reads teams.manager_email (a fact about the real
+// team), never this list or an employee's own team field.
+const EXCLUDED_INTAKE_TEAMS = [
+  'CS Leadership',
+  'Design Leadership',
+  'Engineering Leadership',
+  'Marketing Leadership',
+  'People Leadership',
+  'Product Leadership',
+  'Sales Leadership',
+];
+
 function buildIntakeReferenceData(db) {
-  const teams = db
-    .prepare("SELECT team_id, department, team, primary_office FROM teams WHERE status = 'Active' ORDER BY department, team")
+  // realHeadcount is computed live from employees (excluding not-yet-started test
+  // hires, same population EMPLOYEES below is filtered to) rather than trusted from
+  // teams.headcount - self-correcting if the two ever drift, and is how a genuinely
+  // empty team like "Finance & Operations Leadership" (0 real employees) gets hidden
+  // from the picker automatically rather than needing its own special case.
+  const allTeams = db
+    .prepare(
+      `SELECT t.team_id, t.department, t.team, t.primary_office, t.manager_email,
+              (SELECT COUNT(*) FROM employees e
+               WHERE e.department = t.department AND e.team = t.team AND e.employment_status != 'Pending Start') AS realHeadcount
+       FROM teams t
+       WHERE t.status = 'Active'
+       ORDER BY t.department, t.team`
+    )
     .all();
+  const teams = allTeams
+    .filter((t) => t.realHeadcount > 0 && !EXCLUDED_INTAKE_TEAMS.includes(t.team))
+    .map((t) => ({ team_id: t.team_id, department: t.department, team: t.team, primary_office: t.primary_office, manager_email: t.manager_email }));
   const roles = db.prepare('SELECT role_id, job_family, title, track FROM roles ORDER BY title').all();
   const employees = db
     .prepare(
@@ -1039,7 +1072,12 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   }
   .intake-wrap { max-width: min(640px, 92vw); margin: 0 auto; }
   .eyebrow { margin: 0 0 0.5rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); }
-  .intake-heading { margin: 0 0 0.7rem; font-size: 1.9rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.28; }
+  .intake-heading { margin: 0 0 0.7rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.28; }
+  /* Deliberate two-line break, not responsive wrapping - line 1 sets up, line 2 (the
+     actual ask) reads larger and more prominent. Both are block-level so the break
+     happens at any viewport width, not just when the text runs out of room. */
+  .intake-heading-line1 { display: block; font-size: 1.2rem; }
+  .intake-heading-line2 { display: block; font-size: 1.9rem; }
   .intake-subtitle { margin: 0 0 2.2rem; color: var(--text-secondary); font-size: 1rem; line-height: 1.55; max-width: 46ch; }
   .error-banner { background: rgba(248,113,113,0.15); color: #fca5a5; border: 1px solid rgba(248,113,113,0.3); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.3rem; font-size: 0.88rem; }
   .error-banner[hidden] { display: none; }
@@ -1122,7 +1160,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
 <body>
 <div class="intake-wrap">
   <p class="eyebrow">New Hire Intake · ${escapeHtml(brandLabel)}</p>
-  <h1 class="intake-heading">Your new teammate is starting soon. Let's build their first two months.</h1>
+  <h1 class="intake-heading"><span class="intake-heading-line1">Your new teammate is starting soon.</span><span class="intake-heading-line2">Let's build their first two months.</span></h1>
   <p class="intake-subtitle">Give us a few details, and we'll put together a personalized onboarding plan - who to meet, what to learn, and when.</p>
   ${errorBanner}
   <form id="intakeForm">
@@ -1341,19 +1379,25 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     if (items.some(function (r) { return r.title === previous; })) fldRole.value = previous;
   }
 
+  // The team's manager is teams.manager_email - real "who manages this team" fact -
+  // not "who is personally tagged with this team name" (an employee's own team
+  // field, used below by teamCandidates for buddy/mentor pools, which is a different
+  // question). A manager who oversees a team without personally sitting in it (e.g.
+  // Sivan Kaplan manages Product Design and UX Research from Design Leadership; Yuval
+  // Dayan manages Product Ops & Research from Product Leadership) would otherwise
+  // never surface as that team's manager option - a real bug, not a hypothetical one,
+  // since both cases exist in this dataset today.
   function managerCandidates() {
-    var dept = currentRealDept();
-    var team = currentTeam();
-    var pool = EMPLOYEES.filter(function (e) { return e.track === 'Manager'; });
-    if (dept) {
-      var byDept = pool.filter(function (e) { return e.department === dept; });
-      if (team) {
-        var byTeam = byDept.filter(function (e) { return e.team === team; });
-        if (byTeam.length) return byTeam;
-      }
-      if (byDept.length) return byDept;
+    var teamRow = TEAMS.filter(function (t) { return t.team === fldTeam.value; })[0];
+    if (teamRow && teamRow.manager_email) {
+      var mgr = EMPLOYEES.filter(function (e) { return e.email === teamRow.manager_email; });
+      if (mgr.length) return mgr;
     }
-    return pool;
+    // Fallback only if the team's own manager_email is missing or doesn't resolve to
+    // a real (non-"Pending Start") employee - any Manager-track person in the same
+    // real department, rather than an empty dropdown.
+    var dept = currentRealDept();
+    return EMPLOYEES.filter(function (e) { return e.track === 'Manager' && e.department === dept; });
   }
 
   function teamCandidates() {

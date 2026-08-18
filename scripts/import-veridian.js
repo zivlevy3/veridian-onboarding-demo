@@ -240,6 +240,73 @@ function importKnowledgeBase(db) {
   }
 }
 
+// Known source-data gap: the master pack's "Teams" sheet has 36 rows spanning 7 of the
+// 8 departments that actually have teams - People has zero rows there, even though its
+// employees carry real team names (People Leadership, People Operations & L&D, People
+// Partners, Talent Acquisition - confirmed directly against the Teams and Employees
+// sheets, not assumed; see MEMORY.md for the verification). Backfilled here from the
+// already-imported employees table rather than invented: headcount/manager_email/
+// primary_office are all derived by querying real employee rows for each team name, so
+// they self-correct on every re-import instead of going stale like a one-off hardcoded
+// INSERT would. mission/core_tools are left NULL (both nullable in schema.sql) - there's
+// no real source text for either field for these 4 teams, and inventing plausible-
+// sounding copy would violate the same "don't invent" rule this pipeline enforces
+// everywhere else (see docs/PROJECT-README.md's core principles).
+function backfillPeopleTeams(db) {
+  const PEOPLE_TEAMS = [
+    { team_id: 'PPL-LEAD', team: 'People Leadership', org_group: 'People Operations' },
+    { team_id: 'PPL-OPS', team: 'People Operations & L&D', org_group: 'People Operations' },
+    { team_id: 'PPL-PART', team: 'People Partners', org_group: 'People Partners' },
+    { team_id: 'PPL-TA', team: 'Talent Acquisition', org_group: 'Talent Acquisition' },
+  ];
+  const insert = db.prepare(
+    `INSERT INTO teams (team_id, department, org_group, team, mission, headcount, manager_email, primary_office, core_tools, status)
+     VALUES (?, 'People', ?, ?, NULL, ?, ?, ?, NULL, 'Active')`
+  );
+  let inserted = 0;
+  for (const t of PEOPLE_TEAMS) {
+    const members = db
+      .prepare('SELECT email, manager_email, location FROM employees WHERE department = ? AND team = ?')
+      .all('People', t.team);
+    if (members.length === 0) {
+      console.warn(`backfillPeopleTeams: no employees found for People / "${t.team}" - skipping, not inventing a row with no real members.`);
+      continue;
+    }
+
+    let managerEmail;
+    if (t.team.endsWith('Leadership') && members.length === 1) {
+      // Same convention already used for every other "X Leadership" team in this
+      // dataset (see ENG-LEAD/DSN-LEAD): the sole senior member IS the team's manager,
+      // not that person's own manager one level up (Neta Lavi's own manager_email
+      // points to Yael Shalev, VP People - that's her personal reporting line, not who
+      // manages the People Leadership team, which is her).
+      managerEmail = members[0].email;
+    } else {
+      // The team's manager_email is real "who manages this team" fact, distinct from
+      // an individual member's own manager_email (their personal reporting line) -
+      // same pattern as Design's Sivan Kaplan, who manages Product Design/UX Research
+      // without being personally on either team. Derived as whichever manager_email
+      // this team's own members most commonly report to (majority vote over real
+      // data), not guessed - for every People team below this resolves unambiguously.
+      const counts = {};
+      for (const m of members) {
+        if (m.manager_email) counts[m.manager_email] = (counts[m.manager_email] || 0) + 1;
+      }
+      managerEmail = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0] || null;
+    }
+
+    const officeCounts = {};
+    for (const m of members) {
+      if (m.location) officeCounts[m.location] = (officeCounts[m.location] || 0) + 1;
+    }
+    const primaryOffice = Object.keys(officeCounts).sort((a, b) => officeCounts[b] - officeCounts[a])[0] || null;
+
+    insert.run(t.team_id, t.org_group, t.team, members.length, managerEmail, primaryOffice);
+    inserted++;
+  }
+  console.log(`Backfilled ${inserted} People team row(s) into teams (source workbook's Teams sheet has no People rows at all).`);
+}
+
 function main() {
   if (!fs.existsSync(XLSX_PATH)) {
     throw new Error(`Source workbook not found: ${XLSX_PATH}`);
@@ -281,6 +348,7 @@ function main() {
     console.log(`Imported ${count} rows into ${spec.table} (from "${sheetName}")`);
   }
 
+  backfillPeopleTeams(db);
   importRoles(db, workbook);
   importKnowledgeBase(db);
 

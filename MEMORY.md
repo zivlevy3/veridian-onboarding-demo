@@ -452,8 +452,54 @@ code, not just prose the model could ignore:
   every other pipeline run stops at in this environment. DB check afterward confirmed
   the employee and `manager_intake` rows were saved correctly and **no plan row was
   created** - the failure happens before any partial plan is ever persisted.
-- **TODO before shipping to real users**: this dev database now has real "Pending
-  Start" employees created purely for manual testing (Yuval Barak/VRD-1186, Dana Levi/
-  VRD-1187, and possibly more added later) - see the README's Status section for the
-  cleanup query and the caveat that it stops being a safe signal once real new hires
-  exist in the system.
+- **TODO before shipping to real users**: any manual test submissions through `/start`
+  leave behind real "Pending Start" employees (e.g. Yuval Barak, Dana Levi, Tal Rivkin
+  across earlier test rounds) - see the README's Status section for the cleanup query
+  and the caveat that it stops being a safe signal once real new hires exist in the
+  system. Note: re-running `node scripts/import-veridian.js` wipes all of these
+  automatically (it drops/recreates `employees` from the source workbook, which never
+  had them) - that's how the three named above were actually cleared, as a side effect
+  of the People-teams backfill round below, not a dedicated cleanup step.
+- **Department/Team picker refinements**: three follow-up fixes, verified together in
+  the browser.
+  - **People has zero rows in the master workbook's Teams sheet - a real source-data
+    gap, not a naming mismatch.** Confirmed directly against the sheet (36 rows, 7 of
+    the 8 real departments; People employees do carry real team names - People
+    Leadership, People Operations & L&D, People Partners, Talent Acquisition - just
+    with no corresponding `teams` row). Fixed with a new `backfillPeopleTeams()` in
+    `scripts/import-veridian.js`, called after Teams+Employees load, in the same
+    dedicated-function pattern as `importRoles()`/`importKnowledgeBase()`. Everything
+    is derived from the already-imported `employees` rows, not invented:
+    headcount = real member count; `primary_office` = the office most of that team's
+    real members sit in (majority vote, same convention `teams.primary_office` already
+    uses elsewhere, e.g. Account Executives EMEA = London despite one Tel Aviv
+    member); `manager_email` = majority vote of members' own `manager_email`, **except**
+    for the single-member "X Leadership" case (People Leadership, just Neta Lavi),
+    where that convention would incorrectly resolve to Neta's own manager one level up
+    (Yael Shalev, VP People) - so a sole "Leadership" member is set as their own
+    team's manager instead, matching the existing convention every other "X
+    Leadership" team already uses (e.g. `ENG-LEAD`'s manager is Amit Cohen himself,
+    the team's senior-most/sole strategic member, not Daniel Rosen above him).
+    `mission`/`core_tools` are left `NULL` (both nullable) - no real source text for
+    either field, and inventing plausible copy would violate this project's own
+    "don't invent" rule. Backfilled at import time (not a live-DB-only patch), so it
+    persists across every future re-import instead of needing to be redone.
+  - **All 7 department-level "X Leadership" teams are hidden from the Team picker** -
+    `EXCLUDED_INTAKE_TEAMS` in server.js (CS/Design/Engineering/Marketing/People/
+    Product/Sales Leadership). Every one is track=Manager-only by construction, not a
+    plausible team for a new IC hire. Teams with zero real employees (e.g. Finance &
+    Operations Leadership) are hidden by a separate, general `realHeadcount > 0` rule
+    computed live from `employees` (not the possibly-stale stored `teams.headcount`),
+    so a future empty team doesn't need its own name added to the exclusion list.
+  - **Critical fix, found while hiding the Leadership teams**: the Manager dropdown
+    used to be filtered by matching a candidate's own personal `employees.team` field
+    against the selected team - which silently breaks for exactly the kind of person
+    who manages a team without personally sitting in it (Design's Sivan Kaplan manages
+    Product Design and UX Research from Design Leadership; Product's Yuval Dayan
+    manages Product Ops & Research from Product Leadership - both real, both already
+    in this dataset, not hypothetical). `managerCandidates()` now reads
+    `teams.manager_email` directly - the real "who manages this team" fact - falling
+    back to any Manager-track employee in the same real department only if that field
+    is missing or unresolved. Verified independent of the Leadership-hiding change:
+    Sivan Kaplan and Yuval Dayan both still resolve correctly as their teams' managers
+    with Design Leadership/Product Leadership hidden from the picker.
