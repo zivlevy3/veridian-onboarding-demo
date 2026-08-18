@@ -988,7 +988,6 @@ ${renderLegend(trackStyles)}
 // Start" employee - like a previous test hire - can't sensibly be someone's manager,
 // buddy, or mentor before they've started themselves).
 function buildIntakeReferenceData(db) {
-  const departments = db.prepare('SELECT department FROM departments ORDER BY department').all().map((r) => r.department);
   const teams = db
     .prepare("SELECT team_id, department, team, primary_office FROM teams WHERE status = 'Active' ORDER BY department, team")
     .all();
@@ -998,7 +997,7 @@ function buildIntakeReferenceData(db) {
       "SELECT employee_id, full_name, job_title, department, team, track, email, location FROM employees WHERE employment_status != 'Pending Start' ORDER BY full_name"
     )
     .all();
-  return { departments, teams, roles, employees };
+  return { teams, roles, employees };
 }
 
 function renderStartPage(referenceData, companyName, errorMessage) {
@@ -1208,11 +1207,31 @@ function renderStartPage(referenceData, companyName, errorMessage) {
 
 <script>
 (function () {
-  var DEPARTMENTS = ${JSON.stringify(referenceData.departments)};
   var TEAMS = ${JSON.stringify(referenceData.teams)};
   var ROLES = ${JSON.stringify(referenceData.roles)};
   var EMPLOYEES = ${JSON.stringify(referenceData.employees)};
   var OTHER = '__other__';
+
+  // Display-only mapping for the Department dropdown - real employees.department/
+  // teams.department values are never changed by this; it only controls what shows in
+  // this <select> and which real department(s) its Team options are pulled from.
+  // "Executive" is deliberately absent (not offered at all, real data untouched).
+  // "Engineering" shows as "R&D" - a straight relabel, still exactly one real
+  // department. "Product" is a genuine composite - selecting it pulls teams from BOTH
+  // the real "Product" and "Design" departments (grouped by optgroup below), and
+  // "Design" never appears as its own top-level option. Whichever real department a
+  // selected TEAM actually belongs to (see realDeptOfSelectedTeam below) is what
+  // ultimately gets submitted - this list only ever drives what's shown, never what's
+  // saved.
+  var DEPARTMENT_DISPLAY = [
+    { display: 'Customer Success & Support', match: ['Customer Success & Support'] },
+    { display: 'R&D', match: ['Engineering'] },
+    { display: 'Product', match: ['Product', 'Design'] },
+    { display: 'Finance & Operations', match: ['Finance & Operations'] },
+    { display: 'Marketing', match: ['Marketing'] },
+    { display: 'People', match: ['People'] },
+    { display: 'Sales', match: ['Sales'] },
+  ];
 
   var fldName = document.getElementById('fldName');
   var fldEmail = document.getElementById('fldEmail');
@@ -1240,15 +1259,39 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     return o;
   }
 
-  function jobFamilyMatchesDept(jobFamily, department) {
-    if (!department) return true;
-    if (jobFamily === department) return true;
-    // Known naming mismatch between roles.job_family and departments.department (e.g.
-    // "Customer Success" vs "Customer Success & Support") - a prefix match on either
-    // side covers it without inventing a mapping table for a handful of cases.
-    if (department.indexOf(jobFamily) === 0) return true;
-    if (jobFamily.indexOf(department) === 0) return true;
+  function jobFamilyMatchesAnyDept(jobFamily, departments) {
+    for (var i = 0; i < departments.length; i++) {
+      var department = departments[i];
+      if (jobFamily === department) return true;
+      // Known naming mismatch between roles.job_family and departments.department (e.g.
+      // "Customer Success" vs "Customer Success & Support") - a prefix match on either
+      // side covers it without inventing a mapping table for a handful of cases.
+      if (department.indexOf(jobFamily) === 0) return true;
+      if (jobFamily.indexOf(department) === 0) return true;
+    }
     return false;
+  }
+
+  function currentDisplayDept() {
+    return fldDepartment.value;
+  }
+  // The real department(s) the current display selection can pull teams/roles from -
+  // ['Product', 'Design'] for the composite display option, exactly one real name for
+  // every other (including "R&D" -> ['Engineering']).
+  function currentMatchDepts() {
+    var mapping = DEPARTMENT_DISPLAY.filter(function (d) { return d.display === currentDisplayDept(); })[0];
+    return mapping ? mapping.match : [currentDisplayDept()];
+  }
+  // The one real department the SELECTED TEAM actually belongs to - this, not the
+  // display value, is what's submitted to the server and what filters the Manager/
+  // Buddy/Mentor pools, since those are real employee records with a single real
+  // department each (an employee is never "Product or Design", only ever exactly one).
+  function currentRealDept() {
+    var teamRow = TEAMS.filter(function (t) { return t.team === fldTeam.value; })[0];
+    return teamRow ? teamRow.department : null;
+  }
+  function currentTeam() {
+    return fldTeam.value;
   }
 
   // Department and Team are real organizational fact, not something a demo visitor can
@@ -1256,31 +1299,38 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   // otherwise, so there's no "Other" option here (an offered-but-always-broken option
   // would be misleading). Role is different: an unmatched title degrades gracefully to
   // a documented GAP, not a failure, so "Other" stays there (see refreshRoles below).
-  function currentDept() {
-    return fldDepartment.value;
-  }
-  function currentTeam() {
-    return fldTeam.value;
-  }
-
   function refreshDepartments() {
     fldDepartment.innerHTML = '';
-    DEPARTMENTS.forEach(function (d) { fldDepartment.appendChild(opt(d, d)); });
+    DEPARTMENT_DISPLAY.forEach(function (d) { fldDepartment.appendChild(opt(d.display, d.display)); });
   }
 
   function refreshTeams() {
-    var dept = currentDept();
+    var matchDepts = currentMatchDepts();
     var previous = fldTeam.value;
-    var items = TEAMS.filter(function (t) { return t.department === dept; });
     fldTeam.innerHTML = '';
-    items.forEach(function (t) { fldTeam.appendChild(opt(t.team, t.team)); });
-    if (items.some(function (t) { return t.team === previous; })) fldTeam.value = previous;
+    if (matchDepts.length > 1) {
+      // Composite display department ("Product") - group by each real department so
+      // it's visually clear a Design team is still Design, not secretly Product.
+      matchDepts.forEach(function (realDept) {
+        var items = TEAMS.filter(function (t) { return t.department === realDept; });
+        if (!items.length) return;
+        var group = document.createElement('optgroup');
+        group.label = realDept;
+        items.forEach(function (t) { group.appendChild(opt(t.team, t.team)); });
+        fldTeam.appendChild(group);
+      });
+    } else {
+      var flatItems = TEAMS.filter(function (t) { return t.department === matchDepts[0]; });
+      flatItems.forEach(function (t) { fldTeam.appendChild(opt(t.team, t.team)); });
+    }
+    var allNames = TEAMS.filter(function (t) { return matchDepts.indexOf(t.department) !== -1; }).map(function (t) { return t.team; });
+    if (allNames.indexOf(previous) !== -1) fldTeam.value = previous;
   }
 
   function refreshRoles() {
-    var dept = currentDept();
+    var matchDepts = currentMatchDepts();
     var previous = fldRole.value;
-    var filtered = ROLES.filter(function (r) { return jobFamilyMatchesDept(r.job_family, dept); });
+    var filtered = ROLES.filter(function (r) { return jobFamilyMatchesAnyDept(r.job_family, matchDepts); });
     // "Filtered by department if possible" - job_family/department naming doesn't line
     // up for every role, so an empty filtered list falls back to the full catalog
     // rather than leaving the dropdown with nothing but "Other".
@@ -1292,7 +1342,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   }
 
   function managerCandidates() {
-    var dept = currentDept();
+    var dept = currentRealDept();
     var team = currentTeam();
     var pool = EMPLOYEES.filter(function (e) { return e.track === 'Manager'; });
     if (dept) {
@@ -1307,7 +1357,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   }
 
   function teamCandidates() {
-    var dept = currentDept();
+    var dept = currentRealDept();
     var team = currentTeam();
     if (dept && team) {
       var byTeam = EMPLOYEES.filter(function (e) { return e.department === dept && e.team === team; });
@@ -1414,7 +1464,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     var payload = {
       name: fldName.value.trim(),
       email: fldEmail.value.trim(),
-      department: fldDepartment.value,
+      department: currentRealDept(),
       team: fldTeam.value,
       role: fldRole.value,
       roleOther: fldRoleOther.value.trim(),
@@ -1504,7 +1554,13 @@ app.get('/start', (req, res) => {
 // enforces this and throws a clear error otherwise, same as it always has for the CLI/
 // script callers). Department and Team are real organizational fact for the same
 // reason - the form only offers real teams/departments (no "Other"), so these always
-// match an existing teams row here. Role/title is the one field that tolerates a
+// match an existing teams row here. The Department dropdown's display labels ("R&D"
+// for Engineering; a combined "Product" option covering both real Product and Design
+// teams; "Executive" hidden entirely) are a client-side-only relabeling - see
+// DEPARTMENT_DISPLAY in renderStartPage's script - the client always resolves and
+// submits the real department the selected team actually belongs to, never the
+// display label itself, so nothing here needs to know that mapping exists. Role/title
+// is the one field that tolerates a
 // no-catalog-match "Other" (createEmployee already degrades that to a GAP, not a
 // failure), and buddy tolerates its own free-text "Other" (stored as-is, resolved
 // loosely by the orchestrator).
