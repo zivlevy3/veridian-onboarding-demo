@@ -177,23 +177,34 @@ Hard caps, checked **in code** (`lib/plan-validate.js`), not just described in t
     "direct_manager".replace("direct_manager","team_interfaces"),` or
     `"direct_manager".split("").join("")` - which breaks `JSON.parse` well before any
     `max_tokens` limit is hit (confirmed via `data.usage.output_tokens` logging: every
-    occurrence had well under half the budget used). Seen 4 times total across roughly
-    30 real Process Expert calls made during this investigation (~13%, a rough estimate,
-    not a precise rate) - always the same shape (a quoted string immediately followed by
-    `.methodName(...)`), never anything else resembling embedded code. Not specific to
-    Manager-track employees (also seen on an ordinary IC plan) and not caused by the
-    load-cap fix above (both predate it and postdate it identically). `lib/process-
-    expert-agent.js` now detects this specific shape on a parse failure (a regex looking
-    for `"..."` immediately followed by `.replace(`/`.split(`/`.join(`/etc.) and logs it
-    as `[malformed-code-in-json]`, distinct from an ordinary `[json-parse-error]` - not a
-    fix, just makes the real frequency of this specific pattern visible over time instead
-    of blending into "JSON errors happen sometimes." Handled the same way every JSON
-    failure already is: re-run the pipeline. `max_tokens` was also bumped 8192 -> 16000
-    while investigating (a real successful run measured 7800/8192, ~95% utilized - not
-    generous headroom) - a legitimate, separate improvement, not a fix for this
-    phenomenon specifically. Root cause not investigated further per explicit scope
-    decision - deep-diving *why* the model occasionally does this was deliberately out of
-    scope for this round.
+    occurrence had well under half the budget used). Always the same shape (a quoted
+    string immediately followed by `.methodName(...)`), never anything else resembling
+    embedded code. Not specific to Manager-track employees (also seen on an ordinary IC
+    plan) and not caused by the load-cap fix above (both predate it and postdate it
+    identically). `lib/process-expert-agent.js` now detects this specific shape on a
+    parse failure (a regex looking for `"..."` immediately followed by
+    `.replace(`/`.split(`/`.join(`/etc.) and logs it as `[malformed-code-in-json]`,
+    distinct from an ordinary `[json-parse-error]` - not a fix, just makes the real
+    frequency of this specific pattern visible over time instead of blending into "JSON
+    errors happen sometimes." Handled the same way every JSON failure already is: re-run
+    the pipeline.
+    - **Explicitly checked: raising `max_tokens` does NOT fix this, retry is the real
+      mitigation.** `max_tokens` was bumped 8192 -> 16000 mid-investigation after a real
+      successful run measured 7800/8192 (~95% utilized) - worth doing on its own merits,
+      but its effect on this specific phenomenon needed checking, not assuming. Checked
+      the chronology of all 4 occurrences found during the fix/re-verification work: 2
+      happened before the bump (both at 8192), 2 happened after (at 16000, using only
+      ~31-33% of the new budget when they failed - nowhere near the ceiling either way).
+      Then ran 9 more real Process Expert calls in isolation, purely to remeasure
+      frequency under the new 16000 budget with nothing else mixed in (2026-08-19,
+      VRD-1037/1039/1088/1098/1110/1124/1153/1161/1172, a mix of Manager and IC): 7
+      succeeded clean, 1 hit an ordinary `[json-parse-error]`, 1 hit
+      `[malformed-code-in-json]` again (VRD-1172) - 1/9 ≈ 11%, essentially unchanged from
+      the ~13% estimate before the bump. Conclusion: this is not a token-budget problem
+      wearing a budget-shaped disguise - the same generation glitch persists regardless
+      of how much room the model has. Root cause not investigated further per explicit
+      scope decision - deep-diving *why* the model occasionally does this was
+      deliberately out of scope for this round.
 - A fully empty week is allowed at the Process Expert stage (real information — nothing's
   due that week); the Content Writer turns it into a fixed, verbatim "lighter week" card,
   never invents filler to avoid it.
