@@ -667,7 +667,80 @@ code, not just prose the model could ignore:
     any effect (positive, negative, or neutral) on how well the model respects the load
     cap specifically is an open question this measurement cannot answer on its own -
     worth being honest about rather than asserting a causal claim the data doesn't
-    support. Not investigated further this round; a natural next step, not done here.
+    support. That "natural next step" is the entry directly below.
+- **The natural next step, same day (2026-08-19): `lib/plan-rebalance.js` replaces
+  "throw the whole plan away and regenerate" with deterministic in-code rebalancing,
+  specifically for the three cap/window violations `lib/plan-validate.js` checks** (not
+  for JSON-shape failures - those are a completely different failure class and still go
+  through `withRetry` exactly as before). `rebalancePlan(plan)` runs on the raw Process
+  Expert output, before `validatePlanOrThrow`: `direct_report` items outside weeks 1-2
+  are moved directly into whichever of week 1/2 has fewer (they're always mandatory, so
+  the generic mover never touches them); for the 5-meeting and 6-load caps, `flexible`
+  items are tried first, then `recommended`, moved only to an immediately adjacent week
+  (source ± 1) that stays within *both* caps after the move, and only if it doesn't
+  violate `dependsOn` in either direction (checked against a live map of every item's
+  current week, updated after each move in the same pass). `mandatoryTier: 'mandatory'`
+  items are never moved by this pass, full stop. Every move is logged
+  (`Moved '<title>' from week X to week Y (reason: ...)`.). Up to 3 passes per plan,
+  since relieving one week can shift load into a neighbor that then needs relieving
+  itself. If a genuine, irreducible violation remains after rebalancing (mandatory items
+  alone already exceed a cap, or no adjacent week ever has room) - rare, see below -
+  `validatePlanOrThrow` still throws exactly as before, and `withRetry` still triggers a
+  fresh regeneration; rebalancing is prevention/repair for the common case, not a
+  replacement for retry as the last resort.
+  - **Real example of the removed-mandatory-item-is-off-limits design working correctly**
+    (unit test, before spending real API calls): a synthetic week 1 with 4 mandatory
+    items (office tour, manager intro, company overview, one systems-provisioning batch)
+    plus 5 non-mandatory items at 9 load units total - `rebalancePlan` moved exactly the
+    2 flexible items first, then the 1 recommended item whose `dependsOn` target
+    (another item that correctly stayed in week 1) was checked and respected, landing
+    week 1 at exactly 6 units and leaving week 2 well under cap. `fixed: true`.
+  - **Real examples from actual `/start` runs** (2026-08-19, `node --env-file=.env`
+    disabled here - this ran through the live endpoint, not a script):
+    - `Moved 'Understand how Knowledge Hub, AI Assistant, and AI Agents depend on the
+      platform capabilities this team owns' from week 3 to week 4 (reason: week 3 load
+      cap exceeded (max 6), item was recommended).`
+    - `Moved 'Meet cross-functional partners in Product' from week 4 to week 5 (reason:
+      week 4 load cap exceeded (max 6), item was flexible).`
+    - A week 2 with zero items after a move correctly triggered the pre-existing "lighter
+      week" placeholder path in the Content Writer, not an empty page - the rebalancer's
+      output still flows through every downstream check unchanged.
+  - **Measured, not assumed: real improvement, but short of "near 100%."** 7 real
+    submissions through the live `POST /start` endpoint (not a script):
+    **5/7 (71%)** clean success - up from structured-tool-use-alone's 2/7 (29%), and up
+    from the original free-text-JSON baseline's 4/7 (57%) too. Real progress, but the
+    stated target was "near 100%, not a small improvement," and this isn't that yet.
+    Investigated both remaining failures from the real server logs rather than leaving
+    them as an unexplained residual rate:
+    - **One (`Test Hire Seventeen`) is a genuine scope limitation of the "adjacent week
+      only" search radius**, exposed by an 11-person headcount-based team_interfaces
+      need (`onboardingNeeds[].headcount: 11` → 11 individual "Meet AI Platform teammate
+      - N/11" items, scheduled per-person per `process-expert.md`'s own headcount rule).
+      By the plan's last retry attempt, week 1 had 6 shared-cap meetings (3 mandatory +
+      3 flexible teammate-meet items) with week 2 *also* already at its own cap - so
+      every candidate move the rebalancer tried for week 1's flexible items was
+      correctly rejected (the target would have traded one violation for another), and
+      the ± 1 search never looks further than the immediate neighbor. A wider search
+      radius (or a dedicated per-need spreader for large `headcount` values, mirroring
+      how `direct_report` already gets one) would likely fix this specific shape - not
+      built this round, since it changes the algorithm's design, not just a parameter.
+    - **The other (`Test Hire Twenty`) is the intended "genuine irreducible violation"
+      fallback firing as designed, just unlucky across all 4 attempts** - in at least one
+      attempt, the offending week's items were *entirely* `mandatory` (no flexible or
+      recommended candidate existed at all to move), so `rebalancePlan` correctly found
+      nothing it could do and let `validatePlanOrThrow` throw, exactly as specified. This
+      is the documented, accepted edge case working correctly, not a bug - but it means
+      4 retry attempts still isn't always enough headroom on its own when a genuinely
+      mandatory-only overload comes up.
+  - **What this changes about "explained, non-blocking" load-cap overages going
+    forward**: there is no policy exception encoded anywhere for a specific employee
+    profile or a specific prior overage being "already accepted" - every plan is
+    rebalanced fresh, every time, against the same fixed caps, with zero memory of past
+    runs (see the automatic-retry entry above, which already established this same
+    point for `withRetry` - it's equally true here). The historical plan_ids generated
+    during earlier debugging (already committed as reference artifacts) are exactly
+    that: historical. They are not, and were never meant to be, a standing exception the
+    live system now honors.
 - **Department and Team are closed dropdowns of real org data only - no "Other."**
   `createEmployee` (`lib/employees.js`) requires an exact match against `teams`/
   `departments` and throws otherwise - offering "Other" here would be a form control
