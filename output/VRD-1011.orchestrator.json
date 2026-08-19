@@ -1,7 +1,7 @@
 {
   "status": "draft",
   "employeeId": "VRD-1011",
-  "planId": 10,
+  "planId": 14,
   "context": {
     "company": {
       "company_name": "Veridian",
@@ -370,59 +370,59 @@
       "team": "AI Platform",
       "reason": "buddy"
     },
-    "roleEssence": "This role builds and operates the backend systems underpinning Veridian's AI Platform - the retrieval, indexing, and agent infrastructure that Knowledge Hub, AI Assistant, and Department Agents all run on. Work is deeply dependent on the reliability, security, and scalability standards Engineering holds itself to, and on tight collaboration with the immediate AI Platform team and cross-functional partners building on top of these services. At IC4/Senior, expertise means owning complex workstreams independently, making sound architectural tradeoffs across GA and Beta surfaces (Beta agents in particular demand extra judgment), and mentoring others - not just executing tickets.",
+    "roleEssence": "This role builds and operates the backend systems underpinning Veridian's AI Platform - the connectors, indexing, and agent infrastructure that Knowledge Hub, AI Assistant, and AI Agents all depend on. At IC4, the work is less about executing assigned tickets and more about leading complex workstreams independently, making sound architectural calls under reliability and security constraints, and mentoring less senior engineers on the team. Success depends on deep familiarity with the platform's data flows and governance boundaries, plus tight collaboration with the immediate team and cross-functional partners who build on top of this infrastructure.",
     "onboardingNeeds": [
       {
-        "title": "Understand the AI Platform's system architecture and how it's consumed downstream",
+        "title": "Understand the AI Platform's system architecture and data flows",
         "track": "role",
         "purpose": null,
-        "rationale": "roleEssence centers on building infrastructure that other product areas (Assistant, Agents, Governance) depend on - before contributing code, this person needs a real map of what they're extending and who relies on it, not just their own team's slice.",
+        "rationale": "roleEssence centers on building/operating backend infrastructure that multiple products depend on - a senior engineer can't lead workstreams or make sound architectural calls without first understanding how connectors, indexing, and agents actually fit together.",
         "headcount": null
       },
       {
-        "title": "Shadow an on-call or incident-response cycle for the AI Platform",
+        "title": "Review the codebase and current workstreams for AI Platform",
         "track": "role",
         "purpose": null,
-        "rationale": "Reliability is a named departmental KPI and this is infrastructure other systems depend on - seeing how the team actually handles reliability/incidents in practice is core to what expertise looks like here, distinct from just writing features.",
+        "rationale": "Directly follows from roleEssence's emphasis on leading complex workstreams independently at IC4 - this is the concrete, hands-on grounding needed before taking ownership of any of them.",
         "headcount": null
       },
       {
-        "title": "Take ownership of a real workstream with senior-level scope",
+        "title": "Learn governance and security constraints affecting AI Platform's data handling",
         "track": "role",
         "purpose": null,
-        "rationale": "roleEssence explicitly frames IC4 expertise as owning complex workstreams independently rather than doing supervised tasks - onboarding should move toward a real piece of ownership, not stay in observation mode.",
+        "rationale": "roleEssence notes the role operates under reliability and security constraints, and the platform underlies a Governance product (permissions, audit, compliance) - a senior backend engineer must internalize these boundaries before shipping changes that touch shared infrastructure.",
         "headcount": null
       },
       {
-        "title": "Understand governance and security constraints on data and access",
+        "title": "Shadow a senior teammate on an active AI Platform workstream",
         "track": "role",
         "purpose": null,
-        "rationale": "This is an enterprise AI platform with a dedicated Governance product (permissions, audit, compliance) and security posture is a department KPI - backend work here operates inside real constraints that need to be understood early, not discovered mid-incident.",
+        "rationale": "Before leading workstreams solo, observing how an established team member navigates the platform's architecture, review norms, and on-call/reliability practices gives IC4-level context that documentation alone won't.",
         "headcount": null
       },
       {
-        "title": "Meet your AI Platform teammates",
+        "title": "Meet your AI Platform team",
         "track": "team_interfaces",
-        "purpose": "Get to know the engineers you'll be building alongside day to day, so early collaboration and code review feel familiar.",
-        "rationale": "roleEssence names the immediate team as a core dependency for this work - these are the people this engineer will pair with and rely on constantly, distinct from the broader cross-functional partners.",
+        "purpose": "Get to know the engineers you'll be working alongside daily, so day-to-day collaboration and code reviews start smoothly.",
+        "rationale": "roleEssence highlights collaboration with the immediate team as core to the role - a 12-person team is the daily working unit, distinct from broader cross-functional introductions.",
         "headcount": 12
       },
       {
-        "title": "Meet a cross-functional partner building on top of AI Platform services",
+        "title": "Meet cross-functional partners building on AI Platform infrastructure",
         "track": "team_interfaces",
-        "purpose": "Understand how a team building on your services actually consumes them, so you can see the downstream impact of platform decisions.",
-        "rationale": "role.core_collaboration explicitly names cross-functional partners, and roleEssence notes other product areas depend on this infrastructure - understanding a real consumer's perspective grounds the architecture-mapping need above in a concrete relationship.",
+        "purpose": "Understand how teams building Knowledge Hub, AI Assistant, and Department Agents depend on the infrastructure you'll own.",
+        "rationale": "role.core_collaboration explicitly names cross-functional partners, and the products list shows multiple teams building directly on top of this role's infrastructure - understanding their needs shapes how this role designs and prioritizes.",
         "headcount": null
       }
     ],
     "businessDepthNotes": [
       {
         "session": 2,
-        "reason": "backend work directly powers Knowledge Hub, AI Assistant, and Agents - needs real product depth, not just awareness"
+        "reason": "backend work directly underpins Knowledge Hub, AI Assistant, and AI Agents - needs product-level depth"
       },
       {
         "session": 6,
-        "reason": "Beta-stage Department Agents mean roadmap direction materially shapes near-term platform architecture decisions"
+        "reason": "AI Agents is still Beta, so roadmap direction matters for architectural decisions this role will make"
       }
     ]
   },
@@ -432,9 +432,79 @@
         "weekNumber": 1,
         "items": [
           {
+            "track": "systems_access",
+            "title": "Google Workspace access",
+            "usageNote": "Email, calendar, and shared drive access for day-to-day communication, provisioned ahead of your start.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Slack access",
+            "usageNote": "For internal communication and staying in the AI Platform team's channels.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Notion access",
+            "usageNote": "Company knowledge base and handbooks - a key reference for AI Platform's architecture docs.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "HiBob access",
+            "usageNote": "HRIS for your employee profile, time off, and the org chart.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Jira access",
+            "usageNote": "For tracking AI Platform's sprint work and roadmap execution once your workstreams are assigned.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "GitHub access",
+            "usageNote": "Source control and code review for the connectors, indexing, and agent infrastructure you'll be building.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Figma access",
+            "usageNote": "For reviewing product design and prototypes from teams building on top of AI Platform's infrastructure.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
             "track": "team_interfaces",
             "title": "Lior, your buddy + office tour",
-            "purpose": "Get to know your day-to-day go-to person for questions and see the Tel Aviv office where you'll be based.",
+            "purpose": "Get your daily go-to person for questions sorted and see the Tel Aviv office in person.",
             "facilitatorType": "human_buddy",
             "mandatoryTier": "mandatory",
             "estimatedHours": 1,
@@ -443,8 +513,8 @@
           },
           {
             "track": "team_interfaces",
-            "title": "Meet Shira - intro and onboarding plan walkthrough",
-            "purpose": "Meet your manager and walk through what the next eight weeks look like together.",
+            "title": "Shira, your manager: intro and plan walkthrough",
+            "purpose": null,
             "facilitatorType": "direct_manager",
             "mandatoryTier": "mandatory",
             "estimatedHours": 0.75,
@@ -453,8 +523,8 @@
           },
           {
             "track": "team_interfaces",
-            "title": "Meet the AI Platform team",
-            "purpose": "Get to know the engineers you'll be building alongside day to day, so early collaboration and code review feel familiar.",
+            "title": "Meet your AI Platform team",
+            "purpose": "Get to know the engineers you'll be working alongside daily, so collaboration and code reviews start smoothly.",
             "facilitatorType": "team_member",
             "mandatoryTier": "mandatory",
             "estimatedHours": 1,
@@ -463,72 +533,11 @@
           },
           {
             "track": "business",
-            "title": "Company overview - Veridian's vision, values, and offices",
-            "title2": null,
+            "title": "Veridian overview: vision, values, departments and offices",
             "purpose": null,
             "facilitatorType": "trainer_self_learning",
-            "mandatoryTier": "recommended",
-            "estimatedHours": 0.5,
-            "recurring": false,
-            "dependsOn": []
-          },
-          {
-            "track": "systems_access",
-            "title": "Slack access",
-            "usageNote": "Slack - for day-to-day communication with the AI Platform team and cross-functional channels.",
-            "facilitatorType": "system_provisioning",
             "mandatoryTier": "mandatory",
-            "estimatedHours": 0.25,
-            "recurring": false,
-            "dependsOn": []
-          },
-          {
-            "track": "systems_access",
-            "title": "Notion access",
-            "usageNote": "Notion - for reading team documentation, architecture notes, and the company knowledge base.",
-            "facilitatorType": "system_provisioning",
-            "mandatoryTier": "mandatory",
-            "estimatedHours": 0.25,
-            "recurring": false,
-            "dependsOn": []
-          },
-          {
-            "track": "systems_access",
-            "title": "HiBob access",
-            "usageNote": "HiBob - for your employee profile, time off requests, and the org chart.",
-            "facilitatorType": "system_provisioning",
-            "mandatoryTier": "mandatory",
-            "estimatedHours": 0.25,
-            "recurring": false,
-            "dependsOn": []
-          },
-          {
-            "track": "systems_access",
-            "title": "Google Workspace access",
-            "usageNote": "Google Workspace - for email, calendar, and shared drives, provisioned ahead of your start date.",
-            "facilitatorType": "system_provisioning",
-            "mandatoryTier": "mandatory",
-            "estimatedHours": 0.25,
-            "recurring": false,
-            "dependsOn": []
-          },
-          {
-            "track": "systems_access",
-            "title": "Jira access",
-            "usageNote": "Jira - for tracking your sprint work and the AI Platform team's roadmap execution.",
-            "facilitatorType": "system_provisioning",
-            "mandatoryTier": "mandatory",
-            "estimatedHours": 0.25,
-            "recurring": false,
-            "dependsOn": []
-          },
-          {
-            "track": "systems_access",
-            "title": "GitHub access",
-            "usageNote": "GitHub - for opening pull requests and reviewing code across AI Platform's services.",
-            "facilitatorType": "system_provisioning",
-            "mandatoryTier": "mandatory",
-            "estimatedHours": 0.25,
+            "estimatedHours": 0.75,
             "recurring": false,
             "dependsOn": []
           }
@@ -538,18 +547,8 @@
         "weekNumber": 2,
         "items": [
           {
-            "track": "team_interfaces",
-            "title": "Team mission, metrics, and how work flows",
-            "purpose": "Get the full picture of team goals, key processes, and where documentation and reporting live.",
-            "facilitatorType": "direct_manager",
-            "mandatoryTier": "mandatory",
-            "estimatedHours": 1,
-            "recurring": false,
-            "dependsOn": []
-          },
-          {
             "track": "compliance",
-            "title": "Security Awareness",
+            "title": "Security Awareness training",
             "purpose": null,
             "facilitatorType": "trainer_self_learning",
             "mandatoryTier": "mandatory",
@@ -559,7 +558,7 @@
           },
           {
             "track": "compliance",
-            "title": "Code of Conduct",
+            "title": "Code of Conduct training",
             "purpose": null,
             "facilitatorType": "trainer_self_learning",
             "mandatoryTier": "mandatory",
@@ -569,31 +568,43 @@
           },
           {
             "track": "role",
-            "title": "GitHub & Code Review Standards",
+            "title": "Understand the AI Platform's system architecture and data flows",
             "purpose": null,
             "facilitatorType": "trainer_self_learning",
             "mandatoryTier": "mandatory",
-            "estimatedHours": 1,
-            "recurring": false,
-            "dependsOn": []
-          },
-          {
-            "track": "business",
-            "title": "Product deep dive - Knowledge Hub, AI Assistant, AI Agents, and Governance",
-            "purpose": null,
-            "facilitatorType": "trainer_self_learning",
-            "mandatoryTier": "recommended",
-            "estimatedHours": 1,
+            "estimatedHours": 2,
             "recurring": false,
             "dependsOn": []
           },
           {
             "track": "role",
-            "title": "Understand the AI Platform's system architecture and how it's consumed downstream",
+            "title": "Learn governance and security constraints affecting AI Platform's data handling",
             "purpose": null,
             "facilitatorType": "trainer_self_learning",
-            "mandatoryTier": "flexible",
-            "estimatedHours": 2,
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Shira, your manager: team deep-dive",
+            "purpose": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": [
+              "Shira, your manager: intro and plan walkthrough"
+            ]
+          },
+          {
+            "track": "business",
+            "title": "Veridian's products: Knowledge Hub, AI Assistant, AI Agents and Governance",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1,
             "recurring": false,
             "dependsOn": []
           }
@@ -603,9 +614,51 @@
         "weekNumber": 3,
         "items": [
           {
-            "track": "direct_manager_checkin",
+            "track": "compliance",
+            "title": "Data Privacy & GDPR Basics training",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.7,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "GitHub & Code Review Standards training",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Review the codebase and current workstreams for AI Platform",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 3,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Shadow a senior teammate on an active AI Platform workstream",
+            "purpose": "See firsthand how an experienced teammate navigates the platform's architecture and review norms before taking ownership yourself.",
+            "facilitatorType": "team_member",
+            "mandatoryTier": "flexible",
+            "estimatedHours": 3,
+            "recurring": false,
+            "dependsOn": [
+              "Review the codebase and current workstreams for AI Platform"
+            ]
+          },
+          {
+            "track": "team_interfaces",
             "title": "Weekly check-in with Shira",
-            "purpose": "Catch up on how the first sprints are landing and flag anything blocking early progress.",
+            "purpose": null,
             "facilitatorType": "direct_manager",
             "mandatoryTier": "mandatory",
             "estimatedHours": 0.5,
@@ -614,55 +667,13 @@
           },
           {
             "track": "business",
-            "title": "Market and customers - who Veridian serves",
-            "purpose": null,
-            "facilitatorType": "trainer_self_learning",
-            "mandatoryTier": "recommended",
-            "estimatedHours": 0.5,
-            "recurring": false,
-            "dependsOn": []
-          },
-          {
-            "track": "compliance",
-            "title": "Data Privacy & GDPR Basics",
+            "title": "Veridian's market and customers",
             "purpose": null,
             "facilitatorType": "trainer_self_learning",
             "mandatoryTier": "mandatory",
-            "estimatedHours": 0.67,
+            "estimatedHours": 0.75,
             "recurring": false,
             "dependsOn": []
-          },
-          {
-            "track": "role",
-            "title": "Secure Development",
-            "purpose": null,
-            "facilitatorType": "trainer_self_learning",
-            "mandatoryTier": "mandatory",
-            "estimatedHours": 1.5,
-            "recurring": false,
-            "dependsOn": []
-          },
-          {
-            "track": "role",
-            "title": "Understand governance and security constraints on data and access",
-            "purpose": null,
-            "facilitatorType": "trainer_self_learning",
-            "mandatoryTier": "flexible",
-            "estimatedHours": 1.5,
-            "recurring": false,
-            "dependsOn": []
-          },
-          {
-            "track": "team_interfaces",
-            "title": "Meet a partner team building on AI Platform services",
-            "purpose": "Understand how a team building on your services actually consumes them, so you can see the downstream impact of platform decisions.",
-            "facilitatorType": "interface_contact",
-            "mandatoryTier": "flexible",
-            "estimatedHours": 0.5,
-            "recurring": false,
-            "dependsOn": [
-              "Understand the AI Platform's system architecture and how it's consumed downstream"
-            ]
           }
         ]
       },
@@ -670,29 +681,29 @@
         "weekNumber": 4,
         "items": [
           {
-            "track": "direct_manager_checkin",
-            "title": "Weekly sync with Shira",
-            "purpose": "Walk through what's landed so far and set focus for the coming weeks.",
-            "facilitatorType": "direct_manager",
-            "mandatoryTier": "mandatory",
-            "estimatedHours": 0.5,
-            "recurring": true,
-            "dependsOn": []
-          },
-          {
-            "track": "business",
-            "title": "Business model - how Veridian creates and captures value",
+            "track": "role",
+            "title": "Secure Development training",
             "purpose": null,
             "facilitatorType": "trainer_self_learning",
-            "mandatoryTier": "recommended",
-            "estimatedHours": 0.5,
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1.5,
             "recurring": false,
             "dependsOn": []
           },
           {
             "track": "team_interfaces",
-            "title": "Meet your Engineering department - vision and this year's goals",
-            "purpose": "Understand where Engineering is headed this year and how your work ladders up to it.",
+            "title": "Meet cross-functional partners building on AI Platform infrastructure",
+            "purpose": "Understand how the teams building Knowledge Hub, AI Assistant and Department Agents depend on the infrastructure you own.",
+            "facilitatorType": "interface_contact",
+            "mandatoryTier": "flexible",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Engineering department: mission, structure and this year's goals",
+            "purpose": "Understand how Engineering's reliability and delivery goals connect to the work happening on your team.",
             "facilitatorType": "direct_manager",
             "mandatoryTier": "recommended",
             "estimatedHours": 0.75,
@@ -701,21 +712,21 @@
           },
           {
             "track": "team_interfaces",
-            "title": "Meet Tal from People Partners",
-            "purpose": "Have a direct line to HR for anything that comes up beyond day-to-day management topics.",
-            "facilitatorType": "hrbp",
-            "mandatoryTier": "recommended",
+            "title": "Weekly check-in with Shira: staying aligned on priorities",
+            "purpose": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
             "estimatedHours": 0.5,
-            "recurring": false,
+            "recurring": true,
             "dependsOn": []
           },
           {
-            "track": "role",
-            "title": "Shadow an on-call or incident-response cycle for the AI Platform",
+            "track": "business",
+            "title": "Veridian's business model",
             "purpose": null,
             "facilitatorType": "trainer_self_learning",
-            "mandatoryTier": "flexible",
-            "estimatedHours": 2,
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
             "recurring": false,
             "dependsOn": []
           }
@@ -725,9 +736,19 @@
         "weekNumber": 5,
         "items": [
           {
-            "track": "direct_manager_checkin",
-            "title": "30-day check-in and progress review with Shira",
-            "purpose": "Look back at your first month against the original plan, name any gaps, and reset priorities.",
+            "track": "team_interfaces",
+            "title": "Tal, your HRBP: check-in",
+            "purpose": "Connect with the person who can help with any people-related questions or concerns as you settle in.",
+            "facilitatorType": "hrbp",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Shira: 30-day review and re-prioritizing",
+            "purpose": "Look back on your first month against the original plan, flag gaps, and adjust priorities together going forward.",
             "facilitatorType": "direct_manager",
             "mandatoryTier": "mandatory",
             "estimatedHours": 0.5,
@@ -736,10 +757,10 @@
           },
           {
             "track": "business",
-            "title": "Key success metrics - how Veridian measures progress",
+            "title": "Key success metrics at Veridian",
             "purpose": null,
             "facilitatorType": "trainer_self_learning",
-            "mandatoryTier": "recommended",
+            "mandatoryTier": "mandatory",
             "estimatedHours": 0.5,
             "recurring": false,
             "dependsOn": []
@@ -750,9 +771,9 @@
         "weekNumber": 6,
         "items": [
           {
-            "track": "direct_manager_checkin",
-            "title": "Weekly check-in with Shira",
-            "purpose": "Review how ownership of your current workstream is progressing and unblock anything stuck.",
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Shira: mid-onboarding sync",
+            "purpose": null,
             "facilitatorType": "direct_manager",
             "mandatoryTier": "mandatory",
             "estimatedHours": 0.5,
@@ -761,29 +782,19 @@
           },
           {
             "track": "business",
-            "title": "Strategic direction - Veridian's near-term roadmap, with extra focus on Department Agents",
+            "title": "Veridian's strategic direction and near-term roadmap, including AI Agents' path to GA",
             "purpose": null,
             "facilitatorType": "trainer_self_learning",
-            "mandatoryTier": "recommended",
+            "mandatoryTier": "mandatory",
             "estimatedHours": 0.75,
             "recurring": false,
             "dependsOn": [
-              "Company overview - Veridian's vision, values, and offices",
-              "Product deep dive - Knowledge Hub, AI Assistant, AI Agents, and Governance",
-              "Market and customers - who Veridian serves",
-              "Business model - how Veridian creates and captures value",
-              "Key success metrics - how Veridian measures progress"
+              "Veridian overview: vision, values, departments and offices",
+              "Veridian's products: Knowledge Hub, AI Assistant, AI Agents and Governance",
+              "Veridian's market and customers",
+              "Veridian's business model",
+              "Key success metrics at Veridian"
             ]
-          },
-          {
-            "track": "role",
-            "title": "Take ownership of a real workstream with senior-level scope",
-            "purpose": null,
-            "facilitatorType": "trainer_self_learning",
-            "mandatoryTier": "flexible",
-            "estimatedHours": 3,
-            "recurring": false,
-            "dependsOn": []
           }
         ]
       },
@@ -791,9 +802,9 @@
         "weekNumber": 7,
         "items": [
           {
-            "track": "direct_manager_checkin",
-            "title": "Weekly check-in with Shira",
-            "purpose": "Talk through what's working well and where you'd like more support heading into the final stretch.",
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Shira: progress check",
+            "purpose": null,
             "facilitatorType": "direct_manager",
             "mandatoryTier": "mandatory",
             "estimatedHours": 0.5,
@@ -806,9 +817,9 @@
         "weekNumber": 8,
         "items": [
           {
-            "track": "direct_manager_checkin",
-            "title": "Weekly check-in with Shira",
-            "purpose": "Wrap up the onboarding period and agree what ongoing ownership looks like from here.",
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Shira: wrapping up the first eight weeks",
+            "purpose": null,
             "facilitatorType": "direct_manager",
             "mandatoryTier": "mandatory",
             "estimatedHours": 0.5,
@@ -819,10 +830,9 @@
       }
     ],
     "gaps": [
-      "No product description, ICP, or business-model detail exists in the source data beyond company name/category/offices/product list - business track sessions 3-6 (market, business model, metrics, roadmap) are topic-only placeholders per the demo assumption and must be validated against the real LMS before production use.",
-      "The Figma system entry (due Day 3) appears in the systems catalog but has no clear relevance to a Senior Backend Engineer role - included for completeness but flagged for manual review; if it should not apply to this role, remove it.",
-      "No specific named individual was available in context for the 'partner team building on AI Platform services' interface meeting - scheduled generically as an interface_contact and will need a real name confirmed with the manager.",
-      "No professional mentor is present in context for this employee (pipeline only populates this via manager intake) - not scheduled; manager should add this relationship during the edit step if one exists."
+      "Company overview data has no product description, ICP, or business-model detail beyond name/category/offices - business track sessions 1 and 2 are grounded in real data, but sessions 3-6 (market/customers, business model, metrics, roadmap) describe topics only, without invented facts, per the demo assumption.",
+      "No professional mentor is recorded for this employee (only ever populated via manager intake) - not scheduled or invented; flagging for manual follow-up if one should be assigned.",
+      "Cross-functional partner introductions were scheduled as a single flexible meeting since context did not name specific individuals/teams beyond the products list - manager should confirm specific counterparts to invite."
     ]
   },
   "content": {
@@ -832,102 +842,113 @@
         "items": [
           {
             "id": "w1-i0",
-            "track": "team_interfaces",
-            "shortLine": "Meet Lior, your buddy + office tour",
-            "detailText": "Lior Biton is your go-to person for the everyday questions, and they'll walk you through the Tel Aviv office so you know your way around from day one.",
-            "facilitatorDisplayName": "Lior Biton (your buddy)",
-            "dayHint": "Day 1",
-            "emailContext": "I'll be your Human Buddy while you're getting settled, so no question is too small. Want to grab time on Day 1 for a quick office tour and a chance to say hi?",
-            "completed": false,
-            "completedAt": null
-          },
-          {
-            "id": "w1-i1",
-            "track": "team_interfaces",
-            "shortLine": "Meet Shira, walk through your plan",
-            "detailText": "Sit down with Shira Barnea, your manager, to meet properly and walk through what the next eight weeks actually look like.",
-            "facilitatorDisplayName": "Shira Barnea (your manager)",
-            "dayHint": "Day 1",
-            "completed": false,
-            "completedAt": null
-          },
-          {
-            "id": "w1-i2",
-            "track": "team_interfaces",
-            "shortLine": "Meet the AI Platform team",
-            "detailText": "Get to know the twelve engineers you'll be building alongside day to day, so early collaboration and code review feel familiar rather than cold.",
-            "facilitatorDisplayName": "AI Platform team",
-            "dayHint": "Day 1",
-            "completed": false,
-            "completedAt": null
-          },
-          {
-            "id": "w1-i3",
-            "track": "business",
-            "shortLine": "Company overview: vision, values, offices",
-            "detailText": "A self-paced look at Veridian's vision, values, and its offices in Tel Aviv, London, and Austin.",
-            "facilitatorDisplayName": "Self-guided",
-            "dayHint": "Week 1",
-            "completed": false,
-            "completedAt": null
-          },
-          {
-            "id": "w1-i4",
-            "track": "systems_access",
-            "shortLine": "Slack access ready",
-            "detailText": "Slack is set up for you by Day 1. It's how you'll talk day to day with the AI Platform team and cross-functional channels.",
-            "facilitatorDisplayName": "IT Operations",
-            "dayHint": "Day 1",
-            "completed": false,
-            "completedAt": null
-          },
-          {
-            "id": "w1-i5",
-            "track": "systems_access",
-            "shortLine": "Notion access ready",
-            "detailText": "Notion is set up for you by Day 1, for reading team documentation, architecture notes, and the company knowledge base.",
-            "facilitatorDisplayName": "People Operations",
-            "dayHint": "Day 1",
-            "completed": false,
-            "completedAt": null
-          },
-          {
-            "id": "w1-i6",
-            "track": "systems_access",
-            "shortLine": "HiBob access ready",
-            "detailText": "HiBob is set up for you by Day 1. It holds your employee profile, time off requests, and the org chart.",
-            "facilitatorDisplayName": "People Operations",
-            "dayHint": "Day 1",
-            "completed": false,
-            "completedAt": null
-          },
-          {
-            "id": "w1-i7",
             "track": "systems_access",
             "shortLine": "Google Workspace ready before Day 1",
-            "detailText": "Your email, calendar, and shared drives are already set up, ready for you before your first day.",
+            "detailText": "Your email, calendar, and shared drive access is provisioned ahead of your start, so you're set for day-to-day communication from the moment you log in.",
             "facilitatorDisplayName": "IT Operations",
             "dayHint": "Before Day 1",
             "completed": false,
             "completedAt": null
           },
           {
-            "id": "w1-i8",
+            "id": "w1-i1",
             "track": "systems_access",
-            "shortLine": "Jira access by Day 2",
-            "detailText": "Jira access lands Day 2. You'll use it to track your sprint work and the AI Platform team's roadmap execution.",
+            "shortLine": "Slack access",
+            "detailText": "You'll get access to Slack for internal communication and to join the AI Platform team's channels.",
+            "facilitatorDisplayName": "IT Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i2",
+            "track": "systems_access",
+            "shortLine": "Notion access",
+            "detailText": "Notion holds the company knowledge base and handbooks, and it's a key reference for AI Platform's architecture docs.",
+            "facilitatorDisplayName": "People Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i3",
+            "track": "systems_access",
+            "shortLine": "HiBob access",
+            "detailText": "HiBob is where you'll find your employee profile, submit time off, and browse the org chart.",
+            "facilitatorDisplayName": "People Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i4",
+            "track": "systems_access",
+            "shortLine": "Jira access",
+            "detailText": "You'll get Jira access for tracking AI Platform's sprint work and roadmap execution once your workstreams are assigned.",
             "facilitatorDisplayName": "Engineering Operations",
             "dayHint": "Day 2",
             "completed": false,
             "completedAt": null
           },
           {
-            "id": "w1-i9",
+            "id": "w1-i5",
             "track": "systems_access",
-            "shortLine": "GitHub access by Day 3",
-            "detailText": "GitHub access lands Day 3, for opening pull requests and reviewing code across AI Platform's services.",
+            "shortLine": "GitHub access",
+            "detailText": "GitHub gives you source control and code review access for the connectors, indexing, and agent infrastructure you'll be building.",
             "facilitatorDisplayName": "Engineering",
             "dayHint": "Day 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i6",
+            "track": "systems_access",
+            "shortLine": "Figma access",
+            "detailText": "Figma access lets you review product design and prototypes from teams building on top of AI Platform's infrastructure.",
+            "facilitatorDisplayName": "Design",
+            "dayHint": "Day 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i7",
+            "track": "team_interfaces",
+            "shortLine": "Meet Lior, your buddy + office tour",
+            "detailText": "Lior is your go-to person for the everyday questions, and they'll show you around the Tel Aviv office in person.",
+            "facilitatorDisplayName": "Lior Biton (your buddy)",
+            "dayHint": "Day 1",
+            "emailContext": "I'm your buddy for onboarding, happy to grab 30 minutes to answer any early questions and show you around the office.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i8",
+            "track": "team_interfaces",
+            "shortLine": "Intro and plan walkthrough with Shira",
+            "detailText": "Sit down with Shira to get introduced properly and walk through your onboarding plan together for the weeks ahead.",
+            "facilitatorDisplayName": "Shira Barnea (your manager)",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i9",
+            "track": "team_interfaces",
+            "shortLine": "Meet your AI Platform team",
+            "detailText": "Get to know the engineers you'll be working alongside daily, so collaboration and code reviews start smoothly.",
+            "facilitatorDisplayName": "AI Platform team",
+            "dayHint": "Week 1",
+            "emailContext": "Looking forward to meeting you, I'd love to hear a bit about what you're working on and how our workstreams connect.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i10",
+            "track": "business",
+            "shortLine": "Veridian overview: vision, values, departments",
+            "detailText": "A self-guided walkthrough of Veridian's vision, values, departments, and offices, to give you the lay of the land.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 1",
             "completed": false,
             "completedAt": null
           }
@@ -938,60 +959,60 @@
         "items": [
           {
             "id": "w2-i0",
-            "track": "team_interfaces",
-            "shortLine": "Team mission, metrics, and workflow",
-            "detailText": "Shira will give you the full picture: team goals, key processes, and where documentation and reporting actually live.",
-            "facilitatorDisplayName": "Shira Barnea (your manager)",
-            "dayHint": "Week 2",
-            "completed": false,
-            "completedAt": null
-          },
-          {
-            "id": "w2-i1",
             "track": "compliance",
             "shortLine": "Security Awareness training",
-            "detailText": "A 45-minute training covering the basics of keeping company data and systems secure. Due by Day 7.",
+            "detailText": "A required 45-minute training covering the basics of keeping company data and systems secure.",
             "facilitatorDisplayName": "Security Engineering",
             "dayHint": "By Day 7",
             "completed": false,
             "completedAt": null
           },
           {
-            "id": "w2-i2",
+            "id": "w2-i1",
             "track": "compliance",
             "shortLine": "Code of Conduct training",
-            "detailText": "A short, 30-minute rundown of Veridian's expectations for conduct at work. Due by Day 7.",
+            "detailText": "A short, required training on Veridian's Code of Conduct.",
             "facilitatorDisplayName": "People Operations",
             "dayHint": "By Day 7",
             "completed": false,
             "completedAt": null
           },
           {
+            "id": "w2-i2",
+            "track": "role",
+            "shortLine": "Learn AI Platform's architecture and data flows",
+            "detailText": "Study how connectors, indexing, and agents fit together across the platform, the foundation for leading workstreams and making sound architectural calls.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          },
+          {
             "id": "w2-i3",
             "track": "role",
-            "shortLine": "GitHub & Code Review Standards",
-            "detailText": "A one-time, 60-minute training on how code review actually works here, including the one-reviewer-plus-CI rule before anything merges.",
-            "facilitatorDisplayName": "Engineering Operations",
-            "dayHint": "By Day 14",
+            "shortLine": "Governance and security constraints training",
+            "detailText": "Learn the governance and security boundaries that shape how AI Platform handles data, essential before your changes touch shared infrastructure.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 2",
             "completed": false,
             "completedAt": null
           },
           {
             "id": "w2-i4",
-            "track": "business",
-            "shortLine": "Product deep dive: Hub, Assistant, Agents, Governance",
-            "detailText": "Your backend work directly powers Knowledge Hub, AI Assistant, and Agents, so this goes deeper than a surface tour: how each product area works and what it depends on underneath.",
-            "facilitatorDisplayName": "Self-guided",
+            "track": "team_interfaces",
+            "shortLine": "Team deep-dive with Shira",
+            "detailText": "A closer look at the team with Shira, how the group works, current priorities, and where you'll fit in.",
+            "facilitatorDisplayName": "Shira Barnea (your manager)",
             "dayHint": "Week 2",
             "completed": false,
             "completedAt": null
           },
           {
             "id": "w2-i5",
-            "track": "role",
-            "shortLine": "Map the AI Platform's architecture",
-            "detailText": "A real map of the systems you'll be extending: how they're built, and which product areas (Assistant, Agents, Governance) rely on them downstream.",
-            "facilitatorDisplayName": "Self-guided",
+            "track": "business",
+            "shortLine": "Veridian's products overview",
+            "detailText": "Learn how Knowledge Hub, AI Assistant, AI Agents, and Governance work together, and how your backend work underpins all of them.",
+            "facilitatorDisplayName": "Self-guided training",
             "dayHint": "Week 2",
             "completed": false,
             "completedAt": null
@@ -1003,60 +1024,61 @@
         "items": [
           {
             "id": "w3-i0",
-            "track": "direct_manager_checkin",
-            "shortLine": "Weekly check-in with Shira",
-            "detailText": "Catch up on how the first sprints are landing and flag anything that's blocking early progress.",
-            "facilitatorDisplayName": "Shira Barnea (your manager)",
-            "dayHint": "Week 3",
-            "completed": false,
-            "completedAt": null
-          },
-          {
-            "id": "w3-i1",
-            "track": "business",
-            "shortLine": "Market and customers overview",
-            "detailText": "A self-paced look at who Veridian serves and where the company fits in the market.",
-            "facilitatorDisplayName": "Self-guided",
-            "dayHint": "Week 3",
-            "completed": false,
-            "completedAt": null
-          },
-          {
-            "id": "w3-i2",
             "track": "compliance",
-            "shortLine": "Data Privacy & GDPR Basics",
-            "detailText": "A 40-minute training on data privacy fundamentals and GDPR basics. Due by Day 14.",
+            "shortLine": "Data Privacy & GDPR Basics training",
+            "detailText": "A required training covering the fundamentals of data privacy and GDPR.",
             "facilitatorDisplayName": "Legal & Compliance",
             "dayHint": "By Day 14",
             "completed": false,
             "completedAt": null
           },
           {
-            "id": "w3-i3",
+            "id": "w3-i1",
             "track": "role",
-            "shortLine": "Secure Development training",
-            "detailText": "A 90-minute training on writing secure code, required for Engineering. Due by Day 21.",
-            "facilitatorDisplayName": "Security Engineering",
-            "dayHint": "By Day 21",
+            "shortLine": "GitHub & Code Review Standards training",
+            "detailText": "Learn Engineering's code review standards and how GitHub workflows run on the team.",
+            "facilitatorDisplayName": "Engineering Operations",
+            "dayHint": "By Day 14",
             "completed": false,
             "completedAt": null
           },
           {
-            "id": "w3-i4",
+            "id": "w3-i2",
             "track": "role",
-            "shortLine": "Governance and security constraints",
-            "detailText": "Veridian runs a dedicated Governance product for permissions, audit, and compliance, and security posture is a real departmental measure. Get familiar with the constraints your backend work operates inside.",
+            "shortLine": "Review the codebase and current workstreams",
+            "detailText": "Get hands-on with AI Platform's codebase and its current workstreams, the concrete grounding you'll need before taking ownership of one.",
             "facilitatorDisplayName": "Self-guided",
             "dayHint": "Week 3",
             "completed": false,
             "completedAt": null
           },
           {
-            "id": "w3-i5",
+            "id": "w3-i3",
+            "track": "role",
+            "shortLine": "Shadow a senior teammate on a live workstream",
+            "detailText": "Pair with a senior teammate to see how they navigate the platform's architecture and review norms on an active workstream.",
+            "facilitatorDisplayName": "AI Platform team",
+            "dayHint": "Week 3",
+            "emailContext": "Would love to shadow you on your current workstream this week, mostly to see how you navigate the architecture and review process day to day.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i4",
             "track": "team_interfaces",
-            "shortLine": "Meet a partner team building on AI Platform",
-            "detailText": "See how a team consuming your services actually uses them day to day, so you can see the downstream impact of platform decisions firsthand.",
-            "facilitatorDisplayName": "To be assigned",
+            "shortLine": "Weekly check-in with Shira",
+            "detailText": "Your regular sync with Shira to keep things on track.",
+            "facilitatorDisplayName": "Shira Barnea (your manager)",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i5",
+            "track": "business",
+            "shortLine": "Veridian's market and customers",
+            "detailText": "A look at Veridian's market and the customers it serves.",
+            "facilitatorDisplayName": "Self-guided training",
             "dayHint": "Week 3",
             "completed": false,
             "completedAt": null
@@ -1068,20 +1090,20 @@
         "items": [
           {
             "id": "w4-i0",
-            "track": "direct_manager_checkin",
-            "shortLine": "Weekly sync with Shira",
-            "detailText": "Walk through what's landed so far and set your focus for the coming weeks.",
-            "facilitatorDisplayName": "Shira Barnea (your manager)",
-            "dayHint": "Week 4",
+            "track": "role",
+            "shortLine": "Secure Development training",
+            "detailText": "A required training on secure development practices for engineering work.",
+            "facilitatorDisplayName": "Security Engineering",
+            "dayHint": "By Day 21",
             "completed": false,
             "completedAt": null
           },
           {
             "id": "w4-i1",
-            "track": "business",
-            "shortLine": "Business model overview",
-            "detailText": "A self-paced look at how Veridian creates and captures value as a company.",
-            "facilitatorDisplayName": "Self-guided",
+            "track": "team_interfaces",
+            "shortLine": "Meet cross-functional partners",
+            "detailText": "Understand how the teams building Knowledge Hub, AI Assistant, and Department Agents depend on the infrastructure you own.",
+            "facilitatorDisplayName": "Cross-functional partners",
             "dayHint": "Week 4",
             "completed": false,
             "completedAt": null
@@ -1089,8 +1111,8 @@
           {
             "id": "w4-i2",
             "track": "team_interfaces",
-            "shortLine": "Meet Engineering's vision and goals",
-            "detailText": "Shira will walk you through where Engineering is headed this year and how your work ladders up to it.",
+            "shortLine": "Engineering department: mission and goals",
+            "detailText": "Understand how Engineering's reliability and delivery goals connect to the work happening on your team.",
             "facilitatorDisplayName": "Shira Barnea (your manager)",
             "dayHint": "Week 4",
             "completed": false,
@@ -1099,20 +1121,19 @@
           {
             "id": "w4-i3",
             "track": "team_interfaces",
-            "shortLine": "Meet Tal from People Partners",
-            "detailText": "A direct line to HR for anything beyond day-to-day management topics, whenever you need it.",
-            "facilitatorDisplayName": "Tal Harari (HR Business Partner)",
+            "shortLine": "Weekly check-in: staying aligned on priorities",
+            "detailText": "Check in with Shira to make sure your priorities are still lined up with what matters most.",
+            "facilitatorDisplayName": "Shira Barnea (your manager)",
             "dayHint": "Week 4",
-            "emailContext": "I support People Partners for Engineering, and I'd love to be your direct line to HR for anything beyond the day-to-day. Do you have 30 minutes this week to say hi?",
             "completed": false,
             "completedAt": null
           },
           {
             "id": "w4-i4",
-            "track": "role",
-            "shortLine": "Shadow an on-call/incident cycle",
-            "detailText": "Reliability is one of Engineering's core measures. Shadowing a live on-call or incident-response cycle shows you how the team actually handles it, not just how it's documented.",
-            "facilitatorDisplayName": "Self-guided",
+            "track": "business",
+            "shortLine": "Veridian's business model",
+            "detailText": "An overview of how Veridian's business model works.",
+            "facilitatorDisplayName": "Self-guided training",
             "dayHint": "Week 4",
             "completed": false,
             "completedAt": null
@@ -1124,20 +1145,31 @@
         "items": [
           {
             "id": "w5-i0",
-            "track": "direct_manager_checkin",
-            "shortLine": "30-day check-in with Shira",
-            "detailText": "Look back at your first month against the original plan, name any gaps, and reset priorities together.",
+            "track": "team_interfaces",
+            "shortLine": "Check-in with Tal, your HRBP",
+            "detailText": "Connect with Tal, who can help with any people-related questions or concerns as you settle in.",
+            "facilitatorDisplayName": "Tal Harari (your HRBP)",
+            "dayHint": "Week 5",
+            "emailContext": "I'm your HRBP, happy to grab some time to check in on how the first month has felt and answer any people-related questions.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w5-i1",
+            "track": "team_interfaces",
+            "shortLine": "30-day review with Shira",
+            "detailText": "Look back on your first month against the original plan with Shira, flag any gaps, and adjust priorities together going forward.",
             "facilitatorDisplayName": "Shira Barnea (your manager)",
             "dayHint": "Around Day 30",
             "completed": false,
             "completedAt": null
           },
           {
-            "id": "w5-i1",
+            "id": "w5-i2",
             "track": "business",
-            "shortLine": "Key success metrics overview",
-            "detailText": "A self-paced look at how Veridian measures progress company-wide.",
-            "facilitatorDisplayName": "Self-guided",
+            "shortLine": "Key success metrics at Veridian",
+            "detailText": "Learn how success is measured at Veridian across the company.",
+            "facilitatorDisplayName": "Self-guided training",
             "dayHint": "Week 5",
             "completed": false,
             "completedAt": null
@@ -1149,9 +1181,9 @@
         "items": [
           {
             "id": "w6-i0",
-            "track": "direct_manager_checkin",
-            "shortLine": "Weekly check-in with Shira",
-            "detailText": "Review how ownership of your current workstream is progressing and unblock anything that's stuck.",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in: mid-onboarding sync",
+            "detailText": "A mid-onboarding sync with Shira to see how things are going and what's next.",
             "facilitatorDisplayName": "Shira Barnea (your manager)",
             "dayHint": "Week 6",
             "completed": false,
@@ -1160,19 +1192,9 @@
           {
             "id": "w6-i1",
             "track": "business",
-            "shortLine": "Strategic direction and Department Agents",
-            "detailText": "Veridian's near-term roadmap, with extra focus on Department Agents. Beta-stage agents mean this roadmap materially shapes near-term architecture decisions on your side.",
-            "facilitatorDisplayName": "Self-guided",
-            "dayHint": "Week 6",
-            "completed": false,
-            "completedAt": null
-          },
-          {
-            "id": "w6-i2",
-            "track": "role",
-            "shortLine": "Own a real workstream, senior scope",
-            "detailText": "Take independent ownership of a real workstream with senior-level scope, making the architectural calls yourself rather than working from someone else's spec.",
-            "facilitatorDisplayName": "Self-guided",
+            "shortLine": "Veridian's strategic direction and roadmap",
+            "detailText": "Learn Veridian's near-term roadmap, including AI Agents' path to GA, since it's still in Beta and will shape the architectural decisions ahead of you.",
+            "facilitatorDisplayName": "Self-guided training",
             "dayHint": "Week 6",
             "completed": false,
             "completedAt": null
@@ -1184,9 +1206,9 @@
         "items": [
           {
             "id": "w7-i0",
-            "track": "direct_manager_checkin",
-            "shortLine": "Weekly check-in with Shira",
-            "detailText": "Talk through what's working well and where you'd like more support heading into the final stretch.",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in: progress check",
+            "detailText": "A progress check with Shira on how things are going heading into your two-month mark.",
             "facilitatorDisplayName": "Shira Barnea (your manager)",
             "dayHint": "Week 7",
             "completed": false,
@@ -1199,9 +1221,9 @@
         "items": [
           {
             "id": "w8-i0",
-            "track": "direct_manager_checkin",
-            "shortLine": "Weekly check-in with Shira",
-            "detailText": "Wrap up the onboarding period and agree what ongoing ownership looks like from here. Good luck!",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in: wrapping up eight weeks",
+            "detailText": "Wrap up your first eight weeks with Shira, look at how onboarding went, and set your focus going forward.",
             "facilitatorDisplayName": "Shira Barnea (your manager)",
             "dayHint": "Week 8",
             "completed": false,
@@ -1211,35 +1233,36 @@
       }
     ],
     "internalGaps": [
-      "Business track sessions on market, business model, metrics, and roadmap are topic-only placeholders - no product description, ICP, or business-model detail exists in source data beyond company name/category/offices/product list. Validate against the real LMS before production use.",
-      "Figma system entry (due Day 3) appears in the systems catalog but has no clear relevance to a Senior Backend Engineer role. Flagged for manual review; remove if not applicable."
+      "Company overview data has no product description, ICP, or business-model detail beyond name/category/offices - business track sessions on market/customers, business model, metrics, and roadmap describe topics only, without invented facts.",
+      "No professional mentor is recorded for this employee, and none is populated automatically without manager intake - flagging for manual follow-up on whether one should be assigned.",
+      "Cross-functional partner introduction was scheduled as a single flexible meeting since context did not name specific individuals or teams beyond the products list - manager should confirm specific counterparts to invite."
     ]
   },
   "gatekeeperIssues": [
     {
-      "itemId": "w1-i2",
-      "ruleViolated": "Content Writer voice rule 4 (never explain 'why this way and not another way')",
-      "explanation": "\"so early collaboration and code review feel familiar rather than cold\" explicitly names the alternative outcome being avoided ('rather than cold'), the same pattern as the flagged 'rather than waiting weeks' example in memory §1 rule 4.",
+      "itemId": "w1-i0",
+      "ruleViolated": "memory §1 rule 3 - detailText must stay meaningfully fuller than shortLine",
+      "explanation": "shortLine is \"Google Workspace ready before Day 1\" and detailText \"Your email, calendar, and shared drive access is provisioned ahead of your start, so you're set for day-to-day communication from the moment you log in\" - this is borderline but does add who/what/why (email, calendar, shared drive; ready for communication), so on reflection it passes the fuller-content bar. Not flagged as a real issue; see next item for the actual thin one.",
+      "severity": "minor"
+    },
+    {
+      "itemId": "w3-i5",
+      "ruleViolated": "memory §1 rule 3 - detailText must stay meaningfully fuller than shortLine",
+      "explanation": "shortLine \"Veridian's market and customers\" and detailText \"A look at Veridian's market and the customers it serves\" are nearly identical restatements - detailText adds no new who/why/what-happens information beyond the shortLine, matching the 'Thin (fails)' pattern in memory's rule 3 example.",
       "severity": "minor"
     },
     {
       "itemId": "w4-i4",
-      "ruleViolated": "Content Writer voice rule 4 (never explain 'why this way and not another way')",
-      "explanation": "\"shows you how the team actually handles it, not just how it's documented\" names the alternative format being avoided (documentation vs. shadowing), matching the pattern memory §1 calls out as a leak of internal reasoning about format/sequencing choices.",
+      "ruleViolated": "memory §1 rule 3 - detailText must stay meaningfully fuller than shortLine",
+      "explanation": "shortLine \"Veridian's business model\" and detailText \"An overview of how Veridian's business model works\" simply restate the shortLine with a few extra words, without adding who/why/what-happens detail as required by rule 3.",
       "severity": "minor"
     },
     {
-      "itemId": "w6-i2",
-      "ruleViolated": "Content Writer voice rule 4 (never explain 'why this way and not another way')",
-      "explanation": "\"making the architectural calls yourself rather than working from someone else's spec\" explicitly contrasts the chosen approach against the alternative it avoided, the same shape as the 'rather than waiting weeks' bad example in memory §1.",
-      "severity": "minor"
-    },
-    {
-      "itemId": "internalGaps",
-      "ruleViolated": "Gap classification (memory §3): 'Two different kinds of gaps, two different destinations'",
-      "explanation": "The Figma entry gap ('appears in the systems catalog but has no clear relevance to a Senior Backend Engineer role... remove if not applicable') is a data/system-limitation gap (type 2) correctly filed in internalGaps, not employee-facing - however, this is worth verifying it isn't also silently present in weeks[] as a scheduled Figma item; no Figma item appears in weeks[], so this is correctly classified. No violation found here on inspection.",
+      "itemId": "w2-i1",
+      "ruleViolated": "memory §1 rule 3 - detailText must stay meaningfully fuller than shortLine",
+      "explanation": "shortLine \"Code of Conduct training\" and detailText \"A short, required training on Veridian's Code of Conduct\" add almost nothing beyond the shortLine - no who, why, or what happens is conveyed.",
       "severity": "minor"
     }
   ],
-  "createdAt": "2026-08-18T17:56:31.045Z"
+  "createdAt": "2026-08-19T12:17:24.629Z"
 }

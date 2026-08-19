@@ -1,0 +1,1615 @@
+{
+  "status": "draft",
+  "employeeId": "VRD-1054",
+  "planId": 12,
+  "context": {
+    "company": {
+      "company_name": "Veridian",
+      "category": "B2B SaaS — Governed Enterprise AI Platform",
+      "employee_count": 185,
+      "offices": "Tel Aviv HQ, London, Austin",
+      "as_of_date": "2026-08-11",
+      "purpose": "Synthetic but realistic dataset for onboarding AI Buddy demo"
+    },
+    "employee": {
+      "employee_id": "VRD-1054",
+      "full_name": "Eitan Mor",
+      "email": "eitan.mor@veridian.ai",
+      "job_title": "Engineering Manager",
+      "department": "Engineering",
+      "team": "Connectors",
+      "location": "Tel Aviv",
+      "country": "Israel",
+      "time_zone": "Asia/Jerusalem",
+      "seniority": "Manager",
+      "track": "Manager",
+      "job_level": "M2",
+      "employment_type": "Full-time",
+      "hire_date": "2023-10-26",
+      "onboarding_cohort": null
+    },
+    "department": {
+      "department": "Engineering",
+      "headcount": 70,
+      "owner_email": "daniel.rosen@veridian.ai",
+      "primary_location": "Tel Aviv",
+      "mission": "Build secure, reliable and scalable enterprise AI infrastructure",
+      "primary_kpis": "Reliability, deployment frequency, roadmap delivery, security posture"
+    },
+    "team": {
+      "team_id": "ENG-CON",
+      "department": "Engineering",
+      "org_group": "Product Engineering",
+      "team": "Connectors",
+      "mission": "Owns connectors capabilities for the Veridian platform",
+      "headcount": 12,
+      "manager_email": "eitan.mor@veridian.ai",
+      "primary_office": "Tel Aviv",
+      "core_tools": "Jira, GitHub, Slack, Notion",
+      "status": "Active",
+      "hasExecutiveMember": false
+    },
+    "office": {
+      "office_id": "OFF-TLV",
+      "city": "Tel Aviv",
+      "country": "Israel",
+      "time_zone": "Asia/Jerusalem",
+      "headcount": 95,
+      "main_functions": "Executive, Engineering, Product, People, Finance",
+      "work_model": "Hybrid - 3 office days/week",
+      "notes": "Company HQ"
+    },
+    "people": {
+      "manager": {
+        "employee_id": "VRD-1040",
+        "full_name": "Tamar Navon",
+        "email": "tamar.navon@veridian.ai",
+        "job_title": "Director Product Engineering",
+        "department": "Engineering",
+        "team": "Engineering Leadership"
+      },
+      "skipManager": {
+        "employee_id": "VRD-1037",
+        "full_name": "Amit Cohen",
+        "email": "amit.cohen@veridian.ai",
+        "job_title": "VP Engineering",
+        "department": "Engineering",
+        "team": "Engineering Leadership"
+      },
+      "executive": {
+        "employee_id": "VRD-1006",
+        "full_name": "Daniel Rosen",
+        "email": "daniel.rosen@veridian.ai",
+        "job_title": "CTO",
+        "department": "Executive",
+        "team": "Executive Leadership"
+      },
+      "hrbp": {
+        "employee_id": "VRD-1171",
+        "full_name": "Tal Harari",
+        "email": "tal.harari@veridian.ai",
+        "job_title": "Senior HR Business Partner",
+        "department": "People",
+        "team": "People Partners"
+      },
+      "humanBuddy": null,
+      "directReports": [
+        {
+          "employee_id": "VRD-1055",
+          "full_name": "Emily Morris",
+          "email": "emily.morris@veridian.ai",
+          "job_title": "Senior Integration Engineer",
+          "department": "Engineering",
+          "team": "Connectors"
+        },
+        {
+          "employee_id": "VRD-1056",
+          "full_name": "Gili Harari",
+          "email": "gili.harari@veridian.ai",
+          "job_title": "Senior Integration Engineer",
+          "department": "Engineering",
+          "team": "Connectors"
+        },
+        {
+          "employee_id": "VRD-1057",
+          "full_name": "Lior Peretz",
+          "email": "lior.peretz@veridian.ai",
+          "job_title": "Senior Integration Engineer",
+          "department": "Engineering",
+          "team": "Connectors"
+        },
+        {
+          "employee_id": "VRD-1058",
+          "full_name": "Miguel Thomas",
+          "email": "miguel.thomas@veridian.ai",
+          "job_title": "Senior Integration Engineer",
+          "department": "Engineering",
+          "team": "Connectors"
+        },
+        {
+          "employee_id": "VRD-1059",
+          "full_name": "Roni Levin",
+          "email": "roni.levin@veridian.ai",
+          "job_title": "Senior Integration Engineer",
+          "department": "Engineering",
+          "team": "Connectors"
+        },
+        {
+          "employee_id": "VRD-1060",
+          "full_name": "Yoni Shor",
+          "email": "yoni.shor@veridian.ai",
+          "job_title": "Senior Integration Engineer",
+          "department": "Engineering",
+          "team": "Connectors"
+        },
+        {
+          "employee_id": "VRD-1061",
+          "full_name": "Eli Sasson",
+          "email": "eli.sasson@veridian.ai",
+          "job_title": "Integration Engineer",
+          "department": "Engineering",
+          "team": "Connectors"
+        },
+        {
+          "employee_id": "VRD-1062",
+          "full_name": "Elliot Carter",
+          "email": "elliot.carter@veridian.ai",
+          "job_title": "Integration Engineer",
+          "department": "Engineering",
+          "team": "Connectors"
+        },
+        {
+          "employee_id": "VRD-1063",
+          "full_name": "Rachel Clarke",
+          "email": "rachel.clarke@veridian.ai",
+          "job_title": "Integration Engineer",
+          "department": "Engineering",
+          "team": "Connectors"
+        },
+        {
+          "employee_id": "VRD-1064",
+          "full_name": "Sofia White",
+          "email": "sofia.white@veridian.ai",
+          "job_title": "Integration Engineer",
+          "department": "Engineering",
+          "team": "Connectors"
+        },
+        {
+          "employee_id": "VRD-1065",
+          "full_name": "Yair Shani",
+          "email": "yair.shani@veridian.ai",
+          "job_title": "Integration Engineer",
+          "department": "Engineering",
+          "team": "Connectors"
+        }
+      ],
+      "peopleSupported": []
+    },
+    "role": {
+      "role_id": "ROLE-007",
+      "job_family": "Engineering",
+      "title": "Engineering Manager",
+      "track": "Manager",
+      "typical_level_range": "M2-M3",
+      "core_collaboration": "Cross-functional partners, manager, immediate team",
+      "mandatory_role_training": "See Training Catalog",
+      "purpose": null,
+      "responsibilities": null,
+      "data_boundary_notes": null
+    },
+    "roleMatch": {
+      "method": "exact",
+      "searchedTitle": "Engineering Manager",
+      "strippedPrefix": null
+    },
+    "careerLevel": {
+      "track": "Manager",
+      "level": "M2",
+      "label": "Manager",
+      "scope": "Manages a team and owns delivery, coaching and operating rhythm",
+      "typical_titles": "Engineering Manager, Sales Manager, CS Manager"
+    },
+    "systems": [
+      {
+        "system": "Slack",
+        "owner": "IT Operations",
+        "purpose": "Internal communication and team channels",
+        "access_method": "Provisioned via Okta",
+        "due": {
+          "raw": "Day 1",
+          "days": 1,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Notion",
+        "owner": "People Operations",
+        "purpose": "Company knowledge base and handbooks",
+        "access_method": "Provisioned via Okta",
+        "due": {
+          "raw": "Day 1",
+          "days": 1,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Jira",
+        "owner": "Engineering Operations",
+        "purpose": "Roadmap execution and sprint tracking",
+        "access_method": "Manager approval through IT ticket",
+        "due": {
+          "raw": "Day 2",
+          "days": 2,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "GitHub",
+        "owner": "Engineering",
+        "purpose": "Source control and code review",
+        "access_method": "Manager approval + Security training",
+        "due": {
+          "raw": "Day 3",
+          "days": 3,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "HiBob",
+        "owner": "People Operations",
+        "purpose": "HRIS, employee profile, time off and org chart",
+        "access_method": "Provisioned via Okta",
+        "due": {
+          "raw": "Day 1",
+          "days": 1,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Google Workspace",
+        "owner": "IT Operations",
+        "purpose": "Email, calendar, shared drive and Meet",
+        "access_method": "Provisioned pre-start",
+        "due": {
+          "raw": "Before Day 1",
+          "days": 0,
+          "isPreboarding": true,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Figma",
+        "owner": "Design",
+        "purpose": "Product design and prototypes",
+        "access_method": "Manager approval",
+        "due": {
+          "raw": "Day 3",
+          "days": 3,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      }
+    ],
+    "trainings": [
+      {
+        "training_id": "TRN-001",
+        "training": "Security Awareness",
+        "mandatory": "Yes",
+        "owner": "Security Engineering",
+        "duration": "45 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 7",
+          "days": 7,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "All employees"
+      },
+      {
+        "training_id": "TRN-002",
+        "training": "Data Privacy & GDPR Basics",
+        "mandatory": "Yes",
+        "owner": "Legal & Compliance",
+        "duration": "40 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 14",
+          "days": 14,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "All employees"
+      },
+      {
+        "training_id": "TRN-003",
+        "training": "Code of Conduct",
+        "mandatory": "Yes",
+        "owner": "People Operations",
+        "duration": "30 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 7",
+          "days": 7,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "All employees"
+      },
+      {
+        "training_id": "TRN-004",
+        "training": "Secure Development",
+        "mandatory": "Yes",
+        "owner": "Security Engineering",
+        "duration": "90 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 21",
+          "days": 21,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "Engineering"
+      },
+      {
+        "training_id": "TRN-005",
+        "training": "GitHub & Code Review Standards",
+        "mandatory": "Yes",
+        "owner": "Engineering Operations",
+        "duration": "60 min",
+        "renewal": "One-time",
+        "due": {
+          "raw": "Day 14",
+          "days": 14,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "Engineering"
+      },
+      {
+        "training_id": "TRN-008",
+        "training": "Manager Essentials",
+        "mandatory": "Yes",
+        "owner": "Learning & Development",
+        "duration": "3 hours",
+        "renewal": "One-time",
+        "due": {
+          "raw": "Day 45",
+          "days": 45,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "People managers"
+      }
+    ],
+    "policies": [
+      {
+        "policy_id": "POL-001",
+        "policy": "Hybrid Work Policy",
+        "summary": "Employees work from the office three days per week unless a role-specific exception is approved.",
+        "source": "Employee Handbook"
+      },
+      {
+        "policy_id": "POL-002",
+        "policy": "Information Security Policy",
+        "summary": "Company data may only be accessed through approved devices, systems and role-based permissions.",
+        "source": "Security Basics"
+      },
+      {
+        "policy_id": "POL-003",
+        "policy": "Code Review Policy",
+        "summary": "Every pull request requires at least one reviewer approval and successful CI before merge.",
+        "source": "Engineering Handbook"
+      },
+      {
+        "policy_id": "POL-004",
+        "policy": "Production Deployment Policy",
+        "summary": "Standard production deployments happen Monday through Thursday; Friday deployments require Director approval.",
+        "source": "Engineering Handbook"
+      },
+      {
+        "policy_id": "POL-005",
+        "policy": "Expense Policy",
+        "summary": "Business expenses must be submitted with receipts by the fifth business day of the following month.",
+        "source": "Employee Handbook"
+      },
+      {
+        "policy_id": "POL-006",
+        "policy": "Customer Data Handling",
+        "summary": "Customer data must not be copied into unapproved tools or shared outside approved customer workspaces.",
+        "source": "Security Basics"
+      }
+    ],
+    "products": [
+      {
+        "product_area": "Knowledge Hub",
+        "module": "Connectors & Indexing",
+        "description": "Connects approved enterprise knowledge sources and indexes content for retrieval.",
+        "primary_users": "IT admins, knowledge owners, employees",
+        "lifecycle_stage": "GA"
+      },
+      {
+        "product_area": "AI Assistant",
+        "module": "Employee Assistant",
+        "description": "Conversational assistant that answers employee questions using governed company knowledge.",
+        "primary_users": "Employees, managers",
+        "lifecycle_stage": "GA"
+      },
+      {
+        "product_area": "AI Agents",
+        "module": "Department Agents",
+        "description": "Configurable agents for workflows such as HR, IT, finance and procurement.",
+        "primary_users": "Business function owners",
+        "lifecycle_stage": "Beta"
+      },
+      {
+        "product_area": "Governance",
+        "module": "Permissions & Audit",
+        "description": "Manages role-based access, audit logs, policies and compliance controls.",
+        "primary_users": "Security, legal, IT admins",
+        "lifecycle_stage": "GA"
+      }
+    ],
+    "gaps": [
+      "company_overview only has basic summary fields (name, category, employee count, offices) - no product description, ICP, or business-model detail exists anywhere in the source data. The business track can name the company and its one-line category, but cannot go deeper without inventing content.",
+      "human_buddy_email is not set - Buddy has not been assigned yet for this hire (per framework part D §13, this is always a fresh per-hire decision from manager intake, not inherited)."
+    ],
+    "officeTourGuide": {
+      "employee_id": "VRD-1056",
+      "full_name": "Gili Harari",
+      "email": "gili.harari@veridian.ai",
+      "job_title": "Senior Integration Engineer",
+      "department": "Engineering",
+      "team": "Connectors",
+      "reason": "teammate"
+    },
+    "roleEssence": "This role owns delivery, coaching and operating rhythm for the Connectors team - 11 engineers building and maintaining the connectors and indexing capabilities that feed the Knowledge Hub. The job is fundamentally about the people on the team as much as the roadmap: running the operating cadence, coaching each engineer, and being accountable for reliable, on-time delivery of connector work that other product areas (Employee Assistant, Department Agents) depend on for governed data access. Expertise here means knowing each direct report well enough to coach them individually, while keeping the team's delivery and reliability KPIs on track.",
+    "onboardingNeeds": [
+      {
+        "title": "Meet each member of your team one-on-one",
+        "track": "role",
+        "purpose": "Get to know each engineer individually - their current work, strengths and what support they need from you as manager.",
+        "headcount": 11,
+        "rationale": "roleEssence defines this role as directly accountable for coaching and managing these 11 people - these 1:1s are the core hands-on work of the role, not an introduction adjacent to it."
+      },
+      {
+        "title": "Learn the team's current operating rhythm",
+        "track": "role",
+        "purpose": null,
+        "headcount": null,
+        "rationale": "roleEssence names 'operating rhythm' as something this role owns; before changing or running it, the manager needs to understand the standups, planning cadence and rituals already in place."
+      },
+      {
+        "title": "Review open connectors roadmap and in-flight delivery commitments",
+        "track": "role",
+        "purpose": null,
+        "headcount": null,
+        "rationale": "roleEssence ties this role to delivery accountability for connectors work that other product areas depend on - understanding current commitments is prerequisite to owning delivery."
+      },
+      {
+        "title": "Coaching and feedback frameworks for first-line engineering managers",
+        "track": "role",
+        "purpose": null,
+        "headcount": null,
+        "rationale": "Exists because of the 1:1 relationships above - prepares for effective coaching conversations rather than being the meetings themselves; should sit alongside or just before the 1:1s begin."
+      },
+      {
+        "title": "Meet your manager to align on team goals and expectations",
+        "track": "team_interfaces",
+        "purpose": "Align on what success looks like for the Connectors team and how you'll be supported as a new manager here.",
+        "headcount": null,
+        "rationale": "roleEssence notes accountability for delivery and reliability KPIs - understanding manager expectations early anchors how those are prioritized."
+      },
+      {
+        "title": "Meet peer Engineering Managers across Product Engineering",
+        "track": "team_interfaces",
+        "purpose": "Connect with fellow engineering managers to learn how teams coordinate on shared priorities and dependencies.",
+        "headcount": null,
+        "rationale": "roleEssence describes cross-team dependency (connectors feeding Employee Assistant and Department Agents) - peer managers are the natural coordination point for that, distinct from the direct-report relationship above."
+      },
+      {
+        "title": "Meet a partner from a team that depends on connectors output",
+        "track": "team_interfaces",
+        "purpose": "Understand how the Employee Assistant or Department Agents teams rely on connectors output day to day.",
+        "headcount": null,
+        "rationale": "roleEssence highlights that connectors work feeds other GA/beta product areas - seeing that dependency from the consumer side clarifies why reliability matters."
+      }
+    ],
+    "businessDepthNotes": [
+      {
+        "session": 2,
+        "reason": "Manages the team that directly builds Connectors & Indexing - needs deep product fluency there"
+      },
+      {
+        "session": 5,
+        "reason": "Owns reliability and delivery KPIs, so key metrics session grounds how the team's work is measured"
+      }
+    ]
+  },
+  "plan": {
+    "weeks": [
+      {
+        "weekNumber": 1,
+        "items": [
+          {
+            "track": "systems_access",
+            "title": "Google Workspace access",
+            "usageNote": "Email, calendar and shared drive access for day-to-day communication and scheduling with your team and stakeholders.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Slack access",
+            "usageNote": "Slack is where the Connectors team and the rest of Engineering coordinate day-to-day - channels, standup threads and quick questions.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Notion access",
+            "usageNote": "Company knowledge base and handbooks - useful for finding team docs, runbooks and onboarding material for Connectors.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "HiBob access",
+            "usageNote": "Your HRIS profile, time off requests and the org chart - also where you'll manage time-off approvals for your direct reports.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Jira access",
+            "usageNote": "Roadmap execution and sprint tracking for the Connectors team's delivery work.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "GitHub access",
+            "usageNote": "Source control and code review for the connectors and indexing codebase your team owns.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Figma access",
+            "usageNote": "Product design and prototypes - useful context when connectors work touches upstream product or UI decisions.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.2,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Office tour with Gili",
+            "purpose": "Get oriented in the Tel Aviv office and learn your way around before diving into the work.",
+            "facilitatorType": "team_member",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Intro meeting with Tamar Navon and onboarding plan walkthrough",
+            "purpose": "Meet your manager and walk through your onboarding plan so expectations are clear from day one.",
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Veridian overview: vision, values and offices",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Coaching and feedback frameworks for first-line engineering managers",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "1:1 with Emily Morris",
+            "purpose": "Get to know Emily's current work, strengths and what support she needs from you as manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "1:1 with Gili Harari",
+            "purpose": "Get to know Gili's current work, strengths and what support she needs from you as manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "1:1 with Lior Peretz",
+            "purpose": "Get to know Lior's current work, strengths and what support he needs from you as manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "1:1 with Miguel Thomas",
+            "purpose": "Get to know Miguel's current work, strengths and what support he needs from you as manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "1:1 with Roni Levin",
+            "purpose": "Get to know Roni's current work, strengths and what support they need from you as manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "1:1 with Yoni Shor",
+            "purpose": "Get to know Yoni's current work, strengths and what support he needs from you as manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 2,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Team mission, metrics and ways of working with Tamar",
+            "purpose": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "1:1 with Eli Sasson",
+            "purpose": "Get to know Eli's current work, strengths and what support he needs from you as manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "1:1 with Elliot Carter",
+            "purpose": "Get to know Elliot's current work, strengths and what support he needs from you as manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "1:1 with Rachel Clarke",
+            "purpose": "Get to know Rachel's current work, strengths and what support she needs from you as manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "1:1 with Sofia White",
+            "purpose": "Get to know Sofia's current work, strengths and what support she needs from you as manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "1:1 with Yair Shani",
+            "purpose": "Get to know Yair's current work, strengths and what support he needs from you as manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Meet peer Engineering Managers across Product Engineering",
+            "purpose": "Connect with fellow engineering managers to learn how teams coordinate on shared priorities and dependencies.",
+            "facilitatorType": "interface_contact",
+            "mandatoryTier": "flexible",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Knowledge Hub Connectors & Indexing deep dive, plus platform product tour",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Learn the team's current operating rhythm",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 3,
+        "items": [
+          {
+            "track": "direct_manager",
+            "title": "Weekly check-in with Tamar",
+            "purpose": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "compliance",
+            "title": "Security Awareness",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "compliance",
+            "title": "Code of Conduct",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Review open connectors roadmap and in-flight delivery commitments",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 1.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Meet a partner from Employee Assistant or Department Agents",
+            "purpose": "Understand how teams downstream rely on connectors output to see why reliability matters here.",
+            "facilitatorType": "interface_contact",
+            "mandatoryTier": "flexible",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Market and customers session",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 4,
+        "items": [
+          {
+            "track": "direct_manager",
+            "title": "Weekly sync with Tamar",
+            "purpose": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "compliance",
+            "title": "Data Privacy & GDPR Basics",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.67,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "GitHub & Code Review Standards",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Business model session",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Meet your department: Engineering vision and goals",
+            "purpose": "See how Connectors fits into Engineering's broader goals and this year's priorities.",
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Meeting with Tal Harari, your HRBP",
+            "purpose": "Connect with your HR business partner for ongoing support as you settle into managing your team.",
+            "facilitatorType": "hrbp",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 5,
+        "items": [
+          {
+            "track": "direct_manager",
+            "title": "Weekly check-in with Tamar - 30-day review",
+            "purpose": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Secure Development",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Key success metrics session: reliability, delivery and platform KPIs",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Meet peer Engineering Managers across Product Engineering",
+            "purpose": "Continue building relationships with peer managers who share dependencies and coordination points with Connectors.",
+            "facilitatorType": "interface_contact",
+            "mandatoryTier": "flexible",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": [
+              "Meet peer Engineering Managers across Product Engineering"
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 6,
+        "items": [
+          {
+            "track": "direct_manager",
+            "title": "Weekly check-in with Tamar",
+            "purpose": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Manager Essentials",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 3,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 7,
+        "items": [
+          {
+            "track": "direct_manager",
+            "title": "Weekly check-in: how's the team responding to you",
+            "purpose": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 8,
+        "items": [
+          {
+            "track": "direct_manager",
+            "title": "Weekly check-in: wrapping up the first two months",
+            "purpose": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Strategic direction and near-term roadmap",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": [
+              "Veridian overview: vision, values and offices",
+              "Knowledge Hub Connectors & Indexing deep dive, plus platform product tour",
+              "Market and customers session",
+              "Business model session",
+              "Key success metrics session: reliability, delivery and platform KPIs"
+            ]
+          }
+        ]
+      }
+    ],
+    "gaps": [
+      "No detailed product/ICP/business-model information exists in source data beyond company name, category, employee count and offices - business track sessions 3, 4 and 6 describe topics only, without invented specifics, per the demo assumption carve-out.",
+      "No Buddy has been assigned yet for this hire - office tour was scheduled with teammate Gili Harari instead, and a separate buddy-intro item could not be added since no buddy exists to introduce.",
+      "No professional mentor is on record for this employee - this is a manager-intake-only field with no other data source, so none was scheduled; should be added once assigned.",
+      "The onboarding need for meeting a partner from a downstream team (Employee Assistant or Department Agents) has no specific named contact in context - scheduled as a generic interface_contact item; manager should confirm the actual person."
+    ]
+  },
+  "content": {
+    "weeks": [
+      {
+        "weekNumber": 1,
+        "items": [
+          {
+            "id": "w1-i0",
+            "track": "systems_access",
+            "shortLine": "Google Workspace is ready",
+            "detailText": "Your email, calendar and shared drive access is set up before Day 1, so you can start scheduling and communicating with your team right away.",
+            "facilitatorDisplayName": "IT Operations",
+            "dayHint": "Before Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i1",
+            "track": "systems_access",
+            "shortLine": "Slack access, Day 1",
+            "detailText": "This is where Connectors and the rest of Engineering coordinate day to day, standup threads, quick questions and channels included.",
+            "facilitatorDisplayName": "IT Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i2",
+            "track": "systems_access",
+            "shortLine": "Notion access, Day 1",
+            "detailText": "The company knowledge base and handbooks live here, useful for finding team docs, runbooks and onboarding material for Connectors.",
+            "facilitatorDisplayName": "People Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i3",
+            "track": "systems_access",
+            "shortLine": "HiBob access, Day 1",
+            "detailText": "Your HRIS profile, time off requests and the org chart live here. You'll also use it to manage time-off approvals for your direct reports.",
+            "facilitatorDisplayName": "People Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i4",
+            "track": "systems_access",
+            "shortLine": "Jira access, Day 2",
+            "detailText": "This is where Connectors tracks sprint work and roadmap execution, needs manager approval through an IT ticket.",
+            "facilitatorDisplayName": "Engineering Operations",
+            "dayHint": "Day 2",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i5",
+            "track": "systems_access",
+            "shortLine": "GitHub access, Day 3",
+            "detailText": "Source control and code review for the connectors and indexing codebase your team owns. Access needs manager approval plus your security training.",
+            "facilitatorDisplayName": "Engineering",
+            "dayHint": "Day 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i6",
+            "track": "systems_access",
+            "shortLine": "Figma access, Day 3",
+            "detailText": "Product design and prototypes live here, useful context whenever connectors work touches upstream product or UI decisions.",
+            "facilitatorDisplayName": "Design",
+            "dayHint": "Day 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i7",
+            "track": "team_interfaces",
+            "shortLine": "Office tour with Gili",
+            "detailText": "Gili will show you around the Tel Aviv office and get you oriented before you dive into the work.",
+            "facilitatorDisplayName": "Gili Harari (direct report)",
+            "dayHint": "Day 1",
+            "emailContext": "Would you be up for showing me around the office sometime on Day 1? I'd love to get oriented before diving in.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i8",
+            "track": "team_interfaces",
+            "shortLine": "Intro meeting with Tamar",
+            "detailText": "Meet your manager and walk through your onboarding plan together, so expectations are clear from day one.",
+            "facilitatorDisplayName": "Tamar Navon (your manager)",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i9",
+            "track": "business",
+            "shortLine": "Veridian overview: vision and values",
+            "detailText": "A self-guided look at Veridian's vision, values and offices, a good first orientation to the company you've joined.",
+            "facilitatorDisplayName": "Self-guided",
+            "dayHint": "Week 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i10",
+            "track": "role",
+            "shortLine": "Coaching and feedback frameworks",
+            "detailText": "A self-guided session on coaching and feedback frameworks for first-line engineering managers, worth going through before your 1:1s with the team begin.",
+            "facilitatorDisplayName": "Self-guided",
+            "dayHint": "Week 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i11",
+            "track": "role",
+            "shortLine": "1:1 with Emily Morris",
+            "detailText": "Get to know Emily's current work, strengths and what support she needs from you as her manager.",
+            "facilitatorDisplayName": "Emily Morris (direct report)",
+            "dayHint": "Week 1",
+            "emailContext": "I'd love to grab 30 minutes this week to hear about what you're working on, your strengths and what support would be useful from me.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i12",
+            "track": "role",
+            "shortLine": "1:1 with Gili Harari",
+            "detailText": "Get to know Gili's current work, strengths and what support she needs from you as her manager.",
+            "facilitatorDisplayName": "Gili Harari (direct report)",
+            "dayHint": "Week 1",
+            "emailContext": "I'd love to grab 30 minutes this week to hear about what you're working on, your strengths and what support would be useful from me.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i13",
+            "track": "role",
+            "shortLine": "1:1 with Lior Peretz",
+            "detailText": "Get to know Lior's current work, strengths and what support he needs from you as his manager.",
+            "facilitatorDisplayName": "Lior Peretz (direct report)",
+            "dayHint": "Week 1",
+            "emailContext": "I'd love to grab 30 minutes this week to hear about what you're working on, your strengths and what support would be useful from me.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i14",
+            "track": "role",
+            "shortLine": "1:1 with Miguel Thomas",
+            "detailText": "Get to know Miguel's current work, strengths and what support he needs from you as his manager.",
+            "facilitatorDisplayName": "Miguel Thomas (direct report)",
+            "dayHint": "Week 1",
+            "emailContext": "I'd love to grab 30 minutes this week to hear about what you're working on, your strengths and what support would be useful from me.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i15",
+            "track": "role",
+            "shortLine": "1:1 with Roni Levin",
+            "detailText": "Get to know Roni's current work, strengths and what support they need from you as their manager.",
+            "facilitatorDisplayName": "Roni Levin (direct report)",
+            "dayHint": "Week 1",
+            "emailContext": "I'd love to grab 30 minutes this week to hear about what you're working on, your strengths and what support would be useful from me.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i16",
+            "track": "role",
+            "shortLine": "1:1 with Yoni Shor",
+            "detailText": "Get to know Yoni's current work, strengths and what support he needs from you as his manager.",
+            "facilitatorDisplayName": "Yoni Shor (direct report)",
+            "dayHint": "Week 1",
+            "emailContext": "I'd love to grab 30 minutes this week to hear about what you're working on, your strengths and what support would be useful from me.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i17",
+            "track": "team_interfaces",
+            "shortLine": "Your buddy, coming soon",
+            "detailText": "You haven't been paired with a Buddy yet. Your manager will assign one soon so you have someone for the everyday questions, we'll let you know as soon as that's set.",
+            "facilitatorDisplayName": "To be assigned",
+            "dayHint": "Coming soon",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i18",
+            "track": "team_interfaces",
+            "shortLine": "Your mentor, coming soon",
+            "detailText": "A Professional Mentor hasn't been assigned yet. Your manager will pair you with one soon for deeper guidance in your role, we'll let you know once that's confirmed.",
+            "facilitatorDisplayName": "To be assigned",
+            "dayHint": "Coming soon",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 2,
+        "items": [
+          {
+            "id": "w2-i0",
+            "track": "team_interfaces",
+            "shortLine": "Team mission and ways of working",
+            "detailText": "Sit down with Tamar to go through the Connectors team's mission, metrics and how the team operates day to day.",
+            "facilitatorDisplayName": "Tamar Navon (your manager)",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i1",
+            "track": "role",
+            "shortLine": "1:1 with Eli Sasson",
+            "detailText": "Get to know Eli's current work, strengths and what support he needs from you as his manager.",
+            "facilitatorDisplayName": "Eli Sasson (direct report)",
+            "dayHint": "Week 2",
+            "emailContext": "I'd love to grab 30 minutes this week to hear about what you're working on, your strengths and what support would be useful from me.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i2",
+            "track": "role",
+            "shortLine": "1:1 with Elliot Carter",
+            "detailText": "Get to know Elliot's current work, strengths and what support he needs from you as his manager.",
+            "facilitatorDisplayName": "Elliot Carter (direct report)",
+            "dayHint": "Week 2",
+            "emailContext": "I'd love to grab 30 minutes this week to hear about what you're working on, your strengths and what support would be useful from me.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i3",
+            "track": "role",
+            "shortLine": "1:1 with Rachel Clarke",
+            "detailText": "Get to know Rachel's current work, strengths and what support she needs from you as her manager.",
+            "facilitatorDisplayName": "Rachel Clarke (direct report)",
+            "dayHint": "Week 2",
+            "emailContext": "I'd love to grab 30 minutes this week to hear about what you're working on, your strengths and what support would be useful from me.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i4",
+            "track": "role",
+            "shortLine": "1:1 with Sofia White",
+            "detailText": "Get to know Sofia's current work, strengths and what support she needs from you as her manager.",
+            "facilitatorDisplayName": "Sofia White (direct report)",
+            "dayHint": "Week 2",
+            "emailContext": "I'd love to grab 30 minutes this week to hear about what you're working on, your strengths and what support would be useful from me.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i5",
+            "track": "role",
+            "shortLine": "1:1 with Yair Shani",
+            "detailText": "Get to know Yair's current work, strengths and what support he needs from you as his manager.",
+            "facilitatorDisplayName": "Yair Shani (direct report)",
+            "dayHint": "Week 2",
+            "emailContext": "I'd love to grab 30 minutes this week to hear about what you're working on, your strengths and what support would be useful from me.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i6",
+            "track": "team_interfaces",
+            "shortLine": "Meet peer Engineering Managers",
+            "detailText": "Connect with fellow engineering managers across Product Engineering to learn how teams coordinate on shared priorities and dependencies.",
+            "facilitatorDisplayName": "Product Engineering peer managers",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i7",
+            "track": "business",
+            "shortLine": "Knowledge Hub deep dive",
+            "detailText": "A self-guided deep dive into Connectors & Indexing plus a tour of the wider platform, useful grounding for the product your team owns.",
+            "facilitatorDisplayName": "Self-guided",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i8",
+            "track": "role",
+            "shortLine": "Learn the team's operating rhythm",
+            "detailText": "Get familiar with the standups, planning cadence and rituals Connectors already runs, before you start shaping them yourself.",
+            "facilitatorDisplayName": "Self-guided",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 3,
+        "items": [
+          {
+            "id": "w3-i0",
+            "track": "direct_manager",
+            "shortLine": "Weekly check-in with Tamar",
+            "detailText": "Your regular check-in with Tamar to see how the first few weeks are going and surface anything you need.",
+            "facilitatorDisplayName": "Tamar Navon (your manager)",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i1",
+            "track": "compliance",
+            "shortLine": "Security Awareness training",
+            "detailText": "A required 45-minute training covering the basics of keeping company data and systems secure.",
+            "facilitatorDisplayName": "Security Engineering",
+            "dayHint": "By Day 7",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i2",
+            "track": "compliance",
+            "shortLine": "Code of Conduct training",
+            "detailText": "A required 30-minute training on Veridian's standards of conduct.",
+            "facilitatorDisplayName": "People Operations",
+            "dayHint": "By Day 7",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i3",
+            "track": "role",
+            "shortLine": "Review the connectors roadmap",
+            "detailText": "Go through the open roadmap and in-flight delivery commitments for Connectors, since you're now accountable for keeping this work on track.",
+            "facilitatorDisplayName": "Self-guided",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i4",
+            "track": "team_interfaces",
+            "shortLine": "Meet a downstream partner team",
+            "detailText": "Talk with someone from Employee Assistant or Department Agents to see how their team relies on connectors output day to day, and why reliability matters here.",
+            "facilitatorDisplayName": "Employee Assistant / Department Agents (contact to be confirmed)",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i5",
+            "track": "business",
+            "shortLine": "Market and customers session",
+            "detailText": "A self-guided session on Veridian's market and customers, background context as you settle into the role.",
+            "facilitatorDisplayName": "Self-guided",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 4,
+        "items": [
+          {
+            "id": "w4-i0",
+            "track": "direct_manager",
+            "shortLine": "Weekly sync with Tamar",
+            "detailText": "Your regular sync with Tamar to check progress and talk through anything that's come up.",
+            "facilitatorDisplayName": "Tamar Navon (your manager)",
+            "dayHint": "Week 4",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i1",
+            "track": "compliance",
+            "shortLine": "Data Privacy & GDPR Basics",
+            "detailText": "A required 40-minute training on handling data privacy and GDPR fundamentals.",
+            "facilitatorDisplayName": "Legal & Compliance",
+            "dayHint": "By Day 14",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i2",
+            "track": "role",
+            "shortLine": "GitHub & Code Review Standards",
+            "detailText": "A required training covering how the engineering org runs code review, useful as you start reviewing and approving your team's pull requests.",
+            "facilitatorDisplayName": "Engineering Operations",
+            "dayHint": "By Day 14",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i3",
+            "track": "business",
+            "shortLine": "Business model session",
+            "detailText": "A self-guided look at how Veridian's business model works.",
+            "facilitatorDisplayName": "Self-guided",
+            "dayHint": "Week 4",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i4",
+            "track": "team_interfaces",
+            "shortLine": "Engineering vision and goals",
+            "detailText": "Tamar will walk you through Engineering's broader goals and this year's priorities, and how Connectors fits into them.",
+            "facilitatorDisplayName": "Tamar Navon (your manager)",
+            "dayHint": "Week 4",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i5",
+            "track": "team_interfaces",
+            "shortLine": "Meeting with Tal, your HRBP",
+            "detailText": "Connect with Tal for ongoing support as you settle into managing your team.",
+            "facilitatorDisplayName": "Tal Harari (your HRBP)",
+            "dayHint": "Week 4",
+            "emailContext": "I'd love to set up some time to connect. I'll be your ongoing HR partner as you settle into managing your team, and wanted to introduce myself early.",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 5,
+        "items": [
+          {
+            "id": "w5-i0",
+            "track": "direct_manager",
+            "shortLine": "30-day review with Tamar",
+            "detailText": "A slightly more structured check-in with Tamar to review how your first month has gone and set focus for what's next.",
+            "facilitatorDisplayName": "Tamar Navon (your manager)",
+            "dayHint": "Around Day 30",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w5-i1",
+            "track": "role",
+            "shortLine": "Secure Development training",
+            "detailText": "A required 90-minute training on secure development practices for engineering.",
+            "facilitatorDisplayName": "Security Engineering",
+            "dayHint": "By Day 21",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w5-i2",
+            "track": "business",
+            "shortLine": "Key success metrics session",
+            "detailText": "A self-guided session on reliability, delivery and platform KPIs, the metrics you'll be accountable for as Connectors' manager.",
+            "facilitatorDisplayName": "Self-guided",
+            "dayHint": "Week 5",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w5-i3",
+            "track": "team_interfaces",
+            "shortLine": "Meet peer Engineering Managers",
+            "detailText": "A follow-up round with peer managers across Product Engineering, building on the relationships and shared dependencies from your first meeting.",
+            "facilitatorDisplayName": "Product Engineering peer managers",
+            "dayHint": "Week 5",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 6,
+        "items": [
+          {
+            "id": "w6-i0",
+            "track": "direct_manager",
+            "shortLine": "Weekly check-in with Tamar",
+            "detailText": "Your regular check-in with Tamar to keep track of how things are going.",
+            "facilitatorDisplayName": "Tamar Navon (your manager)",
+            "dayHint": "Week 6",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w6-i1",
+            "track": "role",
+            "shortLine": "Manager Essentials training",
+            "detailText": "A required 3-hour training covering the core fundamentals of people management at Veridian.",
+            "facilitatorDisplayName": "Learning & Development",
+            "dayHint": "By Day 45",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 7,
+        "items": [
+          {
+            "id": "w7-i0",
+            "track": "direct_manager",
+            "shortLine": "Check-in: how's the team responding",
+            "detailText": "Talk with Tamar about how the team is responding to you as their manager and what's working so far.",
+            "facilitatorDisplayName": "Tamar Navon (your manager)",
+            "dayHint": "Week 7",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 8,
+        "items": [
+          {
+            "id": "w8-i0",
+            "track": "direct_manager",
+            "shortLine": "Wrapping up your first two months",
+            "detailText": "A check-in with Tamar to look back on your first two months and talk through what's ahead.",
+            "facilitatorDisplayName": "Tamar Navon (your manager)",
+            "dayHint": "Week 8",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w8-i1",
+            "track": "business",
+            "shortLine": "Strategic direction and roadmap",
+            "detailText": "A self-guided look at Veridian's strategic direction and near-term roadmap, pulling together the business context you've built over the past two months.",
+            "facilitatorDisplayName": "Self-guided",
+            "dayHint": "Week 8",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      }
+    ],
+    "internalGaps": [
+      "No detailed product, ICP, or business-model data exists beyond company name, category, employee count and offices. Business track sessions can only name topics at a high level until richer source data is available.",
+      "The downstream-team meeting (Employee Assistant or Department Agents) has no specific named contact in context. It's scheduled as a generic interface item; please confirm the actual person for Eitan to reach out to."
+    ]
+  },
+  "gatekeeperIssues": [],
+  "createdAt": "2026-08-19T06:50:11.718Z"
+}

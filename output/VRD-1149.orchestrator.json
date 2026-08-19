@@ -1,0 +1,1325 @@
+{
+  "status": "draft",
+  "employeeId": "VRD-1149",
+  "planId": 13,
+  "context": {
+    "company": {
+      "company_name": "Veridian",
+      "category": "B2B SaaS — Governed Enterprise AI Platform",
+      "employee_count": 185,
+      "offices": "Tel Aviv HQ, London, Austin",
+      "as_of_date": "2026-08-11",
+      "purpose": "Synthetic but realistic dataset for onboarding AI Buddy demo"
+    },
+    "employee": {
+      "employee_id": "VRD-1149",
+      "full_name": "Thomas Green",
+      "email": "thomas.green@veridian.ai",
+      "job_title": "Sales Engineering Manager",
+      "department": "Sales",
+      "team": "Solutions Engineering",
+      "location": "London",
+      "country": "United Kingdom",
+      "time_zone": "Europe/London",
+      "seniority": "Manager",
+      "track": "Manager",
+      "job_level": "M2",
+      "employment_type": "Full-time",
+      "hire_date": "2024-07-02",
+      "onboarding_cohort": null
+    },
+    "department": {
+      "department": "Sales",
+      "headcount": 24,
+      "owner_email": "michael.bennett@veridian.ai",
+      "primary_location": "Austin",
+      "mission": "Acquire enterprise customers and expand revenue",
+      "primary_kpis": "Pipeline, bookings, win rate, sales cycle length"
+    },
+    "team": {
+      "team_id": "SAL-SE",
+      "department": "Sales",
+      "org_group": "Pre-Sales",
+      "team": "Solutions Engineering",
+      "mission": "Owns solutions engineering motion for Veridian",
+      "headcount": 4,
+      "manager_email": "thomas.green@veridian.ai",
+      "primary_office": "London",
+      "core_tools": "Salesforce, Gong, Slack, Notion",
+      "status": "Active",
+      "hasExecutiveMember": false
+    },
+    "office": {
+      "office_id": "OFF-LON",
+      "city": "London",
+      "country": "United Kingdom",
+      "time_zone": "Europe/London",
+      "headcount": 44,
+      "main_functions": "Product leadership, EMEA Sales, EMEA CS, Marketing",
+      "work_model": "Hybrid - 3 office days/week",
+      "notes": "EMEA commercial hub"
+    },
+    "people": {
+      "manager": {
+        "employee_id": "VRD-1153",
+        "full_name": "Marcus Johnson",
+        "email": "marcus.johnson@veridian.ai",
+        "job_title": "VP Sales",
+        "department": "Sales",
+        "team": "Sales Leadership"
+      },
+      "skipManager": {
+        "employee_id": "VRD-1003",
+        "full_name": "Michael Bennett",
+        "email": "michael.bennett@veridian.ai",
+        "job_title": "Chief Revenue Officer",
+        "department": "Executive",
+        "team": "Executive Leadership"
+      },
+      "executive": {
+        "employee_id": "VRD-1003",
+        "full_name": "Michael Bennett",
+        "email": "michael.bennett@veridian.ai",
+        "job_title": "Chief Revenue Officer",
+        "department": "Executive",
+        "team": "Executive Leadership"
+      },
+      "hrbp": {
+        "employee_id": "VRD-1173",
+        "full_name": "Rachel Cooper",
+        "email": "rachel.cooper@veridian.ai",
+        "job_title": "HR Business Partner",
+        "department": "People",
+        "team": "People Partners"
+      },
+      "humanBuddy": null,
+      "directReports": [
+        {
+          "employee_id": "VRD-1150",
+          "full_name": "Lior Amar",
+          "email": "lior.amar@veridian.ai",
+          "job_title": "Senior Solutions Engineer",
+          "department": "Sales",
+          "team": "Solutions Engineering"
+        },
+        {
+          "employee_id": "VRD-1151",
+          "full_name": "Aiden Harris",
+          "email": "aiden.harris@veridian.ai",
+          "job_title": "Solutions Engineer",
+          "department": "Sales",
+          "team": "Solutions Engineering"
+        },
+        {
+          "employee_id": "VRD-1152",
+          "full_name": "Samuel Lewis",
+          "email": "samuel.lewis@veridian.ai",
+          "job_title": "Solutions Engineer",
+          "department": "Sales",
+          "team": "Solutions Engineering"
+        }
+      ],
+      "peopleSupported": []
+    },
+    "role": null,
+    "roleMatch": {
+      "method": "none",
+      "searchedTitle": "Sales Engineering Manager",
+      "strippedPrefix": null
+    },
+    "careerLevel": {
+      "track": "Manager",
+      "level": "M2",
+      "label": "Manager",
+      "scope": "Manages a team and owns delivery, coaching and operating rhythm",
+      "typical_titles": "Engineering Manager, Sales Manager, CS Manager"
+    },
+    "systems": [
+      {
+        "system": "Slack",
+        "owner": "IT Operations",
+        "purpose": "Internal communication and team channels",
+        "access_method": "Provisioned via Okta",
+        "due": {
+          "raw": "Day 1",
+          "days": 1,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Notion",
+        "owner": "People Operations",
+        "purpose": "Company knowledge base and handbooks",
+        "access_method": "Provisioned via Okta",
+        "due": {
+          "raw": "Day 1",
+          "days": 1,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "HiBob",
+        "owner": "People Operations",
+        "purpose": "HRIS, employee profile, time off and org chart",
+        "access_method": "Provisioned via Okta",
+        "due": {
+          "raw": "Day 1",
+          "days": 1,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Google Workspace",
+        "owner": "IT Operations",
+        "purpose": "Email, calendar, shared drive and Meet",
+        "access_method": "Provisioned pre-start",
+        "due": {
+          "raw": "Before Day 1",
+          "days": 0,
+          "isPreboarding": true,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Salesforce",
+        "owner": "Revenue Operations",
+        "purpose": "CRM, accounts, opportunities and customer records",
+        "access_method": "Manager approval + CRM training",
+        "due": {
+          "raw": "Day 4",
+          "days": 4,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Gong",
+        "owner": "Revenue Operations",
+        "purpose": "Sales call recording and coaching",
+        "access_method": "Manager approval",
+        "due": {
+          "raw": "Week 1",
+          "days": 7,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      }
+    ],
+    "trainings": [
+      {
+        "training_id": "TRN-001",
+        "training": "Security Awareness",
+        "mandatory": "Yes",
+        "owner": "Security Engineering",
+        "duration": "45 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 7",
+          "days": 7,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "All employees"
+      },
+      {
+        "training_id": "TRN-002",
+        "training": "Data Privacy & GDPR Basics",
+        "mandatory": "Yes",
+        "owner": "Legal & Compliance",
+        "duration": "40 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 14",
+          "days": 14,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "All employees"
+      },
+      {
+        "training_id": "TRN-003",
+        "training": "Code of Conduct",
+        "mandatory": "Yes",
+        "owner": "People Operations",
+        "duration": "30 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 7",
+          "days": 7,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "All employees"
+      },
+      {
+        "training_id": "TRN-006",
+        "training": "Product Certification Level 1",
+        "mandatory": "Yes",
+        "owner": "Product Marketing",
+        "duration": "2 hours",
+        "renewal": "When major release changes",
+        "due": {
+          "raw": "Day 30",
+          "days": 30,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "Sales, CS, Marketing, Product"
+      },
+      {
+        "training_id": "TRN-007",
+        "training": "Salesforce CRM Standards",
+        "mandatory": "Yes",
+        "owner": "Revenue Operations",
+        "duration": "60 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 14",
+          "days": 14,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "Sales, CS, Marketing"
+      },
+      {
+        "training_id": "TRN-008",
+        "training": "Manager Essentials",
+        "mandatory": "Yes",
+        "owner": "Learning & Development",
+        "duration": "3 hours",
+        "renewal": "One-time",
+        "due": {
+          "raw": "Day 45",
+          "days": 45,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "People managers"
+      }
+    ],
+    "policies": [
+      {
+        "policy_id": "POL-001",
+        "policy": "Hybrid Work Policy",
+        "summary": "Employees work from the office three days per week unless a role-specific exception is approved.",
+        "source": "Employee Handbook"
+      },
+      {
+        "policy_id": "POL-002",
+        "policy": "Information Security Policy",
+        "summary": "Company data may only be accessed through approved devices, systems and role-based permissions.",
+        "source": "Security Basics"
+      },
+      {
+        "policy_id": "POL-005",
+        "policy": "Expense Policy",
+        "summary": "Business expenses must be submitted with receipts by the fifth business day of the following month.",
+        "source": "Employee Handbook"
+      },
+      {
+        "policy_id": "POL-006",
+        "policy": "Customer Data Handling",
+        "summary": "Customer data must not be copied into unapproved tools or shared outside approved customer workspaces.",
+        "source": "Security Basics"
+      }
+    ],
+    "products": [
+      {
+        "product_area": "Knowledge Hub",
+        "module": "Connectors & Indexing",
+        "description": "Connects approved enterprise knowledge sources and indexes content for retrieval.",
+        "primary_users": "IT admins, knowledge owners, employees",
+        "lifecycle_stage": "GA"
+      },
+      {
+        "product_area": "AI Assistant",
+        "module": "Employee Assistant",
+        "description": "Conversational assistant that answers employee questions using governed company knowledge.",
+        "primary_users": "Employees, managers",
+        "lifecycle_stage": "GA"
+      },
+      {
+        "product_area": "AI Agents",
+        "module": "Department Agents",
+        "description": "Configurable agents for workflows such as HR, IT, finance and procurement.",
+        "primary_users": "Business function owners",
+        "lifecycle_stage": "Beta"
+      },
+      {
+        "product_area": "Governance",
+        "module": "Permissions & Audit",
+        "description": "Manages role-based access, audit logs, policies and compliance controls.",
+        "primary_users": "Security, legal, IT admins",
+        "lifecycle_stage": "GA"
+      }
+    ],
+    "gaps": [
+      "company_overview only has basic summary fields (name, category, employee count, offices) - no product description, ICP, or business-model detail exists anywhere in the source data. The business track can name the company and its one-line category, but cannot go deeper without inventing content.",
+      "human_buddy_email is not set - Buddy has not been assigned yet for this hire (per framework part D §13, this is always a fresh per-hire decision from manager intake, not inherited).",
+      "No Roles-catalog entry matches job_title \"Sales Engineering Manager\", even after stripping seniority prefixes (tried: Senior, Staff, Lead, Junior, Principal, Associate) - likely an Executive/Manager title the catalog doesn't cover. Role-specific collaboration/training notes unavailable; falling back to Training Catalog audience filtering only."
+    ],
+    "officeTourGuide": {
+      "employee_id": "VRD-1152",
+      "full_name": "Samuel Lewis",
+      "email": "samuel.lewis@veridian.ai",
+      "job_title": "Solutions Engineer",
+      "department": "Sales",
+      "team": "Solutions Engineering",
+      "reason": "teammate"
+    },
+    "roleEssence": "This role leads a small Solutions Engineering team that supports Veridian's sales motion in the pre-sales stage - running technical discovery, demos, and proof-of-concepts that convert enterprise pipeline into bookings. As manager, the job is less about personally running deals and more about coaching the three engineers on the team, owning their operating rhythm, and being accountable for how well SE work moves deals through the sales cycle. Expertise here means deep fluency in Veridian's product suite (especially Knowledge Hub, AI Assistant, and Governance, since those are what get demoed and scrutinized by enterprise buyers) plus the people-management skill of developing engineers who each own their own accounts and deals.",
+    "onboardingNeeds": [
+      {
+        "title": "One-on-ones with each of your Solutions Engineers",
+        "track": "role",
+        "purpose": "Understand each engineer's current deals, strengths, and what support they need from you as their new manager.",
+        "rationale": "roleEssence establishes that managing and coaching this team's three engineers is the core, ongoing work of the role, not an introductory nicety - these meetings are the hands-on job itself.",
+        "headcount": 3
+      },
+      {
+        "title": "Coaching and technical-manager frameworks for supporting SEs on live deals",
+        "track": "role",
+        "purpose": null,
+        "rationale": "Exists because of the one-on-one relationships above - prepares for giving useful deal coaching and technical guidance in those ongoing conversations rather than generic management advice.",
+        "headcount": null
+      },
+      {
+        "title": "Shadow a live customer demo or POC in progress",
+        "track": "role",
+        "purpose": null,
+        "rationale": "roleEssence identifies technical discovery/demos/POCs as the core SE motion this manager must be credible in - observing a real one grounds later coaching in how the work actually happens here, not just in theory.",
+        "headcount": null
+      },
+      {
+        "title": "Deep dive on Knowledge Hub, AI Assistant, and Governance for demo scenarios",
+        "track": "role",
+        "purpose": null,
+        "rationale": "roleEssence ties expertise directly to product fluency for enterprise buyer conversations - these are the GA products most central to what the team demos and defends technically.",
+        "headcount": null
+      },
+      {
+        "title": "Meet your manager, Michael Bennett, and align on Sales/SE operating rhythm",
+        "track": "team_interfaces",
+        "purpose": "Align on how Solutions Engineering's rhythm connects to broader Sales targets and reporting expectations.",
+        "rationale": "Standard but necessary manager relationship - not part of the role's defining work, but needed to operate within the Sales department structure.",
+        "headcount": 1
+      },
+      {
+        "title": "Meet an Account Executive you'll partner with on deals",
+        "track": "team_interfaces",
+        "purpose": "Understand how SE and AE roles split responsibility across a typical deal cycle.",
+        "rationale": "SE work is inherently paired with AE-led deals; understanding that handoff is useful context but is a peer interface, not the manager's own defining relationship.",
+        "headcount": null
+      }
+    ],
+    "businessDepthNotes": [
+      {
+        "session": 2,
+        "reason": "SE team demos these products directly to enterprise buyers - needs hands-on depth, not overview-level"
+      },
+      {
+        "session": 3,
+        "reason": "Discovery and POCs require strong grounding in customer/market context to tailor demos credibly"
+      }
+    ]
+  },
+  "plan": {
+    "weeks": [
+      {
+        "weekNumber": 1,
+        "items": [
+          {
+            "track": "systems_access",
+            "title": "Google Workspace access",
+            "usageNote": "Email, calendar and Meet - set up before Day 1 so scheduling with your team and Sales leadership works from the start.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.25,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Slack access",
+            "usageNote": "For day-to-day communication with your team and cross-functional Sales channels.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.25,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Notion access",
+            "usageNote": "Company knowledge base and handbooks, including Solutions Engineering's shared docs and playbooks.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.25,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "HiBob access",
+            "usageNote": "Your employee profile, time off requests, and org chart - including your own team's reporting line.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.25,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Samuel, office tour",
+            "purpose": "Get shown around the London office and settle into your new physical workspace before diving into the plan.",
+            "facilitatorType": "team_member",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Buddy intro - TBD, confirm with HR",
+            "purpose": "Have a go-to person for day-to-day questions while you're getting oriented.",
+            "facilitatorType": "human_buddy",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Marcus, intro + onboarding plan walkthrough",
+            "purpose": "Walk through your onboarding plan together and align on early priorities as you step into the manager role.",
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "One-on-one with Lior Amar",
+            "purpose": "Understand Lior's current deals, strengths, and what support they need from you as their new manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "One-on-one with Aiden Harris",
+            "purpose": "Understand Aiden's current deals, strengths, and what support they need from you as their new manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "One-on-one with Samuel Lewis",
+            "purpose": "Understand Samuel's current deals, strengths, and what support they need from you as their new manager.",
+            "facilitatorType": "direct_report",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Veridian overview: vision, values, and offices",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Coaching and technical-manager frameworks for supporting SEs on live deals",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 2,
+        "items": [
+          {
+            "track": "systems_access",
+            "title": "Salesforce access",
+            "usageNote": "CRM to track your team's opportunities and accounts, and to review deal progress you'll be coaching on.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Gong access",
+            "usageNote": "Review recorded sales and demo calls to coach your engineers on discovery and technical presentation.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "compliance",
+            "title": "Security Awareness",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "compliance",
+            "title": "Code of Conduct",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Marcus, team mission, metrics, processes and knowledge base",
+            "purpose": "Get grounded in how Solutions Engineering's mission, metrics, and key processes fit into Sales overall.",
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Product deep dive: Knowledge Hub, AI Assistant, AI Agents, Governance",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Deep dive on Knowledge Hub, AI Assistant, and Governance for demo scenarios",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 1.5,
+            "recurring": false,
+            "dependsOn": [
+              "Product deep dive: Knowledge Hub, AI Assistant, AI Agents, Governance"
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 3,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Marcus",
+            "purpose": "Start a regular rhythm to stay aligned on priorities and surface anything blocking early progress.",
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Market and customers, with an eye toward discovery and POC framing",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Meet an Account Executive you'll partner with on deals",
+            "purpose": "Understand how SE and AE roles split responsibility across a typical deal cycle.",
+            "facilitatorType": "interface_contact",
+            "mandatoryTier": "flexible",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Shadow a live customer demo or POC in progress",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 1.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Review Customer Data Handling and Information Security policies",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "flexible",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 4,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Marcus - progress against your plan",
+            "purpose": "Review how the first month has gone against your original plan and re-prioritize where needed.",
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "compliance",
+            "title": "Data Privacy & GDPR Basics",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Business model overview",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Meet Sales: department vision, structure, and this year's goals",
+            "purpose": "Connect Solutions Engineering's day-to-day work to where Sales is headed this year and how success is measured.",
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Meet Rachel, your HR Business Partner",
+            "purpose": "Have a direct line to People team support for anything outside your manager's remit.",
+            "facilitatorType": "hrbp",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 5,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Marcus",
+            "purpose": "Keep the regular cadence going and flag anything that needs course-correcting.",
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "compliance",
+            "title": "Salesforce CRM Standards",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Key success metrics: what Veridian tracks and why",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Meet Michael Bennett, and align on Sales/SE operating rhythm",
+            "purpose": "Align on how Solutions Engineering's rhythm connects to broader Sales targets and reporting expectations.",
+            "facilitatorType": "skip_manager",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 6,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Marcus",
+            "purpose": "Check progress on team coaching and deal support, and adjust focus for the coming weeks.",
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Product Certification Level 1",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 2,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 7,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Marcus",
+            "purpose": "Use this session to talk through how coaching conversations with the team are landing.",
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Manager Essentials",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 3,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 8,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Marcus",
+            "purpose": "Close out the eight-week plan and set direction for what comes next.",
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Strategic direction and near-term roadmap",
+            "purpose": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": [
+              "Veridian overview: vision, values, and offices",
+              "Product deep dive: Knowledge Hub, AI Assistant, AI Agents, Governance",
+              "Market and customers, with an eye toward discovery and POC framing",
+              "Business model overview",
+              "Key success metrics: what Veridian tracks and why"
+            ]
+          }
+        ]
+      }
+    ],
+    "gaps": [
+      "No Buddy has been assigned for this hire yet - the office tour is covered by a teammate (Samuel Lewis), but the buddy intro item is a placeholder pending HR assignment.",
+      "No professional mentor is recorded for this employee (mentor assignment only happens via manager intake) - not scheduled, and should be added once available.",
+      "No Roles-catalog entry matches 'Sales Engineering Manager', so role-specific collaboration notes rely on Training Catalog audience filtering and the Content Expert's onboardingNeeds rather than a catalog role profile.",
+      "Business track sessions 3-6 (market/customers, business model, metrics, roadmap) have no real source data in this dataset - content is topic-level only, per the demo assumption, and must be validated against the real LMS before production use."
+    ]
+  },
+  "content": {
+    "weeks": [
+      {
+        "weekNumber": 1,
+        "items": [
+          {
+            "id": "w1-i0",
+            "track": "systems_access",
+            "shortLine": "Google Workspace ready before you start",
+            "detailText": "Your email, calendar and Meet are set up before Day 1, so you can start scheduling with your team and Sales leadership right away.",
+            "facilitatorDisplayName": "IT Operations",
+            "dayHint": "Before Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i1",
+            "track": "systems_access",
+            "shortLine": "Slack access",
+            "detailText": "Slack is ready for day-to-day communication with your team and the cross-functional Sales channels you'll need.",
+            "facilitatorDisplayName": "IT Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i2",
+            "track": "systems_access",
+            "shortLine": "Notion access",
+            "detailText": "You'll have access to the company knowledge base, including Solutions Engineering's shared docs and playbooks.",
+            "facilitatorDisplayName": "People Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i3",
+            "track": "systems_access",
+            "shortLine": "HiBob access",
+            "detailText": "Your employee profile, time off requests, and the org chart are ready, including your own team's reporting line.",
+            "facilitatorDisplayName": "People Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i4",
+            "track": "team_interfaces",
+            "shortLine": "Office tour with Samuel",
+            "detailText": "Samuel will show you around the London office and get you settled into your workspace before you dive into the plan.",
+            "facilitatorDisplayName": "Samuel Lewis (teammate)",
+            "dayHint": "Day 1",
+            "emailContext": "Looking forward to showing you around the London office and getting you settled in before things pick up.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i5",
+            "track": "team_interfaces",
+            "shortLine": "Your buddy - coming soon",
+            "detailText": "Marcus will pair you with a buddy soon so you have a go-to person for day-to-day questions while you're getting oriented. We'll let you know as soon as that's set.",
+            "facilitatorDisplayName": "To be assigned",
+            "dayHint": "Coming soon",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i6",
+            "track": "team_interfaces",
+            "shortLine": "Plan walkthrough with Marcus",
+            "detailText": "Marcus will walk through your onboarding plan with you and align on early priorities as you step into the manager role.",
+            "facilitatorDisplayName": "Marcus Johnson (your manager)",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i7",
+            "track": "role",
+            "shortLine": "One-on-one with Lior",
+            "detailText": "Sit down with Lior to understand their current deals, strengths, and what support they need from you as their new manager.",
+            "facilitatorDisplayName": "Lior Amar (direct report)",
+            "dayHint": "Week 1",
+            "emailContext": "I'd like to get a real sense of where your deals stand, what's working well for you, and what support would be most useful from me as your manager.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i8",
+            "track": "role",
+            "shortLine": "One-on-one with Aiden",
+            "detailText": "Sit down with Aiden to understand their current deals, strengths, and what support they need from you as their new manager.",
+            "facilitatorDisplayName": "Aiden Harris (direct report)",
+            "dayHint": "Week 1",
+            "emailContext": "I'd like to get a real sense of where your deals stand, what's working well for you, and what support would be most useful from me as your manager.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i9",
+            "track": "role",
+            "shortLine": "One-on-one with Samuel",
+            "detailText": "Sit down with Samuel to understand his current deals, strengths, and what support he needs from you as his new manager.",
+            "facilitatorDisplayName": "Samuel Lewis (direct report)",
+            "dayHint": "Week 1",
+            "emailContext": "I'd like to get a real sense of where your deals stand, what's working well for you, and what support would be most useful from me as your manager.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i10",
+            "track": "business",
+            "shortLine": "Veridian overview",
+            "detailText": "A grounding in Veridian's vision, values, and offices across Tel Aviv, London, and Austin.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i11",
+            "track": "role",
+            "shortLine": "Coaching frameworks for SE managers",
+            "detailText": "Frameworks for coaching engineers and giving useful technical guidance on live deals, built for the one-on-ones you'll be having regularly.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 1",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 2,
+        "items": [
+          {
+            "id": "w2-i0",
+            "track": "systems_access",
+            "shortLine": "Salesforce access",
+            "detailText": "CRM access to track your team's opportunities and accounts, and to review deal progress you'll be coaching on.",
+            "facilitatorDisplayName": "Revenue Operations",
+            "dayHint": "Day 4",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i1",
+            "track": "systems_access",
+            "shortLine": "Gong access",
+            "detailText": "Access to review recorded sales and demo calls, so you can coach your engineers on discovery and technical presentation.",
+            "facilitatorDisplayName": "Revenue Operations",
+            "dayHint": "Week 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i2",
+            "track": "compliance",
+            "shortLine": "Security Awareness training",
+            "detailText": "A 45-minute training covering the basics of keeping company and customer data secure.",
+            "facilitatorDisplayName": "Security Engineering",
+            "dayHint": "By Day 7",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i3",
+            "track": "compliance",
+            "shortLine": "Code of Conduct training",
+            "detailText": "A short training covering Veridian's expectations for how employees work and treat each other.",
+            "facilitatorDisplayName": "People Operations",
+            "dayHint": "By Day 7",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i4",
+            "track": "team_interfaces",
+            "shortLine": "Team mission and metrics with Marcus",
+            "detailText": "Marcus will ground you in how Solutions Engineering's mission, metrics, and key processes fit into Sales overall.",
+            "facilitatorDisplayName": "Marcus Johnson (your manager)",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i5",
+            "track": "business",
+            "shortLine": "Product deep dive",
+            "detailText": "A hands-on look at Knowledge Hub, AI Assistant, AI Agents, and Governance, the products your team demos directly to enterprise buyers.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i6",
+            "track": "role",
+            "shortLine": "Product deep dive for demo scenarios",
+            "detailText": "A closer look at Knowledge Hub, AI Assistant, and Governance specifically for demo scenarios, building on the product deep dive.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 3,
+        "items": [
+          {
+            "id": "w3-i0",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in with Marcus",
+            "detailText": "Your first regular check-in with Marcus, to stay aligned on priorities and surface anything blocking early progress.",
+            "facilitatorDisplayName": "Marcus Johnson (your manager)",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i1",
+            "track": "business",
+            "shortLine": "Market and customers",
+            "detailText": "A look at Veridian's market and customers, with an eye toward discovery and how it shapes POC framing.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i2",
+            "track": "team_interfaces",
+            "shortLine": "Meet an Account Executive",
+            "detailText": "Connect with an AE to understand how SE and AE roles split responsibility across a typical deal cycle.",
+            "facilitatorDisplayName": "Account Executive",
+            "dayHint": "Week 3",
+            "emailContext": "I'd like to understand how we typically split responsibility across a deal cycle, so my team and I plug in well alongside yours.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i3",
+            "track": "role",
+            "shortLine": "Shadow a live demo or POC",
+            "detailText": "Sit in on a live customer demo or proof-of-concept in progress to see how discovery and technical presentation actually play out.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i4",
+            "track": "role",
+            "shortLine": "Review data handling and security policies",
+            "detailText": "Review the Customer Data Handling and Information Security policies that govern how customer data can be used and shared.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 4,
+        "items": [
+          {
+            "id": "w4-i0",
+            "track": "team_interfaces",
+            "shortLine": "Check-in with Marcus: first month review",
+            "detailText": "Review how your first month has gone against your original plan with Marcus, and re-prioritize where needed.",
+            "facilitatorDisplayName": "Marcus Johnson (your manager)",
+            "dayHint": "Week 4",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i1",
+            "track": "compliance",
+            "shortLine": "Data Privacy & GDPR Basics",
+            "detailText": "A 40-minute training on the fundamentals of data privacy and GDPR compliance.",
+            "facilitatorDisplayName": "Legal & Compliance",
+            "dayHint": "By Day 14",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i2",
+            "track": "business",
+            "shortLine": "Business model overview",
+            "detailText": "An overview of how Veridian's business model works.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 4",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i3",
+            "track": "team_interfaces",
+            "shortLine": "Meet Sales: vision and goals",
+            "detailText": "Marcus will connect Solutions Engineering's day-to-day work to where Sales is headed this year and how success gets measured.",
+            "facilitatorDisplayName": "Marcus Johnson (your manager)",
+            "dayHint": "Week 4",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i4",
+            "track": "team_interfaces",
+            "shortLine": "Meet Rachel, your HR Business Partner",
+            "detailText": "Rachel is your direct line to People team support for anything outside your manager's remit.",
+            "facilitatorDisplayName": "Rachel Cooper (HRBP)",
+            "dayHint": "Week 4",
+            "emailContext": "I'm your HR Business Partner, and I'd love to connect so you have a direct line to People support for anything outside your manager's remit.",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 5,
+        "items": [
+          {
+            "id": "w5-i0",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in with Marcus",
+            "detailText": "Keep the regular cadence going with Marcus and flag anything that needs course-correcting.",
+            "facilitatorDisplayName": "Marcus Johnson (your manager)",
+            "dayHint": "Week 5",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w5-i1",
+            "track": "compliance",
+            "shortLine": "Salesforce CRM Standards",
+            "detailText": "A one-hour training on how Salesforce is used and standardized across Sales, CS, and Marketing.",
+            "facilitatorDisplayName": "Revenue Operations",
+            "dayHint": "By Day 14",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w5-i2",
+            "track": "business",
+            "shortLine": "Key success metrics",
+            "detailText": "A look at what Veridian tracks as success and why those metrics matter.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 5",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w5-i3",
+            "track": "team_interfaces",
+            "shortLine": "Meet Michael Bennett on operating rhythm",
+            "detailText": "Align with Michael on how Solutions Engineering's rhythm connects to broader Sales targets and reporting expectations.",
+            "facilitatorDisplayName": "Michael Bennett (CRO, skip manager)",
+            "dayHint": "Week 5",
+            "emailContext": "I'd like to align on how Solutions Engineering's day-to-day rhythm connects to the broader Sales targets and reporting you're tracking.",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 6,
+        "items": [
+          {
+            "id": "w6-i0",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in with Marcus",
+            "detailText": "Check in with Marcus on progress with team coaching and deal support, and adjust focus for the coming weeks.",
+            "facilitatorDisplayName": "Marcus Johnson (your manager)",
+            "dayHint": "Week 6",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w6-i1",
+            "track": "role",
+            "shortLine": "Product Certification Level 1",
+            "detailText": "A two-hour certification covering Veridian's product suite at the level expected of Sales, CS, Marketing, and Product.",
+            "facilitatorDisplayName": "Product Marketing",
+            "dayHint": "By Day 30",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 7,
+        "items": [
+          {
+            "id": "w7-i0",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in with Marcus",
+            "detailText": "Use this session with Marcus to talk through how coaching conversations with your team are landing.",
+            "facilitatorDisplayName": "Marcus Johnson (your manager)",
+            "dayHint": "Week 7",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w7-i1",
+            "track": "role",
+            "shortLine": "Manager Essentials training",
+            "detailText": "A three-hour, one-time training covering the core skills expected of people managers at Veridian.",
+            "facilitatorDisplayName": "Learning & Development",
+            "dayHint": "By Day 45",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 8,
+        "items": [
+          {
+            "id": "w8-i0",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in with Marcus",
+            "detailText": "Close out your eight-week plan with Marcus and set direction for what comes next.",
+            "facilitatorDisplayName": "Marcus Johnson (your manager)",
+            "dayHint": "Week 8",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w8-i1",
+            "track": "business",
+            "shortLine": "Strategic direction and roadmap",
+            "detailText": "A look at Veridian's strategic direction and near-term roadmap, building on the company, product, market, and metrics grounding from earlier weeks.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 8",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      }
+    ],
+    "internalGaps": [
+      "No professional mentor is recorded for this employee - mentor assignment happens via manager intake and hasn't occurred yet. Should be added to the plan once available.",
+      "No Roles-catalog entry matches 'Sales Engineering Manager' - role-specific collaboration notes rely on Training Catalog audience filtering and the Content Expert's onboardingNeeds rather than a catalog role profile.",
+      "Business track sessions (market/customers, business model, metrics, roadmap) have topic-level content only, with no real source data in this dataset - should be validated against the real LMS before production use."
+    ]
+  },
+  "gatekeeperIssues": [],
+  "createdAt": "2026-08-19T11:37:48.748Z"
+}
