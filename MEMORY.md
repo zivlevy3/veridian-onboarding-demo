@@ -805,10 +805,13 @@ code, not just prose the model could ignore:
       fallback firing as designed, just unlucky across all 4 attempts** - in at least one
       attempt, the offending week's items were *entirely* `mandatory` (no flexible or
       recommended candidate existed at all to move), so `rebalancePlan` correctly found
-      nothing it could do and let `validatePlanOrThrow` throw, exactly as specified. This
-      is the documented, accepted edge case working correctly, not a bug - but it means
-      4 retry attempts still isn't always enough headroom on its own when a genuinely
-      mandatory-only overload comes up.
+      nothing it could do and let `validatePlanOrThrow` throw, exactly as specified at
+      the time. This was the documented, accepted edge case working correctly, not a bug
+      - but it meant 4 retry attempts still wasn't always enough headroom on its own when
+      a genuinely mandatory-only overload came up. **Superseded the same day** - see
+      "Everyone gets a plan" below: this exact case (re-tested as a synthetic
+      reproduction, since `Test Hire Twenty` itself was already cleaned up) no longer
+      throws; it saves the plan with the violation documented instead.
   - **What this changes about "explained, non-blocking" load-cap overages going
     forward**: there is no policy exception encoded anywhere for a specific employee
     profile or a specific prior overage being "already accepted" - every plan is
@@ -818,6 +821,60 @@ code, not just prose the model could ignore:
     during earlier debugging (already committed as reference artifacts) are exactly
     that: historical. They are not, and were never meant to be, a standing exception the
     live system now honors.
+- **"Everyone gets a plan" (2026-08-19) - a deliberate philosophy change from "block
+  until perfect" to "always produce something; blocking is truly the last resort."**
+  Saving a plan-with-a-violation is a last resort, never a default - the full priority
+  order, enforced in code (`lib/plan-rebalance.js` + `lib/orchestrator.js`), not just
+  described here:
+  1. **Process Expert tries to produce a balanced plan from the start**, as always -
+     nothing about generation itself changed.
+  2. **If a cap violation exists, `rebalancePlan()` tries to fix it** - the
+     flexible-then-recommended adjacent-week moves already built and documented above.
+     Unchanged.
+  3. **Only if step 2 reports `fixed: false`** - a genuine, irreducible violation (a
+     week's overload is entirely `mandatoryTier: 'mandatory'` items with nothing left to
+     move, or no adjacent week ever had room) - **is the plan now saved as it is**,
+     violation and all, instead of being thrown away and regenerated. Both prior steps
+     are always attempted in full first; this is not a shortcut around them.
+  - **What "saved as is" actually means**, all three required: (a) no exception is
+    thrown and the caller (`withRetry`) never retries for this reason - the HTTP request
+    that triggered it succeeds normally; (b) a `console.warn` line prefixed `LAST RESORT
+    (plan saved with violation, not discarded):` names exactly which week and which cap,
+    for whoever is watching the server log; (c) the same human-readable message is
+    pushed into the plan's own `gaps[]`, which flows into `internalGaps` through the
+    *existing* type-1/type-2 gap-classification path in `prompts/content-writer.md` (see
+    "Two different kinds of gaps" above) - no new gap mechanism was built, this reuses
+    the one already there, since a genuine capacity limitation the pipeline can't
+    resolve is exactly the "system/data limitation" (type 2) category that section
+    already defines. **The employee never sees any of this** - the plan they receive
+    looks like an ordinary, complete plan; the violation is HR/manager-only information.
+  - **This applies only to content/cap violations after a real rebalancing attempt - not
+    to JSON-shape failures.** A response that isn't valid structured output at all has no
+    "almost-valid" form to save - those still throw and go through `withRetry`'s fresh
+    regeneration exactly as before this change; nothing about that path was touched.
+  - **`fixDirectReportWindow` is not part of this last-resort path**, because it doesn't
+    need to be: it moves a misplaced `direct_report` item unconditionally (whichever of
+    week 1/2 has fewer), with no "couldn't find room" case in its own logic - so a
+    direct-report-window violation should never actually reach the last-resort check.
+    The orchestrator still throws if one is somehow still present after rebalancing,
+    since weeks-1-2-only is a hard rule with no stated exception (framework part D §11),
+    unlike the two soft caps this entry is about.
+  - **Verified before committing**, two layers: (1) a synthetic reproduction of the
+    exact `Test Hire Twenty` shape (a week with 6 mandatory, non-deferrable meetings
+    against the 5-meeting cap, `Test Hire Twenty` itself already cleaned up from the DB)
+    confirmed `fixed: false`, no throw, and the correct `gaps[]` entry, entirely without
+    a network call; (2) a real Content Writer API call on that same synthetic plan
+    confirmed the message reaches `internalGaps` (paraphrased, substance intact: *"Week
+    1 has 6 mandatory policy-review meetings with the manager, exceeding the recommended
+    max of 5 shared-capacity meetings per week; these could not be rebalanced since all
+    are mandatory. Manual review recommended..."*), and that the employee-facing
+    `weeks[0].items` came back as six ordinary, fully-written plan items with no trace of
+    the violation - "the employee never sees any of this" is not just intended, it's
+    exactly what came back from the real model call.
+  - `validatePlanOrThrow` (the old always-throw-on-any-violation function) was removed
+    entirely rather than left as dead code once this landed - it had exactly one caller,
+    which no longer calls it, and keeping it around with a comment describing behavior
+    the pipeline no longer has would be actively misleading to a future reader.
 - **Department and Team are closed dropdowns of real org data only - no "Other."**
   `createEmployee` (`lib/employees.js`) requires an exact match against `teams`/
   `departments` and throws otherwise - offering "Other" here would be a form control
