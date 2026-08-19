@@ -1893,11 +1893,26 @@ app.post('/start', async (req, res) => {
       jobPostingText: body.jobPostingText || null,
     });
 
-    const result = await runOrchestrator(db, employee.employee_id, {
-      buddyEmail,
-      mentorEmail: body.mentorEmail,
-      jobPostingText: body.jobPostingText || null,
-    });
+    // runOrchestrator already retries each real API stage internally (see
+    // lib/orchestrator.js's withRetry) for exactly this reason - a transient generation
+    // glitch (malformed-code-in-json, an ordinary JSON parse error, a Gatekeeper
+    // self-narration glitch - see MEMORY.md) shouldn't reach whoever's filling out this
+    // form as a raw error. If every retry attempt for some stage still failed, that's a
+    // real, rarer failure - the visitor gets a clean, generic message here rather than
+    // the underlying Error.message (which can be a full truncated JSON blob, not
+    // something a manager submitting this form should ever see); the real error is
+    // still logged server-side via console.error below for debugging.
+    let result;
+    try {
+      result = await runOrchestrator(db, employee.employee_id, {
+        buddyEmail,
+        mentorEmail: body.mentorEmail,
+        jobPostingText: body.jobPostingText || null,
+      });
+    } catch (err) {
+      console.error(`POST /start: pipeline failed for ${employee.employee_id} after internal retries:`, err);
+      return res.status(500).json({ error: 'Something went wrong while building the onboarding plan. Please try again.' });
+    }
 
     if (result.status === 'blocked') {
       return res.status(422).json({

@@ -578,6 +578,96 @@ code, not just prose the model could ignore:
 
 ## 5. New-hire intake page (`/start`)
 
+- **Significant change (2026-08-19): `runOrchestrator` now retries each real API stage
+  automatically - before this, a real submission through this form had zero retry at
+  all.** Discovered by checking, not assuming: `app.post('/start', ...)` called
+  `runOrchestrator` exactly once inside a single try/catch, and on any failure (a
+  transient JSON glitch in any of the 4 real agent calls, or the weekly-load/meeting-cap
+  validation throw) returned `res.status(500).json({ error: err.message })` - the raw
+  `Error.message`, which for a JSON-parse failure is a full, truncated JSON blob, not
+  something a manager filling out this form should ever see. The only "retry" that had
+  ever existed anywhere in this project was a human re-running `scripts/run-orchestrator.js`
+  by hand during development.
+  - **Fix**: `lib/orchestrator.js` now has a generic `withRetry(label, maxAttempts, fn)`
+    wrapper around each of the 4 real stage calls (Content Expert, Process Expert +
+    its `validatePlanOrThrow` check together, Content Writer, Gatekeeper) -
+    `maxAttempts: 4` (1 initial try + up to 3 retries). Entirely invisible to whoever's
+    waiting on the HTTP request: the request just takes longer, nothing surfaces until
+    every attempt in the budget is exhausted. `server.js`'s `POST /start` handler also
+    wraps the `runOrchestrator` call in its own try/catch now, converting a
+    fully-exhausted failure into a clean, generic message ("Something went wrong while
+    building the onboarding plan. Please try again.") instead of leaking the raw
+    `Error.message` - the real error is still logged server-side via `console.error` for
+    debugging.
+  - **Measured for real, through the live endpoint (not the CLI script) - 7 real
+    submissions to `POST /start`:** 4/7 (57%) reached a saved plan with the visitor
+    seeing nothing but the loading state the whole time; 3/7 (43%) exhausted all 4
+    retry attempts and got the clean generic message - **0/7 ever saw a raw error**,
+    which is the actual fix. Every single retry-exhaustion happened at **Process
+    Expert** specifically (a mix of JSON-parse failures across all the documented
+    shapes, and genuine weekly-load-cap validation failures) - Content Writer and
+    Gatekeeper each recovered within 1-2 attempts whenever they failed at all in this
+    batch. This confirms Process Expert - not the `malformed-code-in-json` phenomenon
+    alone (~13%, see the direct_report load-cap fix entry above) - is the real
+    reliability bottleneck: its overall per-attempt failure rate, combining every JSON
+    glitch shape *and* the weekly-load validation check, is meaningfully higher than
+    that one narrow phenomenon's rate on its own.
+  - **Even 4 attempts is not 100% reliable** - 3 of 7 real runs exhausted the full
+    budget. Worth knowing plainly before treating this as "solved": retry closes the
+    "user sees a raw error" gap completely (confirmed 0/7), but does not close the
+    "user sees a friendly failure and has to click submit again" gap - that's still a
+    real, non-trivial fraction of real submissions, mitigated but not eliminated. Note
+    also that `createEmployee`/`saveManagerIntake` run and commit *before*
+    `runOrchestrator` is even called - a fully-exhausted failure still leaves a real
+    employee + `manager_intake` row behind with no plan, the same category of debris
+    `scripts/cleanup-orphaned-app-state.js` exists for (though that script only removes
+    rows whose `employee_id` no longer exists in `employees` - an employee with no plan
+    at all, still present in `employees`, is a related but different case it doesn't
+    currently cover).
+- **Bigger architectural change, same day (2026-08-19): the 4 structured-JSON agents
+  (Content Expert, Process Expert, Content Writer, Gatekeeper) switched from "ask for
+  JSON in free text, parse it with `JSON.parse`" to forced structured tool use** -
+  `lib/schemas.js` defines a `strict: true` JSON Schema per agent (mirroring the exact
+  shape already documented in each `prompts/*.md`'s own "Output schema" section), and
+  each agent's request now sends `tools: [...]` + `tool_choice: {type: "tool", name:
+  "..."}` instead of relying on prose instructions to produce parseable text. This is
+  prevention, not the retry mechanism above (which is failure *management*) - the goal
+  was to remove the failure class the retry logic exists to paper over, not just retry
+  around it faster.
+  - **Measured, not assumed - and the result is more nuanced than "it worked":**
+    - **JSON-shape reliability: fixed, cleanly, confirmed twice.** 20 real, isolated
+      Content-Expert-then-Process-Expert calls (a mix of Manager and IC employees) via
+      `tool_choice`: **20/20 succeeded, 0 JSON-shape failures** - down from the ~13-20%
+      `malformed-code-in-json`/ordinary-`json-parse-error` rate under the old free-text
+      approach. Re-confirmed independently in the very next measurement below: **0 JSON
+      failures across ~22 real Process Expert attempts.** `tool_use.input` is returned
+      as an already-parsed, schema-validated object - there is no free-form JSON text
+      left for a stray `.replace()` call or trailing narration to corrupt, because the
+      failure mode required free-form text to exist in the first place.
+    - **But the real `/start` clean-success rate got *worse*, not better: 2/7 (29%),
+      down from the free-text baseline's 4/7 (57%).** Checked why, not guessed: every
+      single one of the ~22 real Process Expert attempts across those 7 runs failed on
+      the **weekly-load-cap validation** (`WARNING: week N has X load units... max 6,
+      overloaded`) - a pure content/scheduling-quality issue `validatePlanOrThrow`
+      already checked before this change, completely unrelated to JSON shape and not
+      addressed by a schema (a schema constrains *shape*, not whether the model decides
+      to schedule 9 items in one week). **Not one JSON-shape failure occurred in this
+      batch either** - the fix for that specific problem holds. What changed is that
+      JSON-shape failures used to share the "with-retry" attempt budget with load-cap
+      failures; removing one failure class didn't remove the other, and the load-cap
+      failure rate on its own is apparently high enough (looking like the large majority
+      of attempts, in this sample) that it alone now exhausts the 4-attempt retry budget
+      most of the time for at least this employee profile (AI Platform / Backend
+      Engineer, R&D). This was always true - it was just partially masked by mixing with
+      JSON-shape failures in the earlier combined measurement, not something the
+      structured-output change caused.
+  - **Conclusion, stated plainly: JSON-shape reliability is solved. Overall `/start`
+    reliability is not, and the real remaining bottleneck is Process Expert's weekly-load-
+    cap content quality, not its output format.** Whether structured tool use itself has
+    any effect (positive, negative, or neutral) on how well the model respects the load
+    cap specifically is an open question this measurement cannot answer on its own -
+    worth being honest about rather than asserting a causal claim the data doesn't
+    support. Not investigated further this round; a natural next step, not done here.
 - **Department and Team are closed dropdowns of real org data only - no "Other."**
   `createEmployee` (`lib/employees.js`) requires an exact match against `teams`/
   `departments` and throws otherwise - offering "Other" here would be a form control
