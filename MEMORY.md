@@ -147,10 +147,53 @@ Hard caps, checked **in code** (`lib/plan-validate.js`), not just described in t
   over cap: mandatory items never move; flexible items deferred first; recommended next.
 - **Max 6 "load units"/week** — meetings + non-meetings combined, except all
   `system_provisioning` items in one week count as **one** unit together (a role needing 7
-  systems on day 1 is one provisioning batch, not 7 pieces of content).
+  systems on day 1 is one provisioning batch, not 7 pieces of content), **and `direct_report`
+  items don't count toward this cap at all** — not bundled like systems, not counted even
+  singly (`lib/plan-validate.js`'s `countWeeklyLoadUnits`).
 - **`direct_report` 1:1s are confined to weeks 1–2**, mandatory, no exception, and don't
   share the 5/week cap (their own allowance) — a manager with 11 reports can have 6 in
   week 1 and 5 in week 2 alongside everything else.
+  - **Bug, confirmed 2026-08-19: the load-cap exemption above didn't actually exist in
+    code until this date, even though it reads like settled behavior.** Before this fix,
+    `countWeeklyLoadUnits` counted `direct_report` items one-for-one like any other item -
+    exempt from the 5-meeting cap but NOT from the 6-load-unit cap. The math doesn't work
+    for any manager with roughly 3+ direct reports: week 1 alone already carries ~3-4
+    fixed load units before any direct reports (office tour, manager intro, business
+    session 1, systems bundle), leaving very little budget, while `ceil(N/2)` direct
+    reports need to land in the heavier of weeks 1-2. Confirmed on two real managers via
+    real API calls - Eitan Mor (11 reports) and Thomas Green (3 reports) - both failing
+    this check on **every single real run** (3 and 4 consecutive failures respectively)
+    regardless of how well the Process Expert placed everything else. Fixed by excluding
+    `direct_report` from `countWeeklyLoadUnits` entirely, completing the same exemption
+    it already had from the shared meeting cap. Re-verified after the fix: Eitan Mor
+    passed on the 3rd post-fix attempt (6 reports in week 1, 5 in week 2, Gatekeeper 0
+    issues), Thomas Green passed on the 1st post-fix attempt (3 reports in week 1,
+    Gatekeeper 0 issues) - and a fresh IC plan (no direct reports) was re-verified to
+    still fail this cap normally for ordinary reasons, confirming the exemption didn't
+    accidentally loosen the cap for everyone else.
+  - **Known, non-blocking phenomenon surfaced while re-verifying this fix (not caused by
+    it, not fully root-caused): Process Expert occasionally emits a real JS method call
+    as a JSON field value** instead of a plain string - e.g. `"track":
+    "direct_manager".replace("direct_manager","team_interfaces"),` or
+    `"direct_manager".split("").join("")` - which breaks `JSON.parse` well before any
+    `max_tokens` limit is hit (confirmed via `data.usage.output_tokens` logging: every
+    occurrence had well under half the budget used). Seen 4 times total across roughly
+    30 real Process Expert calls made during this investigation (~13%, a rough estimate,
+    not a precise rate) - always the same shape (a quoted string immediately followed by
+    `.methodName(...)`), never anything else resembling embedded code. Not specific to
+    Manager-track employees (also seen on an ordinary IC plan) and not caused by the
+    load-cap fix above (both predate it and postdate it identically). `lib/process-
+    expert-agent.js` now detects this specific shape on a parse failure (a regex looking
+    for `"..."` immediately followed by `.replace(`/`.split(`/`.join(`/etc.) and logs it
+    as `[malformed-code-in-json]`, distinct from an ordinary `[json-parse-error]` - not a
+    fix, just makes the real frequency of this specific pattern visible over time instead
+    of blending into "JSON errors happen sometimes." Handled the same way every JSON
+    failure already is: re-run the pipeline. `max_tokens` was also bumped 8192 -> 16000
+    while investigating (a real successful run measured 7800/8192, ~95% utilized - not
+    generous headroom) - a legitimate, separate improvement, not a fix for this
+    phenomenon specifically. Root cause not investigated further per explicit scope
+    decision - deep-diving *why* the model occasionally does this was deliberately out of
+    scope for this round.
 - A fully empty week is allowed at the Process Expert stage (real information — nothing's
   due that week); the Content Writer turns it into a fixed, verbatim "lighter week" card,
   never invents filler to avoid it.

@@ -362,7 +362,7 @@ orchestrator/manager may later override in the edit step - not your job here):
 | `skip_manager` | recommended | Can defer 1-2 weeks under load |
 | `professional_mentor` | recommended | Use `context.people.professionalMentor` if present (only ever populated via manager intake - framework part F §13/14, there is no DB source for it). If it's null, that's a pipeline limitation, not a fact about this employee - don't invent a name; note it in `gaps` instead |
 | `interface_contact` | flexible by default, or as given by the onboardingNeed | Comes from an `onboardingNeeds[]` item - you no longer decide on your own that an interface matters enough to schedule. Always individual meetings, never grouped, regardless of `headcount`; see "Scheduling onboardingNeeds" |
-| `direct_report` | mandatory, always | Manager's own 1:1 with a direct report - see the numbered rule above. Weeks 1-2 only. Not subject to the shared 5/week cap (has its own allowance) |
+| `direct_report` | mandatory, always | Manager's own 1:1 with a direct report - see the numbered rule above. Weeks 1-2 only. Not subject to the shared 5/week cap (has its own allowance), and not counted at all toward the 6-unit weekly load cap either (see "Weekly load" below) |
 | `team_member` | mandatory for the one 6+-team group meeting (only when `team.hasExecutiveMember` is not true); flexible otherwise | See the numbered rules above - this is the *only* context in this prompt where a group meeting is ever appropriate, and only for real teammates (shared `team_id`), never for an `onboardingNeeds` list |
 | `trainer_self_learning` | n/a | Not a meeting - see weekly cap rule below |
 | `system_provisioning` | n/a | Not a meeting - see weekly cap rule below |
@@ -411,13 +411,25 @@ Beyond the 5-meeting shared cap (facilitator-based), there's a **separate**, har
 limit: **no week may contain more than 6 load units** - meetings and non-meetings
 combined, EXCEPT all `system_provisioning` items in a given week count together as
 **one** unit, not one each (a role needing 7 systems on day 1 is one provisioning batch,
-not 7 pieces of content). Everything else - meetings, trainings, self-guided content -
-counts one-for-one. This is checked in code and is a hard failure, not a suggestion.
-Example: a week with 3 meetings + 2 trainings + 7 systems = 3 + 2 + 1 = 6 units, exactly
-at the cap, even though it lists 12 individual items. If your initial placement would
-still put more than 6 units in one week, redistribute the ones without a fixed due date
-(see above) into neighboring weeks rather than letting the total climb - but don't
-artificially delay a system/training past its real due date just to satisfy this cap.
+not 7 pieces of content), and EXCEPT `direct_report` items, which don't count toward
+this cap **at all** - not bundled like systems, not counted even singly. This completes
+the same exemption `direct_report` already gets from the shared 5-meeting cap above, for
+the same reason: a manager's 1:1 with their own direct report is short, mandatory, and
+locked to weeks 1-2 with no flexibility in timing - it was never "content competing for
+room" the way a training or a discretionary meeting is. **This matters concretely for
+any manager with more than a couple of direct reports**: before this exemption existed,
+a manager with just 3 reports already exceeded this cap most of the time, and a manager
+with a genuinely large team (10+) exceeded it by a wide margin regardless of how well
+everything else was placed - the fixed week-1 items (office tour, manager intro,
+business session 1) alone leave very little of the 6-unit budget once every
+`direct_report` 1:1 counted fully against it too. Everything else - meetings, trainings,
+self-guided content - counts one-for-one. This is checked in code and is a hard failure,
+not a suggestion. Example: a week with 3 meetings + 2 trainings + 7 systems + 4
+direct-report 1:1s = 3 + 2 + 1 + 0 = 6 units, exactly at the cap, even though it lists 16
+individual items. If your initial placement would still put more than 6 units in one
+week, redistribute the ones without a fixed due date (see above) into neighboring weeks
+rather than letting the total climb - but don't artificially delay a system/training
+past its real due date just to satisfy this cap.
 
 A week ending up with **zero** items is fine at this stage - do not invent a placeholder
 meeting or training just to avoid an empty week. The Content Writer is responsible for
