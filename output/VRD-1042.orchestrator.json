@@ -1,0 +1,1307 @@
+{
+  "status": "draft",
+  "employeeId": "VRD-1042",
+  "planId": 29,
+  "context": {
+    "company": {
+      "company_name": "Veridian",
+      "category": "B2B SaaS — Governed Enterprise AI Platform",
+      "employee_count": 185,
+      "offices": "Tel Aviv HQ, London, Austin",
+      "as_of_date": "2026-08-11",
+      "purpose": "Synthetic but realistic dataset for onboarding AI Buddy demo"
+    },
+    "employee": {
+      "employee_id": "VRD-1042",
+      "full_name": "Amit Avraham",
+      "email": "amit.avraham@veridian.ai",
+      "job_title": "Senior DevOps Engineer",
+      "department": "Engineering",
+      "team": "Infrastructure & DevOps",
+      "location": "Tel Aviv",
+      "country": "Israel",
+      "time_zone": "Asia/Jerusalem",
+      "seniority": "Senior",
+      "track": "IC",
+      "job_level": "IC4",
+      "employment_type": "Full-time",
+      "hire_date": "2023-11-19",
+      "onboarding_cohort": null
+    },
+    "department": {
+      "department": "Engineering",
+      "headcount": 70,
+      "owner_email": "daniel.rosen@veridian.ai",
+      "primary_location": "Tel Aviv",
+      "mission": "Build secure, reliable and scalable enterprise AI infrastructure",
+      "primary_kpis": "Reliability, deployment frequency, roadmap delivery, security posture"
+    },
+    "team": {
+      "team_id": "ENG-INF",
+      "department": "Engineering",
+      "org_group": "Platform & Security",
+      "team": "Infrastructure & DevOps",
+      "mission": "Owns infrastructure & devops capabilities for the Veridian platform",
+      "headcount": 11,
+      "manager_email": "nir.katz@veridian.ai",
+      "primary_office": "Tel Aviv",
+      "core_tools": "Jira, GitHub, Slack, Notion",
+      "status": "Active",
+      "hasExecutiveMember": false
+    },
+    "office": {
+      "office_id": "OFF-TLV",
+      "city": "Tel Aviv",
+      "country": "Israel",
+      "time_zone": "Asia/Jerusalem",
+      "headcount": 95,
+      "main_functions": "Executive, Engineering, Product, People, Finance",
+      "work_model": "Hybrid - 3 office days/week",
+      "notes": "Company HQ"
+    },
+    "people": {
+      "manager": {
+        "employee_id": "VRD-1041",
+        "full_name": "Nir Katz",
+        "email": "nir.katz@veridian.ai",
+        "job_title": "Engineering Manager",
+        "department": "Engineering",
+        "team": "Infrastructure & DevOps"
+      },
+      "skipManager": {
+        "employee_id": "VRD-1038",
+        "full_name": "Lior Mizrahi",
+        "email": "lior.mizrahi@veridian.ai",
+        "job_title": "Director Platform & Infrastructure",
+        "department": "Engineering",
+        "team": "Engineering Leadership"
+      },
+      "executive": {
+        "employee_id": "VRD-1006",
+        "full_name": "Daniel Rosen",
+        "email": "daniel.rosen@veridian.ai",
+        "job_title": "CTO",
+        "department": "Executive",
+        "team": "Executive Leadership"
+      },
+      "hrbp": {
+        "employee_id": "VRD-1171",
+        "full_name": "Tal Harari",
+        "email": "tal.harari@veridian.ai",
+        "job_title": "Senior HR Business Partner",
+        "department": "People",
+        "team": "People Partners"
+      },
+      "humanBuddy": null,
+      "directReports": [],
+      "peopleSupported": []
+    },
+    "role": {
+      "role_id": "ROLE-005",
+      "job_family": "Engineering",
+      "title": "DevOps Engineer",
+      "track": "IC",
+      "typical_level_range": "IC2-IC4",
+      "core_collaboration": "Cross-functional partners, manager, immediate team",
+      "mandatory_role_training": "See Training Catalog",
+      "purpose": null,
+      "responsibilities": null,
+      "data_boundary_notes": null
+    },
+    "roleMatch": {
+      "method": "prefix-stripped",
+      "searchedTitle": "Senior DevOps Engineer",
+      "strippedPrefix": "Senior"
+    },
+    "careerLevel": {
+      "track": "IC",
+      "level": "IC4",
+      "label": "Senior",
+      "scope": "Leads complex workstreams and mentors others",
+      "typical_titles": "Senior Engineer, Senior CSM, Senior PMM"
+    },
+    "systems": [
+      {
+        "system": "Slack",
+        "owner": "IT Operations",
+        "purpose": "Internal communication and team channels",
+        "access_method": "Provisioned via Okta",
+        "due": {
+          "raw": "Day 1",
+          "days": 1,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Notion",
+        "owner": "People Operations",
+        "purpose": "Company knowledge base and handbooks",
+        "access_method": "Provisioned via Okta",
+        "due": {
+          "raw": "Day 1",
+          "days": 1,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Jira",
+        "owner": "Engineering Operations",
+        "purpose": "Roadmap execution and sprint tracking",
+        "access_method": "Manager approval through IT ticket",
+        "due": {
+          "raw": "Day 2",
+          "days": 2,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "GitHub",
+        "owner": "Engineering",
+        "purpose": "Source control and code review",
+        "access_method": "Manager approval + Security training",
+        "due": {
+          "raw": "Day 3",
+          "days": 3,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "HiBob",
+        "owner": "People Operations",
+        "purpose": "HRIS, employee profile, time off and org chart",
+        "access_method": "Provisioned via Okta",
+        "due": {
+          "raw": "Day 1",
+          "days": 1,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Google Workspace",
+        "owner": "IT Operations",
+        "purpose": "Email, calendar, shared drive and Meet",
+        "access_method": "Provisioned pre-start",
+        "due": {
+          "raw": "Before Day 1",
+          "days": 0,
+          "isPreboarding": true,
+          "unparsed": false
+        }
+      },
+      {
+        "system": "Figma",
+        "owner": "Design",
+        "purpose": "Product design and prototypes",
+        "access_method": "Manager approval",
+        "due": {
+          "raw": "Day 3",
+          "days": 3,
+          "isPreboarding": false,
+          "unparsed": false
+        }
+      }
+    ],
+    "trainings": [
+      {
+        "training_id": "TRN-001",
+        "training": "Security Awareness",
+        "mandatory": "Yes",
+        "owner": "Security Engineering",
+        "duration": "45 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 7",
+          "days": 7,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "All employees"
+      },
+      {
+        "training_id": "TRN-002",
+        "training": "Data Privacy & GDPR Basics",
+        "mandatory": "Yes",
+        "owner": "Legal & Compliance",
+        "duration": "40 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 14",
+          "days": 14,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "All employees"
+      },
+      {
+        "training_id": "TRN-003",
+        "training": "Code of Conduct",
+        "mandatory": "Yes",
+        "owner": "People Operations",
+        "duration": "30 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 7",
+          "days": 7,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "All employees"
+      },
+      {
+        "training_id": "TRN-004",
+        "training": "Secure Development",
+        "mandatory": "Yes",
+        "owner": "Security Engineering",
+        "duration": "90 min",
+        "renewal": "Annual",
+        "due": {
+          "raw": "Day 21",
+          "days": 21,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "Engineering"
+      },
+      {
+        "training_id": "TRN-005",
+        "training": "GitHub & Code Review Standards",
+        "mandatory": "Yes",
+        "owner": "Engineering Operations",
+        "duration": "60 min",
+        "renewal": "One-time",
+        "due": {
+          "raw": "Day 14",
+          "days": 14,
+          "isPreboarding": false,
+          "unparsed": false
+        },
+        "audience": "Engineering"
+      }
+    ],
+    "policies": [
+      {
+        "policy_id": "POL-001",
+        "policy": "Hybrid Work Policy",
+        "summary": "Employees work from the office three days per week unless a role-specific exception is approved.",
+        "source": "Employee Handbook"
+      },
+      {
+        "policy_id": "POL-002",
+        "policy": "Information Security Policy",
+        "summary": "Company data may only be accessed through approved devices, systems and role-based permissions.",
+        "source": "Security Basics"
+      },
+      {
+        "policy_id": "POL-003",
+        "policy": "Code Review Policy",
+        "summary": "Every pull request requires at least one reviewer approval and successful CI before merge.",
+        "source": "Engineering Handbook"
+      },
+      {
+        "policy_id": "POL-004",
+        "policy": "Production Deployment Policy",
+        "summary": "Standard production deployments happen Monday through Thursday; Friday deployments require Director approval.",
+        "source": "Engineering Handbook"
+      },
+      {
+        "policy_id": "POL-005",
+        "policy": "Expense Policy",
+        "summary": "Business expenses must be submitted with receipts by the fifth business day of the following month.",
+        "source": "Employee Handbook"
+      },
+      {
+        "policy_id": "POL-006",
+        "policy": "Customer Data Handling",
+        "summary": "Customer data must not be copied into unapproved tools or shared outside approved customer workspaces.",
+        "source": "Security Basics"
+      }
+    ],
+    "products": [
+      {
+        "product_area": "Knowledge Hub",
+        "module": "Connectors & Indexing",
+        "description": "Connects approved enterprise knowledge sources and indexes content for retrieval.",
+        "primary_users": "IT admins, knowledge owners, employees",
+        "lifecycle_stage": "GA"
+      },
+      {
+        "product_area": "AI Assistant",
+        "module": "Employee Assistant",
+        "description": "Conversational assistant that answers employee questions using governed company knowledge.",
+        "primary_users": "Employees, managers",
+        "lifecycle_stage": "GA"
+      },
+      {
+        "product_area": "AI Agents",
+        "module": "Department Agents",
+        "description": "Configurable agents for workflows such as HR, IT, finance and procurement.",
+        "primary_users": "Business function owners",
+        "lifecycle_stage": "Beta"
+      },
+      {
+        "product_area": "Governance",
+        "module": "Permissions & Audit",
+        "description": "Manages role-based access, audit logs, policies and compliance controls.",
+        "primary_users": "Security, legal, IT admins",
+        "lifecycle_stage": "GA"
+      }
+    ],
+    "gaps": [
+      "company_overview only has basic summary fields (name, category, employee count, offices) - no product description, ICP, or business-model detail exists anywhere in the source data. The business track can name the company and its one-line category, but cannot go deeper without inventing content.",
+      "human_buddy_email is not set - Buddy has not been assigned yet for this hire (per framework part D §13, this is always a fresh per-hire decision from manager intake, not inherited)."
+    ],
+    "officeTourGuide": {
+      "employee_id": "VRD-1041",
+      "full_name": "Nir Katz",
+      "email": "nir.katz@veridian.ai",
+      "job_title": "Engineering Manager",
+      "department": "Engineering",
+      "team": "Infrastructure & DevOps",
+      "reason": "teammate"
+    },
+    "roleEssence": "This is a senior IC role owning the infrastructure and deployment backbone of Veridian's platform - building and hardening the systems that make reliability, deployment frequency, and security posture possible. Day-to-day work centers on infrastructure-as-code, CI/CD pipelines, monitoring/observability, and incident response, done in close coordination with the immediate Infra & DevOps team and cross-functional engineering partners whose services run on this infrastructure. At IC4, expertise means not just executing but leading complex workstreams and mentoring others, so ramp-up needs to cover both the technical estate and how the team operates as a unit.",
+    "onboardingNeeds": [
+      {
+        "title": "Map the current infrastructure and deployment architecture",
+        "track": "role",
+        "purpose": null,
+        "rationale": "roleEssence centers on owning infrastructure and deployment systems - a senior engineer needs a working mental model of the actual architecture (environments, CI/CD pipelines, cloud topology) before contributing meaningfully or mentoring others on it.",
+        "headcount": null
+      },
+      {
+        "title": "Learn incident response and on-call practices",
+        "track": "role",
+        "purpose": null,
+        "rationale": "Reliability is a primary department KPI and infrastructure/devops work inherently includes on-call and incident handling - a senior hire needs to understand escalation paths, tooling, and runbooks before joining rotation.",
+        "headcount": null
+      },
+      {
+        "title": "Review security posture and access/governance controls",
+        "track": "role",
+        "purpose": null,
+        "rationale": "Department mission explicitly includes security posture, and the team sits in the Platform & Security org group; DevOps engineers are typically responsible for enforcing infra-level security and compliance controls, so this is core role content, not general orientation.",
+        "headcount": null
+      },
+      {
+        "title": "Shadow a deployment or infra change end-to-end",
+        "track": "role",
+        "purpose": null,
+        "rationale": "Before leading complex workstreams independently at IC4, seeing how a real deployment/change is planned, reviewed, and executed with the current team grounds the person in actual team conventions and tooling.",
+        "headcount": null
+      },
+      {
+        "title": "Meet engineering teams whose services run on the infrastructure you support",
+        "track": "team_interfaces",
+        "purpose": "Understand what these teams build and depend on, so infrastructure decisions account for their real deployment needs.",
+        "rationale": "core_collaboration names cross-functional partners as key; since infra/devops underpins other engineering teams' ability to ship, understanding their workloads and pain points is directly relevant, though this is an interface, not the role's own core work.",
+        "headcount": null
+      },
+      {
+        "title": "Get to know your Infrastructure & DevOps teammates",
+        "track": "team_interfaces",
+        "purpose": null,
+        "rationale": "Useful context-building alongside the technical ramp-up; Process Expert's structural rule already handles the actual scheduling mechanics for this same-team group.",
+        "headcount": null
+      }
+    ],
+    "businessDepthNotes": [
+      {
+        "session": 2,
+        "reason": "Infra/devops underpins all product areas (GA and beta) - worth understanding what's actually being deployed and at what lifecycle stage"
+      },
+      {
+        "session": 5,
+        "reason": "Reliability and deployment frequency are named department KPIs directly tied to this role's output"
+      }
+    ]
+  },
+  "plan": {
+    "weeks": [
+      {
+        "weekNumber": 1,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Nir, your office tour + team orientation",
+            "purpose": "Get shown around the Tel Aviv office and oriented by a teammate on your first day.",
+            "usageNote": null,
+            "facilitatorType": "team_member",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Nir Katz - intro and onboarding plan walkthrough",
+            "purpose": "Meet your manager, align on expectations, and walk through your first weeks together.",
+            "usageNote": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Buddy intro - TBD, confirm with HR",
+            "purpose": "Get paired with a go-to person for day-to-day questions while you ramp up.",
+            "usageNote": null,
+            "facilitatorType": "human_buddy",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Get to know your Infrastructure & DevOps team",
+            "purpose": "Meet the teammates you will work alongside daily and learn how the team operates.",
+            "usageNote": null,
+            "facilitatorType": "team_member",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Slack access",
+            "purpose": null,
+            "usageNote": "For day-to-day communication with your team and cross-functional partners in engineering channels.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Notion access",
+            "purpose": null,
+            "usageNote": "For finding infrastructure runbooks, team docs, and company knowledge base pages.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "HiBob access",
+            "purpose": null,
+            "usageNote": "For your employee profile, time off requests, and viewing the org chart.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Google Workspace access",
+            "purpose": null,
+            "usageNote": "For email, calendar, shared drives, and video meetings from day one.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Veridian overview - vision, values, offices",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 2,
+        "items": [
+          {
+            "track": "systems_access",
+            "title": "Jira access",
+            "purpose": null,
+            "usageNote": "For tracking infrastructure sprint work and roadmap execution tickets.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "GitHub access",
+            "purpose": null,
+            "usageNote": "For source control, opening PRs, and code review on infrastructure-as-code repositories.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "systems_access",
+            "title": "Figma access",
+            "purpose": null,
+            "usageNote": "For viewing product and platform design references relevant to infrastructure work.",
+            "facilitatorType": "system_provisioning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Nir Katz - team mission, metrics, and how we work",
+            "purpose": "Get grounded in the team's mission, metrics, key processes, and where docs and reports live.",
+            "usageNote": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Map the current infrastructure and deployment architecture",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 3,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Product tour - Knowledge Hub, AI Assistant, AI Agents and Governance",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Market and customers overview",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 3,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Nir - settling in",
+            "purpose": "Check in on how the first weeks are going and surface any early questions.",
+            "usageNote": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "compliance",
+            "title": "Security Awareness",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "compliance",
+            "title": "Code of Conduct",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Review security posture and access/governance controls",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 2,
+            "recurring": false,
+            "dependsOn": [
+              "Map the current infrastructure and deployment architecture"
+            ]
+          },
+          {
+            "track": "role",
+            "title": "Learn incident response and on-call practices",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 2,
+            "recurring": false,
+            "dependsOn": [
+              "Map the current infrastructure and deployment architecture"
+            ]
+          },
+          {
+            "track": "business",
+            "title": "Business model overview",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 4,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Nir - progress and blockers",
+            "purpose": "Review how ramp-up is going so far and unblock anything that's come up.",
+            "usageNote": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "compliance",
+            "title": "Data Privacy & GDPR Basics",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.65,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Secure Development",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "GitHub & Code Review Standards",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 1,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Meet engineering teams whose services run on your infrastructure",
+            "purpose": "Understand what these teams build and depend on, so infrastructure decisions account for their real deployment needs.",
+            "usageNote": null,
+            "facilitatorType": "interface_contact",
+            "mandatoryTier": "flexible",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "business",
+            "title": "Key success metrics - reliability and deployment frequency in focus",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 5,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Nir - 30-day review",
+            "purpose": "Look back at the original plan together, close gaps, and re-prioritize for the weeks ahead.",
+            "usageNote": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Meet your department - Engineering vision and goals",
+            "purpose": "Hear how the department's mission and this year's goals connect to your day-to-day work.",
+            "usageNote": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.75,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "team_interfaces",
+            "title": "Tal Harari - HR check-in",
+            "purpose": "Check in with your HR business partner and raise anything that's come up so far.",
+            "usageNote": null,
+            "facilitatorType": "hrbp",
+            "mandatoryTier": "recommended",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": []
+          },
+          {
+            "track": "role",
+            "title": "Shadow a deployment or infra change end-to-end",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 3,
+            "recurring": false,
+            "dependsOn": [
+              "Map the current infrastructure and deployment architecture"
+            ]
+          },
+          {
+            "track": "business",
+            "title": "Strategic direction and near-term roadmap",
+            "purpose": null,
+            "usageNote": null,
+            "facilitatorType": "trainer_self_learning",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": false,
+            "dependsOn": [
+              "Veridian overview - vision, values, offices",
+              "Product tour - Knowledge Hub, AI Assistant, AI Agents and Governance",
+              "Market and customers overview",
+              "Business model overview",
+              "Key success metrics - reliability and deployment frequency in focus"
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 6,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Nir - independent work ramping up",
+            "purpose": "Talk through what's on your plate as you take on more independent workstreams.",
+            "usageNote": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 7,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Nir - staying aligned",
+            "purpose": "Keep in sync on priorities and flag anything that needs attention early.",
+            "usageNote": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          }
+        ]
+      },
+      {
+        "weekNumber": 8,
+        "items": [
+          {
+            "track": "team_interfaces",
+            "title": "Weekly check-in with Nir - wrapping up onboarding",
+            "purpose": "Reflect on the first two months and set goals for the next stretch.",
+            "usageNote": null,
+            "facilitatorType": "direct_manager",
+            "mandatoryTier": "mandatory",
+            "estimatedHours": 0.5,
+            "recurring": true,
+            "dependsOn": []
+          }
+        ]
+      }
+    ],
+    "gaps": [
+      "No Buddy has been assigned yet for this hire - the office tour and orientation is being covered by a teammate (Nir Katz) in the interim, and a separate buddy intro item is placeholdered pending HR assignment.",
+      "No professional mentor is recorded for this employee in the source data - this is a pipeline/intake limitation, not a fact about the employee, so no mentor meeting was scheduled; flag for manual addition if manager intake surfaces one.",
+      "Company-level business context data is thin (no product descriptions beyond name/module list, no ICP or business-model detail) - business track sessions 3, 4, and 6 are necessarily generic topic overviews per the demo assumption and should be validated against real LMS content before production use.",
+      "IC team is 11 people (6+) with no executive member, so per the structural rule only one group team meeting was scheduled; no additional individual teammate meetings were added since context does not specify which teammates are most relevant beyond the general cross-functional interface need already captured."
+    ]
+  },
+  "content": {
+    "weeks": [
+      {
+        "weekNumber": 1,
+        "items": [
+          {
+            "id": "w1-i0",
+            "track": "team_interfaces",
+            "shortLine": "Office tour with Nir",
+            "detailText": "Nir will show you around the Tel Aviv office on your first day and help you get oriented before things ramp up.",
+            "facilitatorDisplayName": "Nir Katz (your manager)",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i1",
+            "track": "team_interfaces",
+            "shortLine": "Intro and onboarding plan walkthrough with Nir",
+            "detailText": "Meet your manager Nir Katz to align on expectations and walk through what your first few weeks will look like.",
+            "facilitatorDisplayName": "Nir Katz (your manager)",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i2",
+            "track": "team_interfaces",
+            "shortLine": "Your buddy, coming soon",
+            "detailText": "HR is still finalizing your buddy assignment, the person you'll go to for everyday questions as you ramp up. We'll let you know as soon as that's set.",
+            "facilitatorDisplayName": "To be assigned",
+            "dayHint": "Coming soon",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i3",
+            "track": "team_interfaces",
+            "shortLine": "Meet the Infrastructure & DevOps team",
+            "detailText": "Get to know the teammates you'll be working alongside every day and see how the team operates together.",
+            "facilitatorDisplayName": "Infrastructure & DevOps team",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i4",
+            "track": "systems_access",
+            "shortLine": "Slack access",
+            "detailText": "Slack is set up for day-to-day communication with your team and cross-functional partners in engineering channels.",
+            "facilitatorDisplayName": "IT Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i5",
+            "track": "systems_access",
+            "shortLine": "Notion access",
+            "detailText": "Your Notion access is ready for finding infrastructure runbooks, team docs, and the company knowledge base.",
+            "facilitatorDisplayName": "People Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i6",
+            "track": "systems_access",
+            "shortLine": "HiBob access",
+            "detailText": "HiBob gives you your employee profile, time off requests, and the org chart in one place.",
+            "facilitatorDisplayName": "People Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i7",
+            "track": "systems_access",
+            "shortLine": "Google Workspace access",
+            "detailText": "Your email, calendar, shared drives, and video meetings are ready to go from day one.",
+            "facilitatorDisplayName": "IT Operations",
+            "dayHint": "Day 1",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w1-i8",
+            "track": "business",
+            "shortLine": "Veridian overview: vision, values, offices",
+            "detailText": "A self-paced look at Veridian's vision, values, and offices to get you grounded in the company.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 1",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 2,
+        "items": [
+          {
+            "id": "w2-i0",
+            "track": "systems_access",
+            "shortLine": "Jira access",
+            "detailText": "Jira access is ready for tracking infrastructure sprint work and roadmap execution tickets.",
+            "facilitatorDisplayName": "Engineering Operations",
+            "dayHint": "Day 2",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i1",
+            "track": "systems_access",
+            "shortLine": "GitHub access",
+            "detailText": "GitHub access is ready for source control, opening PRs, and code review on infrastructure-as-code repositories.",
+            "facilitatorDisplayName": "Engineering",
+            "dayHint": "Day 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i2",
+            "track": "systems_access",
+            "shortLine": "Figma access",
+            "detailText": "Figma access lets you view product and platform design references relevant to infrastructure work.",
+            "facilitatorDisplayName": "Design",
+            "dayHint": "Day 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i3",
+            "track": "team_interfaces",
+            "shortLine": "Team mission, metrics, and how we work with Nir",
+            "detailText": "Nir will walk you through the team's mission, key metrics, and core processes, plus where to find docs and reports.",
+            "facilitatorDisplayName": "Nir Katz (your manager)",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i4",
+            "track": "role",
+            "shortLine": "Map the current infrastructure and architecture",
+            "detailText": "Build a working mental model of the environments, CI/CD pipelines, and cloud topology you'll be responsible for.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i5",
+            "track": "business",
+            "shortLine": "Product tour: Knowledge Hub, AI Assistant, AI Agents, Governance",
+            "detailText": "Walk through Veridian's product areas, from the Knowledge Hub to Governance, to see what your infrastructure work supports.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w2-i6",
+            "track": "business",
+            "shortLine": "Market and customers overview",
+            "detailText": "A self-paced overview of Veridian's market and customer base.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 2",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 3,
+        "items": [
+          {
+            "id": "w3-i0",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in with Nir: settling in",
+            "detailText": "A short check-in with Nir on how your first weeks are going and a chance to raise any early questions.",
+            "facilitatorDisplayName": "Nir Katz (your manager)",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i1",
+            "track": "compliance",
+            "shortLine": "Security Awareness training",
+            "detailText": "Required training covering the basics of keeping company systems and data secure.",
+            "facilitatorDisplayName": "Security Engineering",
+            "dayHint": "By Day 7",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i2",
+            "track": "compliance",
+            "shortLine": "Code of Conduct training",
+            "detailText": "Required training on Veridian's expectations for workplace conduct.",
+            "facilitatorDisplayName": "People Operations",
+            "dayHint": "By Day 7",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i3",
+            "track": "role",
+            "shortLine": "Review security posture and access controls",
+            "detailText": "Go deeper into the security and governance controls that infrastructure engineers are responsible for enforcing, building on the architecture you mapped last week.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i4",
+            "track": "role",
+            "shortLine": "Learn incident response and on-call practices",
+            "detailText": "Get familiar with escalation paths, tooling, and runbooks before you join the on-call rotation.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w3-i5",
+            "track": "business",
+            "shortLine": "Business model overview",
+            "detailText": "A self-paced look at how Veridian's business model works.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 3",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 4,
+        "items": [
+          {
+            "id": "w4-i0",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in with Nir: progress and blockers",
+            "detailText": "Review how your ramp-up is going with Nir and work through anything that's blocking you.",
+            "facilitatorDisplayName": "Nir Katz (your manager)",
+            "dayHint": "Week 4",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i1",
+            "track": "compliance",
+            "shortLine": "Data Privacy & GDPR Basics training",
+            "detailText": "Required training covering the fundamentals of data privacy and GDPR.",
+            "facilitatorDisplayName": "Legal & Compliance",
+            "dayHint": "By Day 14",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i2",
+            "track": "role",
+            "shortLine": "Secure Development training",
+            "detailText": "Required training on secure coding and development practices for engineering.",
+            "facilitatorDisplayName": "Security Engineering",
+            "dayHint": "Week 4",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i3",
+            "track": "role",
+            "shortLine": "GitHub & Code Review Standards training",
+            "detailText": "Learn Veridian's code review policy and standards for working in GitHub, including the one-approval-plus-CI rule before any merge.",
+            "facilitatorDisplayName": "Engineering Operations",
+            "dayHint": "By Day 14",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i4",
+            "track": "team_interfaces",
+            "shortLine": "Meet teams running on your infrastructure",
+            "detailText": "Connect with engineering teams whose services depend on the infrastructure you support, so you understand their real deployment needs.",
+            "facilitatorDisplayName": "Engineering partner teams",
+            "dayHint": "Week 4",
+            "emailContext": "I'd love to understand what your team builds and how you depend on the infrastructure we run, so our decisions account for your real deployment needs.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w4-i5",
+            "track": "business",
+            "shortLine": "Key success metrics: reliability and deployment frequency",
+            "detailText": "A closer look at reliability and deployment frequency, the two metrics most directly tied to your work.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 4",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 5,
+        "items": [
+          {
+            "id": "w5-i0",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in with Nir: 30-day review",
+            "detailText": "Look back at your original onboarding plan with Nir, close any gaps, and re-prioritize for the weeks ahead.",
+            "facilitatorDisplayName": "Nir Katz (your manager)",
+            "dayHint": "Around Day 30",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w5-i1",
+            "track": "team_interfaces",
+            "shortLine": "Meet Engineering: vision and goals",
+            "detailText": "Hear from Nir how Engineering's mission and this year's goals connect to your day-to-day infrastructure work.",
+            "facilitatorDisplayName": "Nir Katz (your manager)",
+            "dayHint": "Week 5",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w5-i2",
+            "track": "team_interfaces",
+            "shortLine": "HR check-in with Tal",
+            "detailText": "A check-in with Tal Harari, your HR business partner, to raise anything that's come up since you started.",
+            "facilitatorDisplayName": "Tal Harari (HR business partner)",
+            "dayHint": "Week 5",
+            "emailContext": "I'd like to check in on how things have been going since you started and hear if anything's come up.",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w5-i3",
+            "track": "role",
+            "shortLine": "Shadow a deployment end-to-end",
+            "detailText": "Follow a real deployment or infrastructure change from planning through execution, grounding you in how the team actually works day to day.",
+            "facilitatorDisplayName": "Infrastructure & DevOps team",
+            "dayHint": "Week 5",
+            "completed": false,
+            "completedAt": null
+          },
+          {
+            "id": "w5-i4",
+            "track": "business",
+            "shortLine": "Strategic direction and near-term roadmap",
+            "detailText": "A self-paced look at Veridian's strategic direction and what's coming next on the roadmap, building on the company and product context from earlier weeks.",
+            "facilitatorDisplayName": "Self-guided training",
+            "dayHint": "Week 5",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 6,
+        "items": [
+          {
+            "id": "w6-i0",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in with Nir: independent work ramping up",
+            "detailText": "Talk through what's on your plate with Nir as you take on more independent workstreams.",
+            "facilitatorDisplayName": "Nir Katz (your manager)",
+            "dayHint": "Week 6",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 7,
+        "items": [
+          {
+            "id": "w7-i0",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in with Nir: staying aligned",
+            "detailText": "A quick sync with Nir to stay aligned on priorities and flag anything that needs attention early.",
+            "facilitatorDisplayName": "Nir Katz (your manager)",
+            "dayHint": "Week 7",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      },
+      {
+        "weekNumber": 8,
+        "items": [
+          {
+            "id": "w8-i0",
+            "track": "team_interfaces",
+            "shortLine": "Weekly check-in with Nir: wrapping up onboarding",
+            "detailText": "Reflect with Nir on your first two months and set goals for the stretch ahead.",
+            "facilitatorDisplayName": "Nir Katz (your manager)",
+            "dayHint": "Week 8",
+            "completed": false,
+            "completedAt": null
+          }
+        ]
+      }
+    ],
+    "internalGaps": [
+      "No professional mentor is recorded for this employee - flag for manual addition if manager intake surfaces one; not shown to employee since no mentor role exists to reference yet.",
+      "Company-level business context data is thin (no product descriptions beyond name/module list, no ICP or business-model detail) - business track sessions are generic topic overviews and should be validated against real LMS content before production use.",
+      "IC team is 11 people with no executive member, so only one group team meeting was scheduled; no additional individual teammate meetings were added since context does not specify which teammates are most relevant."
+    ]
+  },
+  "gatekeeperIssues": [
+    {
+      "itemId": "w4-i3",
+      "ruleViolated": "Section 6/no-invent — internal-classification/policy detail must be grounded, not stated as invented fact; also general 'don't invent critical information' principle",
+      "explanation": "detailText says 'including the one-approval-plus-CI rule before any merge' — this states a specific internal policy detail (exact approval count and CI requirement) that reads as invented rather than grounded in any real source data described in memory. Memory's no-invent section requires mandatory trainings be scheduled from real rows but doesn't establish that specific internal process rules can be fabricated as descriptive detail in employee-facing text.",
+      "severity": "minor"
+    },
+    {
+      "itemId": "w4-i4",
+      "ruleViolated": "Content Writer voice rule 4 (never explain why this way and not another way)",
+      "explanation": "The item includes an 'emailContext' with the phrase 'so our decisions account for your real deployment needs' which frames the meeting's purpose around a system-level rationale, though this is borderline since it describes substance (understanding needs) rather than a scheduling/grouping mechanism. Flagging as minor since it edges toward justifying the meeting's existence rather than pure content.",
+      "severity": "minor"
+    }
+  ],
+  "createdAt": "2026-08-19T19:11:18.393Z"
+}

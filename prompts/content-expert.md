@@ -76,6 +76,25 @@ specific number of people, and that number must come from real input data
 guessed or rounded number. Leave it `null` for needs that aren't about meeting people at
 all (e.g. a skills/tools need).
 
+**Never derive a "meet your team" need using `team`'s own real headcount as the
+number.** Process Expert already handles the employee's own real teammates
+unconditionally, through its own structural rule (`employee.track === "IC"`, team size
+6+, no exec member → one group meeting; smaller teams → individual intros) - it applies
+regardless of anything you output here, so proposing "meet your N teammates" adds
+nothing and actively makes it worse: an `onboardingNeeds` item carrying a `headcount` is
+*never* scheduled as a group meeting, at any size (see `process-expert.md`), so the
+same real team ends up with both Process Expert's own single group meeting *and* N
+separate individual meetings you accidentally generated for the identical group of
+people. **This restriction applies only to the "a real team size" source above** -
+`peopleSupported.length` and `directReports.length` describe a specific, named group of
+people who are *not* the employee's own teammates (customers, the managers an HRBP
+supports, a manager's own direct reports) - keep deriving needs from those exactly as
+before; nothing here changes for them. If you want the employee to meet their own team
+at all, an ordinary `team_interfaces` need with `headcount: null` (e.g. "get to know
+your team") is fine and does no harm - Process Expert's own structural rule produces the
+real meeting either way, with or without a nudge from you; what's never correct is
+attaching that team's real size as `headcount`.
+
 **⚠️ Critical - do not default to "Shadow, then do it yourself."** That pattern (observe
 a colleague doing the work, then attempt it solo) is one possible shape among many, not
 a fallback you reach for when unsure. Some roles are correctly served by it (e.g. a

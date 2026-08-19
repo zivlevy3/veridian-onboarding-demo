@@ -371,6 +371,83 @@ logistics, and voice are three different jobs, run in that order:
   already said everything the gap entry was saying. `internalGaps` is for what the plan
   says nothing about, not a second copy of what it already covers.
 
+**Fixed at the Content Expert layer, not Process Expert (2026-08-19): "meet your team"
+duplication when `headcount` was sourced from the team's own real size.** Root cause,
+found from a real failure (`Test Hire Seventeen`, 11-person team): two independent code
+paths both handle "meet your own teammates" —
+  1. Process Expert's own **structural** rule (`employee.track === "IC"`, team size 6+,
+     no exec member → exactly one group meeting; smaller teams → individual intros),
+     driven directly by `context.team.headcount`, unconditional and independent of
+     anything Content Expert outputs.
+  2. `onboardingNeeds[]` items carrying a `headcount` — per Process Expert's own
+     scheduling rule these are **always** N individual meetings, never grouped, at any
+     size.
+`prompts/content-expert.md` used to explicitly permit "a real team size if given" as one
+of three valid `headcount` sources (alongside `peopleSupported.length` and
+`directReports.length`). When it used that source for a "meet your team" need, it
+correctly followed its own prompt while unknowingly duplicating what Process Expert's
+structural rule was already going to produce unconditionally — the real team ended up
+with both the one structural group meeting *and* N separate individual meetings for the
+identical group of people.
+- **Fixed in Content Expert, not Process Expert.** Process Expert's own design boundary,
+  already established above and restated verbatim in its own prompt: *"Don't
+  second-guess, merge, or drop a need"* (`prompts/process-expert.md` line 42) — it places
+  `onboardingNeeds[]` exactly as given, purely a scheduling decision. Teaching it to
+  detect-and-suppress a duplicate against its own structural output would mean
+  second-guessing what Content Expert handed it, exactly the responsibility split this
+  boundary exists to prevent. Content Expert already has direct access to `team` and
+  already reasons about role/team relationships, making it the correct place for one
+  narrow rule: never use the team's own real size as `headcount` for a "meet your team"
+  need. `peopleSupported`/`directReports` sourcing (the legitimate HRBP/manager-portfolio
+  case) is untouched — those describe a *different*, specifically-named group of people
+  (customers, supported managers, direct reports), not the employee's own teammates. An
+  ordinary `team_interfaces` need with `headcount: null` (e.g. "get to know your team")
+  is still fine to propose — Process Expert's structural rule produces the real meeting
+  regardless; what's never correct is attaching the team's real size as `headcount`.
+- **Verified with 3 real API checks before committing**, cheapest first:
+  1. Content Expert only, Moran Peleg (`VRD-1172`, the legitimate portfolio case) —
+     `headcount: 8` sourced from `peopleSupported`, unchanged; a new, harmless
+     `team_interfaces`/`headcount: null` "meet a fellow People Partner" need appeared,
+     exactly the still-permitted shape.
+  2. Content Expert only, Daniel Hadar (`VRD-1011`, 12-person real team, the original bug
+     shape) — the duplicate headcount-bearing need is gone, replaced by an ordinary
+     `team_interfaces`/`headcount: null` need whose own `rationale` explicitly cited the
+     new rule ("headcount intentionally omitted since Process Expert's own structural
+     rule already covers this team's real size").
+  3. Full pipeline, once, on Amit Avraham (`VRD-1042`, 11-person IC team, no exec member —
+     same shape as the original bug, substituted for Daniel — see the known issue below):
+     exactly one team meeting was scheduled ("Get to know your Infrastructure & DevOps
+     team", `headcount: null`), and the plan's own `gaps[]` explained why: *"IC team is 11
+     people (6+) with no executive member, so per the structural rule only one group team
+     meeting was scheduled; no additional individual teammate meetings were added."* No
+     duplication anywhere in the final schedule.
+
+**Known issue, found while verifying the fix above, not investigated further this round
+(2026-08-19): Process Expert can collapse an entire plan to near-nothing on some
+employee contexts, unrelated to the headcount fix.** On Daniel Hadar (`VRD-1011`)
+specifically, 3 consecutive real API calls (via the CLI orchestrator script) all returned
+a schema-valid but severely degenerate plan: 1 week instead of 8, that week's `items: []`
+or two trivial items (one titled literally `"placeholder"`), `gaps: ["placeholder"]`,
+`stop_reason: "tool_use"` (not truncation — only 81–405 output tokens against a
+16000-token budget). Root cause appears to be the model over-applying
+`prompts/process-expert.md`'s "never invent critical information" rule (§ "Rule: never
+invent critical information", lines ~440–451): that rule says to use "an explicit
+placeholder in **that item's** title" for the *specific* affected item when a gap exists,
+but on Daniel's context the model instead collapsed the **entire plan** to a single
+placeholder rather than building the rest normally. Confirmed unrelated to the Content
+Expert fix above — Content Expert's own output was healthy in all 3 runs (clean
+`roleEssence`, 5-6 sensible needs, no duplication). Also confirmed not universal: the
+same full pipeline ran cleanly on Amit Avraham (`VRD-1042`) immediately after, so this is
+specific to something in Daniel's context, not a general regression. `lib/schemas.js`'s
+strict-mode schema cannot enforce "exactly 8 weeks" structurally (`minItems`/`maxItems`
+aren't supported — already documented in that file's header comment as a known
+limitation, enforced only by prose in the tool description and system prompt), so this
+kind of collapse passes `validatePlanOrThrow` silently whenever the collapsed shape
+happens to stay within the caps (trivially true for a near-empty plan). Worth a real
+investigation — why Daniel's context specifically triggers this, and probably a
+structural fix (e.g. a minimum-content check independent of the cap checks) — but flagged
+here for a future round, not chased down now.
+
 ---
 
 ## 4. "Don't invent" — where it's actually enforced
