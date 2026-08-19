@@ -17,6 +17,7 @@ const { getPlan, toggleItemStatus, approvePlan, saveManagerIntake } = require('.
 const { buildEmployeeContext } = require('./lib/context');
 const { createEmployee } = require('./lib/employees');
 const { runOrchestrator } = require('./lib/orchestrator');
+const { runMilo } = require('./lib/milo-agent');
 
 const PORT = process.env.PORT || 3000;
 
@@ -635,6 +636,85 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
     .compose-window { right: 0; left: 0; width: 100%; max-width: 100%; }
   }
 
+  /* Milo chat - the dashboard's own design language (dark, Inter, accent gradient),
+     deliberately NOT the compose window's light Gmail pastiche above - Milo is this
+     product's own assistant, not a mock of a different app. Bottom-LEFT specifically so
+     it never has to fight the compose window (bottom-right) for the same corner. */
+  .milo-bubble {
+    position: fixed; left: 24px; bottom: 24px; width: 56px; height: 56px;
+    border-radius: 50%; border: none; cursor: pointer; z-index: 250;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: #fff; font-size: 1.4rem; font-weight: 800; font-family: inherit;
+    display: flex; align-items: center; justify-content: center;
+    animation: milo-glow 2.6s ease-in-out infinite;
+    transition: transform .15s ease;
+  }
+  .milo-bubble:hover { transform: translateY(-2px) scale(1.05); }
+  .milo-bubble[hidden] { display: none; }
+  @keyframes milo-glow {
+    0%, 100% { box-shadow: 0 4px 18px rgba(99,102,241,0.4), 0 0 0px rgba(99,102,241,0.3); }
+    50% { box-shadow: 0 4px 22px rgba(99,102,241,0.55), 0 0 20px rgba(99,102,241,0.45); }
+  }
+
+  .milo-window {
+    position: fixed; left: 24px; bottom: 24px; width: 380px; max-width: calc(100vw - 32px);
+    height: 520px; max-height: calc(100vh - 48px);
+    background: var(--bg-card); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 2px 0 rgba(255,255,255,0.04) inset;
+    border: 1px solid var(--hairline);
+    z-index: 300; display: flex; flex-direction: column;
+    transform: translateY(16px) scale(0.97); opacity: 0; pointer-events: none;
+    transition: transform .2s cubic-bezier(.2,.8,.2,1), opacity .18s ease;
+  }
+  .milo-window[hidden] { display: none; }
+  .milo-window.visible { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+
+  .milo-header {
+    flex: none; padding: 0.9rem 1rem; display: flex; align-items: center; gap: 0.65rem;
+    background: var(--bg-elevated); border-bottom: 1px solid var(--hairline);
+  }
+  .milo-avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex: none;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; color: #fff; font-size: 0.9rem;
+  }
+  .milo-header-text { flex: 1; min-width: 0; }
+  .milo-header-name { font-weight: 700; font-size: 0.95rem; }
+  .milo-header-status { font-size: 0.74rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; }
+  .milo-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 6px #4ade80; flex: none; }
+  .milo-close {
+    background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+    font-size: 1.1rem; line-height: 1; padding: 0.2rem 0.5rem; border-radius: 6px; font-family: inherit;
+  }
+  .milo-close:hover { color: var(--text-primary); background: rgba(255,255,255,0.08); }
+
+  .milo-messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .milo-msg { max-width: 84%; padding: 0.55rem 0.75rem; border-radius: 12px; font-size: 0.87rem; line-height: 1.45; white-space: pre-wrap; }
+  .milo-msg.milo { align-self: flex-start; background: var(--bg-card-hover); color: var(--text-primary); border-bottom-left-radius: 3px; }
+  .milo-msg.user { align-self: flex-end; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: #fff; border-bottom-right-radius: 3px; }
+  .milo-msg.typing { color: var(--text-muted); font-style: italic; }
+
+  .milo-input-row { flex: none; padding: 0.75rem; border-top: 1px solid var(--hairline); display: flex; gap: 0.5rem; }
+  .milo-input {
+    flex: 1; background: var(--bg-card-hover); border: 1px solid var(--hairline); border-radius: 20px;
+    padding: 0.5rem 0.9rem; color: var(--text-primary); font-family: inherit; font-size: 0.87rem; outline: none;
+  }
+  .milo-input:focus { border-color: var(--accent-1); }
+  .milo-send {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: #fff; border: none;
+    border-radius: 50%; width: 38px; height: 38px; flex: none; cursor: pointer; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center; font-family: inherit;
+    transition: transform .15s ease;
+  }
+  .milo-send:hover { transform: translateY(-1px); }
+  .milo-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  @media (max-width: 460px) {
+    .milo-window { left: 8px; right: 8px; width: auto; bottom: 8px; height: 70vh; }
+    .milo-bubble { left: 16px; bottom: 16px; }
+  }
+
   input[type=checkbox] {
     -webkit-appearance: none; appearance: none;
     width: 21px; height: 21px; border-radius: 50%;
@@ -737,6 +817,23 @@ ${renderLegend(trackStyles)}
   </div>
 </div>
 
+<button type="button" class="milo-bubble" id="miloBubble" title="Chat with Milo" aria-label="Open Milo chat">M</button>
+<div class="milo-window" id="miloWindow" hidden>
+  <div class="milo-header">
+    <div class="milo-avatar">M</div>
+    <div class="milo-header-text">
+      <div class="milo-header-name">Milo</div>
+      <div class="milo-header-status"><span class="milo-status-dot"></span>Here to help</div>
+    </div>
+    <button type="button" class="milo-close" id="miloClose" aria-label="Close Milo chat">&times;</button>
+  </div>
+  <div class="milo-messages" id="miloMessages"></div>
+  <div class="milo-input-row">
+    <input type="text" class="milo-input" id="miloInput" placeholder="Ask Milo anything..." autocomplete="off">
+    <button type="button" class="milo-send" id="miloSend" aria-label="Send message">&#10148;</button>
+  </div>
+</div>
+
 <div class="item-form-overlay" id="itemFormOverlay" hidden>
   <div class="item-form-modal">
     <h3 id="itemFormHeading">Add item</h3>
@@ -831,6 +928,100 @@ ${renderLegend(trackStyles)}
 
   document.getElementById('composeClose').addEventListener('click', closeComposeWindow);
   document.getElementById('composeSend').addEventListener('click', closeComposeWindow);
+
+  // ---- Milo chat (real API calls, via POST /plan/:planId/milo -> lib/milo-agent.js) ----
+  // Conversation history lives only in this array - client-side, in-memory, for the life
+  // of this page view. No DB persistence, no localStorage: a refresh starts a fresh
+  // conversation, same session-only convention as the item add/edit forms below. The
+  // Messages API itself is stateless, so this whole array is re-sent to the server on
+  // every single message - that's what makes Milo's "memory" real, not a server session.
+  var PLAN_ID = ${plan.plan_id};
+  var miloBubble = document.getElementById('miloBubble');
+  var miloWindow = document.getElementById('miloWindow');
+  var miloMessages = document.getElementById('miloMessages');
+  var miloInput = document.getElementById('miloInput');
+  var miloSend = document.getElementById('miloSend');
+  var miloHistory = [];
+  var miloOpened = false;
+  var miloBusy = false;
+
+  function appendMiloMessage(role, text) {
+    var div = document.createElement('div');
+    div.className = 'milo-msg ' + (role === 'user' ? 'user' : 'milo');
+    div.textContent = text;
+    miloMessages.appendChild(div);
+    miloMessages.scrollTop = miloMessages.scrollHeight;
+    return div;
+  }
+
+  function openMiloWindow() {
+    miloWindow.hidden = false;
+    // Force a reflow before adding the class, same trick as the compose window, so the
+    // slide/fade transition actually plays instead of jumping straight to its end state.
+    void miloWindow.offsetWidth;
+    miloWindow.classList.add('visible');
+    if (!miloOpened) {
+      miloOpened = true;
+      appendMiloMessage('milo', "Hi, I'm Milo - happy to help with anything about getting started. What's up?");
+    }
+    miloInput.focus();
+  }
+
+  function closeMiloWindow() {
+    miloWindow.classList.remove('visible');
+    setTimeout(function () { miloWindow.hidden = true; }, 200);
+  }
+
+  miloBubble.addEventListener('click', openMiloWindow);
+  document.getElementById('miloClose').addEventListener('click', closeMiloWindow);
+
+  function sendMiloMessage() {
+    var text = miloInput.value.trim();
+    if (!text || miloBusy) return;
+
+    appendMiloMessage('user', text);
+    miloHistory.push({ role: 'user', content: text });
+    miloInput.value = '';
+    miloBusy = true;
+    miloSend.disabled = true;
+    var typingEl = appendMiloMessage('milo', 'Milo is typing...');
+    typingEl.classList.add('typing');
+
+    fetch('/plan/' + PLAN_ID + '/milo', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ messages: miloHistory }),
+    })
+      .then(function (res) {
+        return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+      })
+      .then(function (result) {
+        typingEl.remove();
+        if (!result.ok) {
+          appendMiloMessage('milo', "Sorry, something went wrong on my end" + (result.data && result.data.error ? ': ' + result.data.error : '.'));
+          return;
+        }
+        appendMiloMessage('milo', result.data.reply);
+        miloHistory.push({ role: 'assistant', content: result.data.reply });
+      })
+      .catch(function () {
+        typingEl.remove();
+        appendMiloMessage('milo', "Sorry, I couldn't reach the server just now - please try again.");
+      })
+      .finally(function () {
+        miloBusy = false;
+        miloSend.disabled = false;
+        miloInput.focus();
+      });
+  }
+
+  miloSend.addEventListener('click', sendMiloMessage);
+  miloInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendMiloMessage();
+    }
+  });
 
   // ---- Add/Edit item (session-only - never sent to the server) ----
   var overlay = document.getElementById('itemFormOverlay');
@@ -1598,6 +1789,25 @@ app.post('/plan/:planId/item/:itemId/toggle', (req, res) => {
   const plan = toggleItemStatus(db, planId, req.params.itemId);
   if (!plan) return res.status(404).send(`No plan found for plan_id ${planId}.`);
   res.redirect(`/plan/${planId}?week=${Number(req.query.week) || 1}`);
+});
+
+// Milo's own conversation history lives client-side (see the milo-* script section in
+// renderPlanPage) - this route is stateless per call, same as the Messages API itself:
+// the client re-sends the full messages array every time, this just forwards it to
+// lib/milo-agent.js's runMilo() (which rebuilds this one plan_id's safe context fresh on
+// every call) and returns the real reply. No conversation state kept on the server.
+app.post('/plan/:planId/milo', async (req, res) => {
+  const planId = Number(req.params.planId);
+  const messages = Array.isArray(req.body && req.body.messages) ? req.body.messages : null;
+  if (!messages || messages.length === 0) {
+    return res.status(400).json({ error: 'messages array is required.' });
+  }
+  try {
+    const reply = await runMilo(planId, messages);
+    res.json({ reply });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/plan/:planId/approve', (req, res) => {
