@@ -205,8 +205,8 @@ sentence - "Well done!" or "Good luck!" does more work than a gushing paragraph.
 
 - Yes: "Grab 30 minutes with Shira to align on your first few weeks."
 - No: "Attend mandatory 1:1 meeting with direct manager."
-- Yes: "Say hi to Lior - they're your Human Buddy for the everyday questions."
-- No: "Human Buddy introduction session (mandatory)."
+- Yes: "Say hi to Lior - they're your Buddy for the everyday questions."
+- No: "Buddy introduction session (mandatory)."
 
 `shortLine` can be a little more clipped/label-like (it's for a compact card); `detailText`
 should read as a full, warm sentence or two.

@@ -455,6 +455,72 @@ code, not just prose the model could ignore:
     override your manager or HR policies"). Flagged here for whoever builds that prompt
     next; not acted on now - building the Buddy agent is explicitly the next, separate
     step, not part of this round.
+  - **Decision (2026-08-18): "AI Buddy" is retired as the agent's name - it's "Milo"
+    now.** Reason: this project already has a "Human Buddy" (`human_buddy_email`,
+    resolved via `resolveOfficeTourGuide`/`buildEmployeeContext` throughout the real
+    pipeline) - "AI Buddy" as a second, similarly-named but functionally unrelated
+    concept was a live confusion risk for anyone reading the code/docs/content cold, not
+    a hypothetical one. `FAQ-014`'s `answer` (`db/faq`) was updated to say "Milo" instead
+    of "The AI Buddy" as the first real content instance, since that's the exact row
+    already flagged above as the candidate for the future agent's own system prompt -
+    important the name be consistent there before that prompt gets written, not
+    retrofitted afterward. **This DB edit does not survive a re-import** - `faq` is one
+    of `import-veridian.js`'s `KNOWLEDGE_BASE_SHEETS` tables, rebuilt from
+    `Veridian_Knowledge_Base_Content_v1.xlsx` on every run, and the source workbook cell
+    itself still says "AI Buddy" - re-running the import will silently revert this row
+    unless the source xlsx is edited too (out of scope for this rename round) or the
+    import script gets a rename step of its own. Every other "AI Buddy" mention (code
+    comments in `db/schema.sql`/`scripts/import-veridian.js`, `docs/`, `README.md`) is
+    still unrenamed as of this decision - deliberately out of scope here, since this pass
+    was a preliminary name change only, not the Buddy agent build itself (that's a
+    separate, later step - see above).
+  - **Follow-up (2026-08-18, same day): the "does not survive a re-import" caveat above
+    is fixed, and "Human Buddy" is shortened to "Buddy" too.** `import-veridian.js` now
+    runs `normalizeBuddyNaming(db)` right after `importKnowledgeBase(db)` - a generic
+    scan over every text column in `faq`/`glossary`/`culture` (not a hardcoded column
+    list; a real scan against live data found hits in `faq.tags` and `glossary.term`,
+    columns a hardcoded list would have missed) applying two renames: "AI Buddy" -> "Milo"
+    and "Human Buddy" -> "Buddy". Runs on the real imported content itself, so both
+    renames now survive every future re-import - verified directly: re-ran the import
+    twice, `FAQ-014` came out saying "Milo" both times, generated fresh from the raw xlsx
+    cell (still "AI Buddy" in the source workbook) each time, not a leftover live-DB
+    value. "Human Buddy" is shortened once "AI Buddy" (Milo) no longer exists to
+    disambiguate against - same reasoning that motivated the original rename.
+    `human_buddy_email` (the `employees` column) is untouched - the rename only ever
+    rewrites free-text content, never a column/field name.
+    - **A literal string-replace has grammar edge cases - "The AI Buddy" needed special
+      handling.** The generic "AI Buddy" -> "Milo" rule alone produced "The Milo can
+      help..." from the source's "The AI Buddy can help..." - grammatically wrong, since
+      "Milo" is a proper name and doesn't take "The". Fixed by adding a MORE SPECIFIC
+      `["The AI Buddy", "Milo"]` rule that runs before the bare `["AI Buddy", "Milo"]`
+      rule (rename-rule order matters here), so an article-prefixed mention gets the
+      article dropped along with the noun phrase, while any other "AI Buddy" occurrence
+      (mid-sentence, a tag) still gets caught by the bare rule afterward. Worth
+      remembering if another proper-name rename ever goes through this same mechanism.
+    - **Scope decisions made explicitly, not defaulted:** `lib/context.js`'s gap-message
+      string ("human_buddy_email is not set - Human Buddy has not been assigned yet...")
+      was included even though `lib/` wasn't in the original four listed directories
+      (prompts/, docs/, server.js, output/) - it's the live source of that exact gap text
+      (reproduced verbatim in several `output/*.json` examples), so leaving it unrenamed
+      would mean any future real run immediately reintroduces "Human Buddy" for this one
+      message. Renamed to "Buddy has not been assigned yet..."; the `human_buddy_email`
+      field-name reference right before it is untouched (it's the real column name, not
+      display text). Conversely, **`output/*.json` was deliberately left untouched** -
+      those files (the `VRD-*.manual-example.json` fixtures and
+      `VRD-1011.orchestrator.json`, committed specifically as a record of a real API run)
+      are intentional historical snapshots of what those runs/old plans actually said at
+      the time, not living display text - retroactively editing their content would make
+      them an inaccurate record of their own history. Their remaining "Human Buddy"
+      mentions are correct and expected to stay exactly as they are.
+    - **`docs/onboarding-framework.md`'s two "AI Buddy" mentions were renamed to "Milo"
+      too** (the role-responsibility matrix row, and the note distinguishing it from the
+      Human Buddy row) - this is the project's core framework/design doc, read as living
+      reference alongside the code, not a historical snapshot like `output/`, so it needs
+      to stay consistent with the system rather than freeze an old name. Closes the
+      specific gap the original decision above flagged as "still unrenamed... deliberately
+      out of scope" for `docs/` - narrowed since then to just this one doc; `README.md`,
+      `docs/PROJECT-README.md`, and code comments in `db/schema.sql`/
+      `scripts/import-veridian.js` remain unrenamed, still out of scope.
 
 ## 5. New-hire intake page (`/start`)
 
@@ -499,6 +565,32 @@ code, not just prose the model could ignore:
   automatically (it drops/recreates `employees` from the source workbook, which never
   had them) - that's how the three named above were actually cleared, as a side effect
   of the People-teams backfill round below, not a dedicated cleanup step.
+- **That side-effect wipe is only half the cleanup - app-state tables get left behind,
+  orphaned.** `scripts/import-veridian.js` only ever drops/recreates `ORG_TABLES`
+  (`employees` among them) - it deliberately never touches `plans`/`manager_intake`/
+  `plan_item_status` (see `db/persistence-schema.sql`'s own comment on this), specifically
+  so re-importing an updated xlsx doesn't wipe saved plans. That means a test employee
+  wiped from `employees` still has its `plans`/`manager_intake` rows sitting around,
+  pointing at an `employee_id` that no longer resolves to anyone. Confirmed for real
+  (2026-08-18): `plan_id=6` and 3 `manager_intake` rows, all referencing VRD-1186/1187/
+  1188 - test employees created via `/start` during earlier development, already wiped
+  from `employees` by a prior re-import, whose app-state rows had quietly sat there ever
+  since. Removed by hand once found, then handled properly below.
+- **Decision: orphan cleanup is a separate, explicit script - not folded into
+  `import-veridian.js` as an automatic side effect.** `scripts/cleanup-orphaned-app-state.js`
+  finds `plans`/`manager_intake`/`plan_item_status` rows whose `employee_id` no longer
+  exists in `employees` and deletes them, but only when run directly - it always prints
+  every row it's about to remove first, never silently. `import-veridian.js` itself only
+  prints a warning count at the end of its own run ("N orphaned app-state row(s) found -
+  run scripts/cleanup-orphaned-app-state.js to remove them") via that script's exported
+  `findOrphans()` - it does not delete anything itself.
+  **Why:** `import-veridian.js`'s job is the org-data rebuild (`ORG_TABLES`); deleting
+  app-state rows is a different concern with a different owner, and folding a destructive
+  action into a script whose primary purpose is something else means it happens as an
+  invisible side effect of running that other thing - exactly the kind of silent
+  auto-deletion this project avoids everywhere else (see the git-commit discipline
+  throughout this log: always show what's about to change before changing it). A cheap
+  warning costs nothing and keeps the destructive step an explicit, separate choice.
 - **Department/Team picker refinements**: three follow-up fixes, verified together in
   the browser.
   - **People has zero rows in the master workbook's Teams sheet - a real source-data

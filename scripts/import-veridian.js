@@ -8,6 +8,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
 const XLSX = require('xlsx');
+const { findOrphans } = require('./cleanup-orphaned-app-state');
 
 const ROOT = path.join(__dirname, '..');
 const XLSX_PATH = path.join(ROOT, 'data', 'Veridian_Master_Data_Pack_v1.xlsx');
@@ -240,6 +241,65 @@ function importKnowledgeBase(db) {
   }
 }
 
+// Buddy naming normalization - runs after importKnowledgeBase() populates
+// faq/glossary/culture from the source workbook. Scans every text column in these three
+// tables generically, not just the columns known today to carry either name - a real
+// scan against the live data found hits in faq.tags and glossary.term, not just the
+// obvious answer/definition columns, confirming a generic scan was the right call over
+// hardcoding a fixed column list.
+//   1. "AI Buddy" -> "Milo" - the AI Buddy agent's name collided with the pre-existing
+//      Human Buddy concept; "Milo" is its new, distinct name (see MEMORY.md).
+//   2. "Human Buddy" -> "Buddy" - shortened for the same reason, once "AI Buddy" no
+//      longer exists to disambiguate against. The internal field name
+//      `human_buddy_email` (on `employees`, a different table entirely) is never touched
+//      by this function - this only rewrites free-text content, never a column name.
+// Runs on the real imported content itself (not a live-DB-only patch), so both renames
+// survive every future re-import instead of reverting the moment this script runs again.
+// "The AI Buddy" -> "Milo" must run BEFORE the bare "AI Buddy" -> "Milo" rule below -
+// "Milo" is a proper name, so a leading "The " needs to go with it ("The AI Buddy can
+// help..." -> "Milo can help...", not the grammatically-off "The Milo can help..."). Any
+// "AI Buddy" not preceded by "The " (e.g. mid-sentence, a tag) still gets caught by the
+// bare rule once the article-prefixed case is already handled.
+const BUDDY_RENAMES = [
+  ['The AI Buddy', 'Milo'],
+  ['AI Buddy', 'Milo'],
+  ['Human Buddy', 'Buddy'],
+];
+const BUDDY_TABLES = ['faq', 'glossary', 'culture'];
+
+function normalizeBuddyNaming(db) {
+  let totalReplacements = 0;
+  for (const table of BUDDY_TABLES) {
+    const columnInfo = db.prepare(`PRAGMA table_info(${table})`).all();
+    const pkColumn = (columnInfo.find((c) => c.pk === 1) || {}).name;
+    const rows = db.prepare(`SELECT rowid AS __rowid, * FROM ${table}`).all();
+    for (const row of rows) {
+      const updates = {};
+      for (const col of columnInfo) {
+        const value = row[col.name];
+        if (typeof value !== 'string') continue;
+        let newValue = value;
+        for (const [from, to] of BUDDY_RENAMES) {
+          if (newValue.includes(from)) newValue = newValue.split(from).join(to);
+        }
+        if (newValue !== value) {
+          updates[col.name] = newValue;
+          const label = pkColumn ? row[pkColumn] : row.__rowid;
+          console.log(`  [${table}:${label}] ${col.name}: "${value}" -> "${newValue}"`);
+          totalReplacements++;
+        }
+      }
+      if (Object.keys(updates).length > 0) {
+        const setClause = Object.keys(updates)
+          .map((c) => `${c} = ?`)
+          .join(', ');
+        db.prepare(`UPDATE ${table} SET ${setClause} WHERE rowid = ?`).run(...Object.values(updates), row.__rowid);
+      }
+    }
+  }
+  console.log(`Buddy naming normalization: ${totalReplacements} field(s) updated across ${BUDDY_TABLES.join('/')}.`);
+}
+
 // Known source-data gap: the master pack's "Teams" sheet has 36 rows spanning 7 of the
 // 8 departments that actually have teams - People has zero rows there, even though its
 // employees carry real team names (People Leadership, People Operations & L&D, People
@@ -351,6 +411,7 @@ function main() {
   backfillPeopleTeams(db);
   importRoles(db, workbook);
   importKnowledgeBase(db);
+  normalizeBuddyNaming(db);
 
   db.exec('PRAGMA foreign_keys = ON');
   const violations = db.prepare('PRAGMA foreign_key_check').all();
@@ -359,6 +420,18 @@ function main() {
     process.exitCode = 1;
   } else {
     console.log('Foreign key check passed.');
+  }
+
+  // This script only ever drops/recreates ORG_TABLES (above) - it never touches the
+  // app-state tables (plans/manager_intake/plan_item_status), so a re-import after a
+  // manual /start test submission leaves that test employee's plan/intake rows behind,
+  // now pointing at an employee_id that no longer exists. Reported here as a warning
+  // only - this script's job is the org-data rebuild, not deciding to delete app state;
+  // see scripts/cleanup-orphaned-app-state.js to actually remove them.
+  const { orphanedPlans, orphanedIntake, orphanedStatus } = findOrphans(db);
+  const orphanCount = orphanedPlans.length + orphanedIntake.length + orphanedStatus.length;
+  if (orphanCount > 0) {
+    console.warn(`\n${orphanCount} orphaned app-state row(s) found (referencing an employee_id no longer in employees) - run scripts/cleanup-orphaned-app-state.js to remove them.`);
   }
 
   db.close();

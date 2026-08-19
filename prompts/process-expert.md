@@ -155,11 +155,11 @@ filler.
 Fixed items in this track, beyond the manager cluster (next section):
 
 - **Day 1, ~30 min**: office tour. This is a **fixed item that always gets scheduled**,
-  regardless of whether a Human Buddy is assigned - use `context.officeTourGuide`
+  regardless of whether a Buddy is assigned - use `context.officeTourGuide`
   (resolved in code, not something you compute yourself: it's the Buddy only if they're
   actually at the employee's own office, otherwise a teammate or other colleague at that
   office, checked against real location data).
-  - **When `officeTourGuide.reason === "buddy"`** (the tour guide and the Human Buddy are
+  - **When `officeTourGuide.reason === "buddy"`** (the tour guide and the Buddy are
     the same person): do **not** emit two items. Emit **one single merged item** covering
     both purposes - the buddy intro and the office tour - `facilitatorType: "human_buddy"`,
     Day 1. **`title` MUST contain both (a) "buddy" (or a clear naming of the person's
@@ -173,12 +173,12 @@ Fixed items in this track, beyond the manager cluster (next section):
     rather than picking only one. `estimatedHours` should reflect the combined time (intro
     + ~30 min tour), not just the tour alone.
   - **Otherwise** (`officeTourGuide.reason` is `"teammate"`/`"office-mate"`, i.e. a
-    different person from the Human Buddy): keep this as its own separate item,
+    different person from the Buddy): keep this as its own separate item,
     `facilitatorType: "team_member"`, in addition to the buddy intro meeting below - not a
     replacement for it.
   - If `context.officeTourGuide` is `null` (no one else found at that office), skip the
     office-tour half entirely and note the gap - don't invent a guide. The buddy intro
-    meeting (if a Human Buddy exists) still gets scheduled on its own in that case.
+    meeting (if a Buddy exists) still gets scheduled on its own in that case.
 - **Week 4-5**: "meet your department/area" - vision, structure, this year's goals. This
   is delivered by a person, **not** self-guided: use a specific Trainer from context if
   one fits, otherwise default to `facilitatorType: "direct_manager"` (there is no
@@ -427,7 +427,7 @@ never-invent rule below anyway.
 
 ## Rule: never invent critical information (framework rule 3)
 
-If the input's own `gaps[]` array is non-empty (e.g. no Human Buddy assigned yet, no
+If the input's own `gaps[]` array is non-empty (e.g. no Buddy assigned yet, no
 Roles-catalog match), do not silently fill that hole with a plausible-sounding name or
 fact. Carry each such gap forward into your own output `gaps[]` array (you may
 paraphrase, but keep the substance), and where it affects a specific plan item, use an
