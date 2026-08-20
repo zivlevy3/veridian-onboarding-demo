@@ -1007,10 +1007,44 @@ code, not just prose the model could ignore:
   and an employee with a real plan (refused); a synthetic orphan + real resubmission
   under the same email confirmed detection, deletion, and a successful retry
   (`matched a previous orphaned attempt ... removed it and retrying`).
-  - **Known gap, not yet closed here**: the *client* still declares failure immediately
-    the moment its own connection drops ("Connection lost - please try again"), even
-    though the server-side pipeline may still be quietly running to a real, successful
-    conclusion in the background - it has no way to find out. The three real verification
-    runs above only look clean because each one happened to finish before its own script
-    checked the result; a real visitor watching their screen would see a failure message
-    at the moment of the drop regardless of what the server goes on to do.
+  - **Gap closed the same day - see the entry directly below.** The *client* used to
+    declare failure immediately the moment its own connection dropped ("Connection lost
+    - please try again"), even though the server-side pipeline might still be quietly
+    running to a real, successful conclusion in the background - it had no way to find
+    out. The three real verification runs above only looked clean because each one
+    happened to finish before its own script checked the result; a real visitor watching
+    their screen would have seen a failure message at the moment of the drop regardless
+    of what the server went on to do.
+- **"Disconnect ≠ failure - always check the real state before declaring failure"
+  (2026-08-20, same day, closing the gap above).** Real-world trigger: three genuine
+  `/start` submissions from an actual phone (not a script), "Mor golan" → "Mor gonen" →
+  "Mor goneni", ~105 seconds apart - initially misread as deliberate retries after a
+  "duplicate name" rejection. **The logs proving that story wrong no longer existed**
+  (the server had been restarted twice since for unrelated code changes, and this dev
+  setup doesn't persist stdout to a file) - so the real answer had to come from the
+  database instead: all three independently **succeeded** (three real saved plans, three
+  different auto-generated emails, no duplicate-email collision, no error at all). The
+  ~105s gaps line up with real per-pipeline durations observed this session (90-130s+,
+  sometimes more) - the likely real story is impatience during a wait with no visible
+  sign the first attempt was still working, not any rejection. (`deleteOrphanedEmployee`
+  itself didn't even exist yet at the time of these three submissions - it was built
+  later the same session, for the disconnect scenario, not in response to this.) Fixed
+  by making the *client* check reality before giving up, not just the server: `POST
+  /start` now sends `{employeeId}` as the stream's very first event (before any real
+  pipeline work starts), and a new `GET /employee/:employeeId/plan-status` endpoint
+  answers the one question that actually matters after a drop - "did a plan get saved
+  for me?" On a stream that closes without ever sending `done: true`, the client no
+  longer declares failure immediately - it shows a distinct, non-alarming "Connection
+  lost - checking whether your plan finished..." message (deliberately not styled like
+  `.error-banner`, since this isn't a failure) and polls the new endpoint every 8s, up to
+  15 times (~2 minutes) before giving up. A plan showing up at any point redirects
+  exactly as if the stream had delivered it normally - the drop becomes invisible in
+  hindsight. Only after the full poll window with no plan does this become a real, shown
+  failure - and even then, retrying with the *exact same details* (not a new name) is
+  explicitly called out as safe, since the orphan-cleanup above is exactly what makes
+  that true. Verified live: submitted a real request with the actual page (not a
+  script), aborted the browser's own `fetch` deliberately *after* confirming real
+  server-side progress (Content Expert already complete, Process Expert running - not an
+  immediate abort), confirmed the UI showed the reconnect message rather than an error,
+  then let the real pipeline finish server-side (`plan_id=41`) and confirmed the
+  client's poll loop caught it and auto-redirected to `/plan/41` with zero user action.

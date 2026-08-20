@@ -1484,6 +1484,11 @@ function renderStartPage(referenceData, companyName, errorMessage) {
      the word "error", never which stage glitched (see the onRetry/emitRetry comment in
      lib/orchestrator.js) - the ring keeps spinning underneath exactly as before. */
   .progress-step--retrying .progress-step-label { color: var(--accent-2); }
+  /* Shown while polling GET /employee/:id/plan-status after a dropped connection -
+     deliberately not styled like .error-banner (red-tinted) since this isn't a failure,
+     just an active, ongoing check. */
+  .loading-reconnect { margin: 1.2rem 0 0; max-width: 320px; text-align: center; color: var(--accent-2); font-size: 0.85rem; font-weight: 600; }
+  .loading-reconnect[hidden] { display: none; }
 
   @media (max-width: 767px) {
     /* 16px is the iOS Safari threshold - anything smaller on a focused input triggers
@@ -1585,6 +1590,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     <li class="progress-step" data-stage="content-writer"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
     <li class="progress-step" data-stage="gatekeeper"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
   </ol>
+  <p class="loading-reconnect" id="loadingReconnect" hidden></p>
 </div>
 
 <script>
@@ -1667,6 +1673,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   function resetProgressSteps() {
     progressState = { doneStages: [], retrying: false };
     renderProgressSteps();
+    document.getElementById('loadingReconnect').hidden = true;
   }
 
   function markStageDone(stage) {
@@ -1683,6 +1690,16 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   function markAllStepsDone() {
     progressState = { doneStages: PROGRESS_STAGES.map(function (s) { return s.stage; }), retrying: false };
     renderProgressSteps();
+  }
+
+  // Shown instead of an immediate failure when the connection drops - the steps stay
+  // frozen at whatever they last reached (real information, not stale-looking), this
+  // line is what tells the visitor something changed and is still being actively
+  // resolved, not silently stuck.
+  function showReconnecting() {
+    var el = document.getElementById('loadingReconnect');
+    el.hidden = false;
+    el.textContent = 'Connection lost - checking whether your plan finished...';
   }
 
   function opt(value, label) {
@@ -1955,6 +1972,61 @@ function renderStartPage(referenceData, companyName, errorMessage) {
       showError(message || 'Something went wrong.');
     }
 
+    // Captured from the stream's very first event (see server.js's POST /start,
+    // sendEvent({employeeId}) right after writeHead) - the one thing worth keeping if
+    // the connection drops, since it's what lets a drop be checked instead of assumed.
+    var employeeId = null;
+
+    // "Disconnect is not the same as failure" (2026-08-20, see MEMORY.md). The server
+    // can't be cancelled mid-pipeline once it's running (see POST /start's own comment on
+    // this) and a real run has been observed taking 90-130s+ end to end - so a stream
+    // that just stopped arriving is not evidence the pipeline failed, only that this
+    // particular connection can't hear about it anymore. Poll GET
+    // /employee/:id/plan-status instead of guessing: if a plan shows up, this was always
+    // a success the user just couldn't see - redirect exactly as if the stream had
+    // delivered it normally. Only after several checks with no plan does this become a
+    // real, shown failure - and even then, retrying with the exact same details (not a
+    // new name) is safe and correct, since the orphan-cleanup already in POST /start
+    // (deleteOrphanedEmployee) is exactly what handles that case.
+    var POLL_INTERVAL_MS = 8000;
+    var MAX_POLL_ATTEMPTS = 15; // ~2 minutes of checking before giving up
+
+    function checkPlanStatus(attempt) {
+      if (!employeeId) {
+        fail('Connection lost - please try again with the same details (safe to resubmit).');
+        return;
+      }
+      fetch('/employee/' + encodeURIComponent(employeeId) + '/plan-status')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.hasPlan) {
+            markAllStepsDone();
+            window.location.href = '/plan/' + data.planId;
+            return;
+          }
+          if (attempt >= MAX_POLL_ATTEMPTS) {
+            fail('Something went wrong while building the onboarding plan. Safe to try again with the same details.');
+            return;
+          }
+          setTimeout(function () { checkPlanStatus(attempt + 1); }, POLL_INTERVAL_MS);
+        })
+        .catch(function () {
+          // A failed status check is itself just a transient hiccup, not the answer -
+          // keep polling on the same schedule rather than treating one failed check as
+          // the final word.
+          if (attempt >= MAX_POLL_ATTEMPTS) {
+            fail('Something went wrong while building the onboarding plan. Safe to try again with the same details.');
+            return;
+          }
+          setTimeout(function () { checkPlanStatus(attempt + 1); }, POLL_INTERVAL_MS);
+        });
+    }
+
+    function handleConnectionDrop() {
+      showReconnecting();
+      checkPlanStatus(1);
+    }
+
     // POST /start's response is a stream of newline-delimited JSON progress events, not
     // one final JSON body - a validation failure (bad department/team/manager/etc.) is
     // still a plain JSON error response sent before any streaming starts (checked via
@@ -1971,7 +2043,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
         if (!r.ok) {
           // A validation-stage error (bad department/team/manager/etc.) - a plain,
           // specific message sent before any streaming started. Tagged isServerError so
-          // the catch below shows it as-is, not the generic "connection lost" message
+          // the catch below shows it as-is, not the generic connection-drop handling
           // that's for an actual dropped connection, not a real rejection.
           return r.json().then(function (data) {
             var e = new Error((data && data.error) || 'Something went wrong.');
@@ -1985,6 +2057,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
         var receivedDone = false;
 
         function handleEvent(event) {
+          if (event.employeeId) { employeeId = event.employeeId; return; }
           if (event.done) {
             receivedDone = true;
             if (event.planId) {
@@ -2006,7 +2079,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
               // connection dropped mid-pipeline (screen off, network loss), not a
               // real, reported outcome. The server-side cleanup for this exact case
               // is in POST /start's req.on('close') handling.
-              if (!receivedDone) fail('Connection lost - please try again.');
+              if (!receivedDone) handleConnectionDrop();
               return;
             }
             buffer += decoder.decode(chunk.value, { stream: true });
@@ -2020,7 +2093,10 @@ function renderStartPage(referenceData, companyName, errorMessage) {
         }
         return pump();
       })
-      .catch(function (err) { fail(err.isServerError ? err.message : 'Connection lost - please try again.'); });
+      .catch(function (err) {
+        if (err.isServerError) { fail(err.message); return; }
+        handleConnectionDrop();
+      });
   });
 })();
 </script>
@@ -2082,6 +2158,19 @@ app.post('/plan/:planId/approve', (req, res) => {
 app.get('/start', (req, res) => {
   const referenceData = buildIntakeReferenceData(db);
   res.send(renderStartPage(referenceData, companyName));
+});
+
+// "Disconnect is not the same as failure" (2026-08-20, see MEMORY.md) - a client whose
+// connection to POST /start dropped mid-pipeline (screen off, network blip) has no way
+// to know whether the server kept going and actually finished, since runOrchestrator
+// can't be cancelled mid-flight and is deliberately left to run to its real conclusion
+// (see the req.on('close') handling below). This lets the client ask the one question
+// that actually matters after a drop - "did a plan get saved for me?" - instead of
+// assuming the answer is no. Read-only, no auth (matches every other route on this
+// single-view demo dashboard - see the file header comment).
+app.get('/employee/:employeeId/plan-status', (req, res) => {
+  const plan = db.prepare('SELECT plan_id FROM plans WHERE employee_id = ? ORDER BY plan_id DESC LIMIT 1').get(req.params.employeeId);
+  res.json({ hasPlan: !!plan, planId: plan ? plan.plan_id : null });
 });
 
 // Creates the employee, saves the manager's intake answers, then runs the full
@@ -2189,6 +2278,11 @@ app.post('/start', async (req, res) => {
   // is even possible to observe, since that's exactly the state that produces them.
   res.on('error', () => {});
   const sendEvent = (event) => res.write(JSON.stringify(event) + '\n');
+  // First event, always, before anything else - if the connection drops before another
+  // byte arrives, this is still enough for the client to poll GET
+  // /employee/:employeeId/plan-status instead of giving up outright (see renderStartPage's
+  // client script).
+  sendEvent({ employeeId: employee.employee_id });
 
   // Screen-off / network-drop mid-pipeline is a real case, not a hypothetical: the
   // client's fetch is gone, but runOrchestrator (already in flight, several sequential
