@@ -308,9 +308,11 @@ function renderCarousel(plan, context, activeWeek, trackStyles, nameEmailMap) {
 
   return `
     <div class="carousel-viewport">
-      <button type="button" class="arrow arrow-prev" id="prevBtn" aria-label="Previous week">&#8249;</button>
+      <div class="carousel-nav">
+        <button type="button" class="arrow arrow-prev" id="prevBtn" aria-label="Previous week">&#8249;</button>
+        <button type="button" class="arrow arrow-next" id="nextBtn" aria-label="Next week">&#8250;</button>
+      </div>
       <div class="carousel-track" id="track">${cards}</div>
-      <button type="button" class="arrow arrow-next" id="nextBtn" aria-label="Next week">&#8250;</button>
     </div>
     <div class="dots" id="dots">${dots}</div>
     <script>
@@ -322,7 +324,13 @@ function renderCarousel(plan, context, activeWeek, trackStyles, nameEmailMap) {
       var prevBtn = document.getElementById('prevBtn');
       var nextBtn = document.getElementById('nextBtn');
 
+      // Below 767px, the 3D perspective/partial-opacity neighbor effect is dropped
+      // entirely (it does not work well under touch) - only the active card is shown,
+      // full width, everything else fully hidden. matchMedia is re-checked on every
+      // position() call (not cached once) so rotating a device or resizing the window
+      // re-evaluates it live, same as the resize listener below does.
       function position() {
+        var isMobile = window.matchMedia('(max-width: 767px)').matches;
         cards.forEach(function (card) {
           var w = Number(card.getAttribute('data-week'));
           var offset = w - active;
@@ -333,6 +341,12 @@ function renderCarousel(plan, context, activeWeek, trackStyles, nameEmailMap) {
             card.style.opacity = '1';
             card.style.zIndex = '3';
             card.style.pointerEvents = 'auto';
+          } else if (isMobile) {
+            card.classList.add('is-far');
+            card.style.transform = 'translateX(-50%)';
+            card.style.opacity = '0';
+            card.style.zIndex = '1';
+            card.style.pointerEvents = 'none';
           } else if (Math.abs(offset) === 1) {
             card.classList.add('is-near');
             card.style.transform = 'translateX(calc(-50% + ' + (offset * 68) + '%)) scale(0.58) rotateY(' + (offset * -12) + 'deg)';
@@ -379,6 +393,7 @@ function renderCarousel(plan, context, activeWeek, trackStyles, nameEmailMap) {
       dots.forEach(function (dot) {
         dot.addEventListener('click', function () { setActive(Number(dot.getAttribute('data-week'))); });
       });
+      window.addEventListener('resize', position);
 
       position();
     })();
@@ -632,10 +647,6 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
   .compose-icon:hover { background: #f1f3f4; }
   .compose-icon.compose-format { font-weight: 700; text-decoration: underline; font-size: 14px; }
 
-  @media (max-width: 520px) {
-    .compose-window { right: 0; left: 0; width: 100%; max-width: 100%; }
-  }
-
   /* Milo chat - the dashboard's own design language (dark, Inter, accent gradient),
      deliberately NOT the compose window's light Gmail pastiche above - Milo is this
      product's own assistant, not a mock of a different app. Bottom-LEFT specifically so
@@ -710,11 +721,6 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
   .milo-send:hover { transform: translateY(-1px); }
   .milo-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-  @media (max-width: 460px) {
-    .milo-window { left: 8px; right: 8px; width: auto; bottom: 8px; height: 70vh; }
-    .milo-bubble { left: 16px; bottom: 16px; }
-  }
-
   input[type=checkbox] {
     -webkit-appearance: none; appearance: none;
     width: 21px; height: 21px; border-radius: 50%;
@@ -747,6 +753,11 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
   .day-hint { color: var(--text-muted); font-size: 0.78rem; margin-left: auto; }
   .detail-text { margin: 0 0.85rem 0.8rem; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
 
+  /* .carousel-nav wraps both arrow buttons purely so the mobile media query below can
+     reflow them into one row above the card without touching the HTML - on desktop it's
+     display:contents, meaning it has no box of its own at all, so .arrow-prev/.arrow-next
+     position exactly as before (absolute, relative to .carousel-viewport, at the sides). */
+  .carousel-nav { display: contents; }
   .arrow {
     position: absolute; top: 50%; transform: translateY(-50%);
     width: 46px; height: 46px; border-radius: 50%;
@@ -765,9 +776,49 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
   .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--hairline); border: none; padding: 0; cursor: pointer; transition: background .2s ease, transform .2s ease; }
   .dot.active { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); transform: scale(1.3); }
 
-  @media (max-width: 640px) {
-    .legend { gap: 0.7rem 1rem; }
-    .carousel-viewport { height: 72vh; }
+  /* Mobile (2026-08-20): single breakpoint for every below-768px override on this page -
+     see MEMORY.md for the full rationale per section. Sections below are independent of
+     each other; each is scoped to its own class(es). */
+  @media (max-width: 767px) {
+    header { padding: 1.4rem 1.25rem 1.2rem; }
+    main { padding: 1.5rem 1rem 0; }
+
+    /* 1. Legend: a 2-column grid instead of a horizontal row that would otherwise wrap
+       mid-line unpredictably depending on label length. */
+    .legend { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem 0.8rem; }
+
+    /* 2. Carousel: one full-width card, no 3D/perspective/partial-opacity neighbors (see
+       the isMobile branch in renderCarousel's inline script - this alone can't remove
+       the effect, since the script sets transform/opacity as inline styles, which beat
+       any stylesheet rule). Nav arrows move out of the absolutely-positioned sides
+       (unusable as touch targets there, and they'd overlap card content) into a row
+       above the card - .carousel-nav going from display:contents to a real flex row is
+       what makes this reflow possible without touching the HTML. */
+    .carousel-viewport { display: flex; flex-direction: column; align-items: center; height: auto; min-height: 0; max-height: none; perspective: none; }
+    .carousel-nav { display: flex; justify-content: center; gap: 1rem; order: -1; margin-bottom: 0.9rem; }
+    .arrow { position: static; top: auto; transform: none; }
+    .carousel-track { position: relative; width: 100%; height: 60vh; min-height: 420px; max-height: 640px; flex: none; }
+    .week-card { width: 100%; }
+    .dots { margin-top: 1.1rem; }
+
+    /* 4. Milo bubble: smaller, tucked closer to the corner. */
+    .milo-bubble { width: 48px; height: 48px; left: 14px; bottom: 14px; font-size: 1.15rem; }
+
+    /* 5. Milo chat window: full screen. The animation drops the transform property
+       entirely here (not just re-tuned) - a non-none transform on an ancestor becomes the containing
+       block for any position:fixed descendant per the CSS spec, which would silently
+       break .milo-input-row's fixed positioning below. Opacity alone still animates the
+       open/close smoothly without that side effect. */
+    .milo-window, .milo-window.visible { left: 0; right: 0; top: 0; bottom: 0; width: 100%; height: 100%; max-width: 100%; max-height: 100%; border-radius: 0; transform: none; }
+    .milo-close { width: 44px; height: 44px; font-size: 1.6rem; }
+    .milo-messages { padding-bottom: 84px; }
+    /* Fixed (not absolute/in-flow) so the input stays pinned to the real viewport bottom
+       rather than being pushed around by the on-screen keyboard resizing the layout. */
+    .milo-input-row { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bg-card); padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)); }
+
+    /* 6. Compose (email) window: full screen, same reasoning as the Milo window above. */
+    .compose-window { top: 0; bottom: 0; height: 100%; max-height: 100%; max-width: 100%; left: 0; right: 0; width: 100%; border-radius: 0; }
+    .compose-header-icons button { width: 44px; height: 44px; font-size: 20px; }
   }
 </style>
 </head>
@@ -1365,6 +1416,11 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     flex: none; width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--hairline);
     display: flex; align-items: center; justify-content: center; position: relative;
   }
+  /* min-width:0 overrides the flex item default (min-width:auto), which would otherwise
+     refuse to let this long label wrap below its own unwrapped content width - on a
+     narrow screen that's exactly what causes a flex row to quietly force the whole page
+     wider than the viewport instead of just wrapping to a second line. */
+  .progress-step-label { min-width: 0; }
   /* Pending (default): empty ring, nothing else. */
   /* Active: same ring, spun as a lightweight loading indicator - no separate spinner
      element needed, the step's own icon doubles as one. */
@@ -1378,6 +1434,15 @@ function renderStartPage(referenceData, companyName, errorMessage) {
      the word "error", never which stage glitched (see the onRetry/emitRetry comment in
      lib/orchestrator.js) - the ring keeps spinning underneath exactly as before. */
   .progress-step--retrying .progress-step-label { color: var(--accent-2); }
+
+  @media (max-width: 767px) {
+    /* 16px is the iOS Safari threshold - anything smaller on a focused input triggers
+       an automatic zoom-in on focus that most users then have to manually zoom back out
+       of. .field-input already covers every text/email/date input and every <select>
+       (see the selector list above); textarea is included in that same rule already. */
+    .field-input, select, textarea { font-size: 16px; }
+    .progress-steps { max-width: 100%; }
+  }
 </style>
 </head>
 <body>
