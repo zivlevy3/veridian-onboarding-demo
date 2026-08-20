@@ -1340,12 +1340,44 @@ function renderStartPage(referenceData, companyName, errorMessage) {
 
   .loading-overlay {
     position: fixed; inset: 0; background: rgba(5,8,14,0.86); display: flex; flex-direction: column;
-    align-items: center; justify-content: center; z-index: 200; gap: 1.1rem;
+    align-items: center; justify-content: center; z-index: 200; gap: 0.6rem; padding: 2rem;
   }
   .loading-overlay[hidden] { display: none; }
-  .spinner { width: 42px; height: 42px; border-radius: 50%; border: 3px solid var(--hairline); border-top-color: var(--accent-1); animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { color: var(--text-secondary); font-size: 0.95rem; font-weight: 600; }
+  .loading-heading { margin: 0; color: var(--text-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  /* "This usually takes a minute or two" - sets a real time expectation up front, right
+     under the eyebrow, so the (real, measured) 30s-300s wait never reads as stuck. */
+  .loading-eta { margin: 0 0 1.4rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; }
+
+  /* Real-time progress steps, replacing a single generic spinner - one row per pipeline
+     stage (see server.js's POST /start streaming + lib/orchestrator.js's onProgress).
+     Same visual language as the rest of this page: muted-until-relevant text, the two
+     brand accents for anything currently happening, no new colors introduced.
+     Deliberately vertical only (top-to-bottom), never a horizontal variant - most real
+     traffic to this form arrives from a phone (a LinkedIn link, not a desktop browser),
+     and a vertical list already reads well at any width without needing a separate
+     layout. Sized deliberately large (not a small incidental detail): ~45% bigger text
+     and icons than an initial pass, since this is the only thing on screen for the
+     entire wait and should read as the page's main content, not a footnote. */
+  .progress-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1.8rem; width: 100%; max-width: 380px; }
+  .progress-step { display: flex; align-items: center; gap: 1.1rem; font-size: 1.35rem; font-weight: 600; line-height: 1.3; color: var(--text-muted); }
+  .progress-step-icon {
+    flex: none; width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--hairline);
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  /* Pending (default): empty ring, nothing else. */
+  /* Active: same ring, spun as a lightweight loading indicator - no separate spinner
+     element needed, the step's own icon doubles as one. */
+  .progress-step--active .progress-step-icon { border-color: var(--accent-1); border-top-color: transparent; animation: spin 0.8s linear infinite; }
+  .progress-step--active .progress-step-label { color: var(--text-primary); }
+  /* Done: filled accent circle + checkmark, replacing the ring entirely. */
+  .progress-step--done .progress-step-icon { border-color: var(--accent-1); background: var(--accent-1); animation: none; }
+  .progress-step--done .progress-step-icon::after { content: '\\2713'; color: #fff; font-size: 1.05rem; font-weight: 700; line-height: 1; }
+  .progress-step--done .progress-step-label { color: var(--text-secondary); }
+  /* Retrying: the active step's label swaps to a generic "just a moment" line - never
+     the word "error", never which stage glitched (see the onRetry/emitRetry comment in
+     lib/orchestrator.js) - the ring keeps spinning underneath exactly as before. */
+  .progress-step--retrying .progress-step-label { color: var(--accent-2); }
 </style>
 </head>
 <body>
@@ -1430,8 +1462,14 @@ function renderStartPage(referenceData, companyName, errorMessage) {
 </div>
 
 <div class="loading-overlay" id="loadingOverlay" hidden>
-  <div class="spinner"></div>
-  <p class="loading-text">Building your plan...</p>
+  <p class="loading-heading">Building the plan</p>
+  <p class="loading-eta">This usually takes a minute or two</p>
+  <ol class="progress-steps" id="progressSteps">
+    <li class="progress-step" data-stage="content-expert"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
+    <li class="progress-step" data-stage="process-expert"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
+    <li class="progress-step" data-stage="content-writer"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
+    <li class="progress-step" data-stage="gatekeeper"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
+  </ol>
 </div>
 
 <script>
@@ -1478,7 +1516,59 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   var fldJd = document.getElementById('fldJd');
   var errorBanner = document.getElementById('errorBanner');
   var loadingOverlay = document.getElementById('loadingOverlay');
+  var progressStepsEl = document.getElementById('progressSteps');
   var submitBtn = document.getElementById('submitBtn');
+
+  // Mirrors lib/orchestrator.js's onProgress stage keys, in pipeline order. Each
+  // emitStage(...) call there corresponds to one row here finishing.
+  var PROGRESS_STAGES = [
+    { stage: 'content-expert', label: 'Understanding the role...' },
+    { stage: 'process-expert', label: 'Structuring the timeline...' },
+    { stage: 'content-writer', label: 'Drafting the plan...' },
+    { stage: 'gatekeeper', label: 'Reviewing for quality...' },
+  ];
+  var RETRY_LABEL = 'Just a moment, refining a few details...';
+
+  // Small explicit state machine instead of incremental class-toggling - doneStages
+  // grows as stage events arrive, retrying toggles on/off around retry events, and
+  // every row is fully re-rendered from this state each time, so there's exactly one
+  // source of truth for what the UI should look like at any point.
+  var progressState = { doneStages: [], retrying: false };
+
+  function renderProgressSteps() {
+    var activeIndex = progressState.doneStages.length;
+    PROGRESS_STAGES.forEach(function (step, index) {
+      var li = progressStepsEl.querySelector('[data-stage="' + step.stage + '"]');
+      var label = li.querySelector('.progress-step-label');
+      var isDone = progressState.doneStages.indexOf(step.stage) !== -1;
+      var isActive = !isDone && index === activeIndex;
+      li.classList.toggle('progress-step--done', isDone);
+      li.classList.toggle('progress-step--active', isActive);
+      li.classList.toggle('progress-step--retrying', isActive && progressState.retrying);
+      label.textContent = isActive && progressState.retrying ? RETRY_LABEL : step.label;
+    });
+  }
+
+  function resetProgressSteps() {
+    progressState = { doneStages: [], retrying: false };
+    renderProgressSteps();
+  }
+
+  function markStageDone(stage) {
+    if (progressState.doneStages.indexOf(stage) === -1) progressState.doneStages.push(stage);
+    progressState.retrying = false;
+    renderProgressSteps();
+  }
+
+  function showRetryMessage() {
+    progressState.retrying = true;
+    renderProgressSteps();
+  }
+
+  function markAllStepsDone() {
+    progressState = { doneStages: PROGRESS_STAGES.map(function (s) { return s.stage; }), retrying: false };
+    renderProgressSteps();
+  }
 
   function opt(value, label) {
     var o = document.createElement('option');
@@ -1740,29 +1830,65 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     if (!payload.managerEmail) { showError('Please select a direct manager.'); return; }
     if (!payload.mentorEmail) { showError('Please select a mentor.'); return; }
 
+    resetProgressSteps();
     loadingOverlay.hidden = false;
     submitBtn.disabled = true;
 
+    function fail(message) {
+      loadingOverlay.hidden = true;
+      submitBtn.disabled = false;
+      showError(message || 'Something went wrong.');
+    }
+
+    // POST /start's response is a stream of newline-delimited JSON progress events, not
+    // one final JSON body - a validation failure (bad department/team/manager/etc.) is
+    // still a plain JSON error response sent before any streaming starts (checked via
+    // r.ok below); everything after that point (pipeline progress, retries, the final
+    // outcome) arrives as one JSON object per line, read incrementally via
+    // fetch()+ReadableStream. Not native EventSource/SSE - this is a POST with a real
+    // body, and EventSource can only issue GET.
     fetch('/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
-      .then(function (result) {
-        if (result.ok && result.data.planId) {
-          window.location.href = '/plan/' + result.data.planId;
-          return;
+      .then(function (r) {
+        if (!r.ok) {
+          return r.json().then(function (data) { throw new Error((data && data.error) || 'Something went wrong.'); });
         }
-        loadingOverlay.hidden = true;
-        submitBtn.disabled = false;
-        showError((result.data && result.data.error) || 'Something went wrong.');
+        var reader = r.body.getReader();
+        var decoder = new TextDecoder();
+        var buffer = '';
+
+        function handleEvent(event) {
+          if (event.done) {
+            if (event.planId) {
+              markAllStepsDone();
+              window.location.href = '/plan/' + event.planId;
+            } else {
+              fail(event.error);
+            }
+            return;
+          }
+          if (event.type === 'retry') { showRetryMessage(); return; }
+          if (event.stage) { markStageDone(event.stage); return; }
+        }
+
+        function pump() {
+          return reader.read().then(function (chunk) {
+            if (chunk.done) return;
+            buffer += decoder.decode(chunk.value, { stream: true });
+            var lines = buffer.split('\\n');
+            buffer = lines.pop();
+            lines.forEach(function (line) {
+              if (line.trim()) handleEvent(JSON.parse(line));
+            });
+            return pump();
+          });
+        }
+        return pump();
       })
-      .catch(function (err) {
-        loadingOverlay.hidden = true;
-        submitBtn.disabled = false;
-        showError(err.message);
-      });
+      .catch(function (err) { fail(err.message); });
   });
 })();
 </script>
@@ -1845,11 +1971,13 @@ app.get('/start', (req, res) => {
 // loosely by the orchestrator).
 app.post('/start', async (req, res) => {
   const body = req.body || {};
+  let employee;
+  let buddyEmail;
   try {
     const department = body.department;
     const team = body.team;
     const title = body.role === '__other__' ? String(body.roleOther || '').trim() : body.role;
-    const buddyEmail = body.buddy === '__other__' ? String(body.buddyOther || '').trim() || null : body.buddy || null;
+    buddyEmail = body.buddy === '__other__' ? String(body.buddyOther || '').trim() || null : body.buddy || null;
 
     if (!department || !team || !title) {
       return res.status(400).json({ error: 'Department, team, and role/title are all required.' });
@@ -1875,7 +2003,7 @@ app.post('/start', async (req, res) => {
       });
     }
 
-    const { employee } = createEmployee(db, {
+    const created = createEmployee(db, {
       name: body.name,
       email: body.email,
       title,
@@ -1885,6 +2013,7 @@ app.post('/start', async (req, res) => {
       office,
       startDate: body.startDate,
     });
+    employee = created.employee;
 
     saveManagerIntake(db, employee.employee_id, {
       primaryMentorEmail: body.mentorEmail,
@@ -1892,39 +2021,56 @@ app.post('/start', async (req, res) => {
       buddyEmail,
       jobPostingText: body.jobPostingText || null,
     });
-
-    // runOrchestrator already retries each real API stage internally (see
-    // lib/orchestrator.js's withRetry) for exactly this reason - a transient generation
-    // glitch (malformed-code-in-json, an ordinary JSON parse error, a Gatekeeper
-    // self-narration glitch - see MEMORY.md) shouldn't reach whoever's filling out this
-    // form as a raw error. If every retry attempt for some stage still failed, that's a
-    // real, rarer failure - the visitor gets a clean, generic message here rather than
-    // the underlying Error.message (which can be a full truncated JSON blob, not
-    // something a manager submitting this form should ever see); the real error is
-    // still logged server-side via console.error below for debugging.
-    let result;
-    try {
-      result = await runOrchestrator(db, employee.employee_id, {
-        buddyEmail,
-        mentorEmail: body.mentorEmail,
-        jobPostingText: body.jobPostingText || null,
-      });
-    } catch (err) {
-      console.error(`POST /start: pipeline failed for ${employee.employee_id} after internal retries:`, err);
-      return res.status(500).json({ error: 'Something went wrong while building the onboarding plan. Please try again.' });
-    }
-
-    if (result.status === 'blocked') {
-      return res.status(422).json({
-        error: `${employee.full_name}'s employee record and manager intake were saved, but the Gatekeeper blocked this plan from being saved - see server logs for the blocking issue(s).`,
-      });
-    }
-
-    res.json({ planId: result.planId });
   } catch (err) {
     console.error('POST /start failed:', err);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
+
+  // The employee record and intake answers are saved - everything past this point is
+  // the real pipeline run (30s-300s of real API latency), so the response switches to a
+  // stream of newline-delimited JSON progress events instead of one silent wait. Not a
+  // native EventSource/SSE stream - this is a POST with a real body, and EventSource can
+  // only issue GET - just a normal streamed HTTP response the client reads incrementally
+  // via fetch()+ReadableStream (see renderStartPage's client script). Every line is one
+  // JSON event; the final line always carries `done: true`. Once writeHead below has
+  // run, no more plain JSON error responses are possible - every outcome from here on
+  // (pipeline failure, Gatekeeper block, success) goes out as a `done` event instead.
+  res.writeHead(200, { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-cache' });
+  const sendEvent = (event) => res.write(JSON.stringify(event) + '\n');
+
+  // runOrchestrator already retries each real API stage internally (see
+  // lib/orchestrator.js's withRetry) for exactly this reason - a transient generation
+  // glitch (malformed-code-in-json, an ordinary JSON parse error, a Gatekeeper
+  // self-narration glitch - see MEMORY.md) shouldn't reach whoever's filling out this
+  // form as a raw error. If every retry attempt for some stage still failed, that's a
+  // real, rarer failure - the visitor gets a clean, generic message here rather than
+  // the underlying Error.message (which can be a full truncated JSON blob, not
+  // something a manager submitting this form should ever see); the real error is
+  // still logged server-side via console.error below for debugging.
+  let result;
+  try {
+    result = await runOrchestrator(
+      db,
+      employee.employee_id,
+      { buddyEmail, mentorEmail: body.mentorEmail, jobPostingText: body.jobPostingText || null },
+      (progress) => sendEvent(progress)
+    );
+  } catch (err) {
+    console.error(`POST /start: pipeline failed for ${employee.employee_id} after internal retries:`, err);
+    sendEvent({ done: true, error: 'Something went wrong while building the onboarding plan. Please try again.' });
+    return res.end();
+  }
+
+  if (result.status === 'blocked') {
+    sendEvent({
+      done: true,
+      error: `${employee.full_name}'s employee record and manager intake were saved, but the Gatekeeper blocked this plan from being saved - see server logs for the blocking issue(s).`,
+    });
+    return res.end();
+  }
+
+  sendEvent({ done: true, planId: result.planId });
+  res.end();
 });
 
 app.listen(PORT, () => {
