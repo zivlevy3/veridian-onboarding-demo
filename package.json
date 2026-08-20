@@ -5,7 +5,8 @@
   "type": "commonjs",
   "scripts": {
     "import": "node scripts/import-veridian.js",
-    "dashboard": "node --env-file=.env server.js"
+    "dashboard": "node --env-file=.env server.js",
+    "start": "node server.js"
   },
   "engines": {
     "node": ">=22.5.0"
