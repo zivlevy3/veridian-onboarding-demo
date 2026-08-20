@@ -703,13 +703,16 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
      it never has to fight the compose window (bottom-right) for the same corner. */
   .milo-bubble {
     position: fixed; left: 24px; bottom: 24px; width: 56px; height: 56px;
-    border-radius: 50%; border: none; cursor: pointer; z-index: 250;
-    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-    color: #fff; font-size: 1.4rem; font-weight: 800; font-family: inherit;
+    border-radius: 16px; border: none; cursor: pointer; z-index: 250; padding: 0;
+    background: transparent;
     display: flex; align-items: center; justify-content: center;
     animation: milo-glow 2.6s ease-in-out infinite;
     transition: transform .15s ease;
   }
+  /* The gradient + shape both live in the SVG now (a speech bubble, not a plain circle
+     with a letter in it - an immediate "this is a chat" signal a circular avatar-style
+     button doesn't give) - this just makes sure the SVG fills its button exactly. */
+  .milo-bubble svg { display: block; width: 100%; height: 100%; }
   .milo-bubble:hover { transform: translateY(-2px) scale(1.05); }
   .milo-bubble[hidden] { display: none; }
   @keyframes milo-glow {
@@ -852,7 +855,7 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
     .dots { margin-top: 1.1rem; }
 
     /* 4. Milo bubble: smaller, tucked closer to the corner. */
-    .milo-bubble { width: 48px; height: 48px; left: 14px; bottom: 14px; font-size: 1.15rem; }
+    .milo-bubble { width: 48px; height: 48px; left: 14px; bottom: 14px; }
 
     /* 5. Milo chat window: full screen. The animation drops the transform property
        entirely here (not just re-tuned) - a non-none transform on an ancestor becomes the containing
@@ -918,7 +921,18 @@ ${renderLegend(trackStyles)}
   </div>
 </div>
 
-<button type="button" class="milo-bubble" id="miloBubble" title="Chat with Milo" aria-label="Open Milo chat">M</button>
+<button type="button" class="milo-bubble" id="miloBubble" title="Chat with Milo" aria-label="Open Milo chat">
+  <svg viewBox="0 0 56 56" aria-hidden="true">
+    <defs>
+      <linearGradient id="miloBubbleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color: var(--accent-1)"></stop>
+        <stop offset="100%" style="stop-color: var(--accent-2)"></stop>
+      </linearGradient>
+    </defs>
+    <path d="M4,22 A14,14 0 0 1 18,8 L38,8 A14,14 0 0 1 52,22 L52,34 L56,44 L44,40 L14,40 A14,14 0 0 1 4,26 Z" fill="url(#miloBubbleGrad)"></path>
+    <text x="28" y="24" text-anchor="middle" dominant-baseline="central" font-size="21" font-weight="800" fill="#fff" font-family="inherit">M</text>
+  </svg>
+</button>
 <div class="milo-window" id="miloWindow" hidden>
   <div class="milo-header">
     <div class="milo-avatar">M</div>
