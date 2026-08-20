@@ -2188,6 +2188,12 @@ app.post('/start', async (req, res) => {
   res.end();
 });
 
-app.listen(PORT, () => {
+// Explicit 0.0.0.0 (not just relying on Node's own default-all-interfaces behavior when
+// host is omitted) so this is a deliberate, visible choice - lets other devices on the
+// same LAN (e.g. a real phone, for testing the mobile-responsive work against an actual
+// touch screen and a real on-screen keyboard, not just Chrome DevTools' emulation) reach
+// this dev server via the host machine's LAN IP, not just localhost/127.0.0.1.
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Onboarding dashboard running at http://localhost:${PORT}/plan/2`);
+  console.log(`Also reachable on the LAN at http://<this machine's IP>:${PORT}/plan/2`);
 });
