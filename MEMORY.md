@@ -985,3 +985,32 @@ code, not just prose the model could ignore:
     is missing or unresolved. Verified independent of the Leadership-hiding change:
     Sivan Kaplan and Yuval Dayan both still resolve correctly as their teams' managers
     with Design Leadership/Product Leadership hidden from the picker.
+- **Orphan cleanup for an interrupted `/start` submission (2026-08-20).** A client whose
+  connection drops mid-pipeline (screen off, network blip) used to leave a real
+  `employees`/`manager_intake` row behind with no plan and no way to retry under the
+  same email (`createEmployee`'s duplicate-email check would block it forever). Fixed
+  with `lib/persistence.js`'s `deleteOrphanedEmployee(db, employeeId)` - deletes an
+  employee's own row and `manager_intake` row, but **only if no plan was ever saved for
+  them**; refuses (returns `false`) if a real plan exists, regardless of status. Two
+  callers in `server.js`'s `POST /start`: (a) `req.on('close')` sets
+  `clientDisconnected`, and if the pipeline then throws or the Gatekeeper blocks it, the
+  orphan is cleaned up (logged, not silent); a pipeline that *succeeds* anyway despite
+  the disconnect is left alone - a real plan now exists, which is a fine outcome even if
+  nobody was watching it finish. (b) Before calling `createEmployee`, a plain `SELECT`
+  checks for an existing employee with the submitted email; if `deleteOrphanedEmployee`
+  confirms it's an orphan (no plan), it's removed and the same submission proceeds
+  normally - a genuine duplicate person (one with a real plan) still hits the normal
+  blocking error, unchanged. Verified live: 3 real `/start` submissions interrupted via
+  `AbortController`/`curl -m` all happened to succeed anyway and were correctly left
+  alone (`pipeline succeeded ... after the client disconnected ... not cleaned up`);
+  `deleteOrphanedEmployee` unit-tested directly against both a genuine orphan (deleted)
+  and an employee with a real plan (refused); a synthetic orphan + real resubmission
+  under the same email confirmed detection, deletion, and a successful retry
+  (`matched a previous orphaned attempt ... removed it and retrying`).
+  - **Known gap, not yet closed here**: the *client* still declares failure immediately
+    the moment its own connection drops ("Connection lost - please try again"), even
+    though the server-side pipeline may still be quietly running to a real, successful
+    conclusion in the background - it has no way to find out. The three real verification
+    runs above only look clean because each one happened to finish before its own script
+    checked the result; a real visitor watching their screen would see a failure message
+    at the moment of the drop regardless of what the server goes on to do.

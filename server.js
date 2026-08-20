@@ -13,7 +13,7 @@
 // them to everyone.
 const express = require('express');
 const { openDb } = require('./lib/db');
-const { getPlan, toggleItemStatus, approvePlan, saveManagerIntake } = require('./lib/persistence');
+const { getPlan, toggleItemStatus, approvePlan, saveManagerIntake, deleteOrphanedEmployee } = require('./lib/persistence');
 const { buildEmployeeContext } = require('./lib/context');
 const { createEmployee } = require('./lib/employees');
 const { runOrchestrator } = require('./lib/orchestrator');
@@ -1969,14 +1969,24 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     })
       .then(function (r) {
         if (!r.ok) {
-          return r.json().then(function (data) { throw new Error((data && data.error) || 'Something went wrong.'); });
+          // A validation-stage error (bad department/team/manager/etc.) - a plain,
+          // specific message sent before any streaming started. Tagged isServerError so
+          // the catch below shows it as-is, not the generic "connection lost" message
+          // that's for an actual dropped connection, not a real rejection.
+          return r.json().then(function (data) {
+            var e = new Error((data && data.error) || 'Something went wrong.');
+            e.isServerError = true;
+            throw e;
+          });
         }
         var reader = r.body.getReader();
         var decoder = new TextDecoder();
         var buffer = '';
+        var receivedDone = false;
 
         function handleEvent(event) {
           if (event.done) {
+            receivedDone = true;
             if (event.planId) {
               markAllStepsDone();
               window.location.href = '/plan/' + event.planId;
@@ -1991,7 +2001,14 @@ function renderStartPage(referenceData, companyName, errorMessage) {
 
         function pump() {
           return reader.read().then(function (chunk) {
-            if (chunk.done) return;
+            if (chunk.done) {
+              // The stream closed without ever sending a done:true line - the
+              // connection dropped mid-pipeline (screen off, network loss), not a
+              // real, reported outcome. The server-side cleanup for this exact case
+              // is in POST /start's req.on('close') handling.
+              if (!receivedDone) fail('Connection lost - please try again.');
+              return;
+            }
             buffer += decoder.decode(chunk.value, { stream: true });
             var lines = buffer.split('\\n');
             buffer = lines.pop();
@@ -2003,7 +2020,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
         }
         return pump();
       })
-      .catch(function (err) { fail(err.message); });
+      .catch(function (err) { fail(err.isServerError ? err.message : 'Connection lost - please try again.'); });
   });
 })();
 </script>
@@ -2118,6 +2135,22 @@ app.post('/start', async (req, res) => {
       });
     }
 
+    // A prior attempt for this same email that got interrupted (screen off, network
+    // drop) before a plan was ever saved leaves a real employees/manager_intake row
+    // behind with nothing to show for it - createEmployee's own duplicate-email check
+    // would otherwise permanently block every future retry under that email. Checked
+    // BEFORE calling createEmployee (rather than parsing its thrown error string) so
+    // this is a plain, direct query, not string-matching. deleteOrphanedEmployee only
+    // ever removes an employee who has no saved plan - a real duplicate person (a
+    // second submission for someone genuinely already onboarded) still hits
+    // createEmployee's normal blocking error below, unchanged.
+    const existingByEmail = db.prepare('SELECT employee_id FROM employees WHERE email = ?').get(body.email);
+    if (existingByEmail && deleteOrphanedEmployee(db, existingByEmail.employee_id)) {
+      console.log(
+        `POST /start: "${body.email}" matched a previous orphaned attempt (${existingByEmail.employee_id}, no plan ever saved) - removed it and retrying under the same email.`
+      );
+    }
+
     const created = createEmployee(db, {
       name: body.name,
       email: body.email,
@@ -2151,7 +2184,28 @@ app.post('/start', async (req, res) => {
   // run, no more plain JSON error responses are possible - every outcome from here on
   // (pipeline failure, Gatekeeper block, success) goes out as a `done` event instead.
   res.writeHead(200, { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-cache' });
+  // Swallows write-after-close errors (EPIPE/ERR_STREAM_WRITE_AFTER_END) instead of
+  // letting them become an unhandled 'error' event - real once clientDisconnected below
+  // is even possible to observe, since that's exactly the state that produces them.
+  res.on('error', () => {});
   const sendEvent = (event) => res.write(JSON.stringify(event) + '\n');
+
+  // Screen-off / network-drop mid-pipeline is a real case, not a hypothetical: the
+  // client's fetch is gone, but runOrchestrator (already in flight, several sequential
+  // real API calls deep) can't be cleanly cancelled mid-way without deep surgery through
+  // every agent call - so it's left to run to whatever conclusion it reaches, same as
+  // always. What changes is what happens AFTER: if the client is gone, there's no point
+  // writing progress events into a dead socket (guarded in the onProgress callback
+  // below), and - the real fix - if the pipeline never reaches a saved plan (throws, or
+  // the Gatekeeper blocks it), the employee/manager_intake rows created earlier in this
+  // request are cleaned up via deleteOrphanedEmployee rather than left as a permanent
+  // orphan with nothing to show for it. A pipeline that succeeds anyway despite the
+  // disconnect is left alone - a real plan now exists, which is a fine outcome even if
+  // nobody was watching it finish.
+  let clientDisconnected = false;
+  req.on('close', () => {
+    if (!res.writableEnded) clientDisconnected = true;
+  });
 
   // runOrchestrator already retries each real API stage internally (see
   // lib/orchestrator.js's withRetry) for exactly this reason - a transient generation
@@ -2168,15 +2222,33 @@ app.post('/start', async (req, res) => {
       db,
       employee.employee_id,
       { buddyEmail, mentorEmail: body.mentorEmail, jobPostingText: body.jobPostingText || null },
-      (progress) => sendEvent(progress)
+      (progress) => {
+        if (!clientDisconnected) sendEvent(progress);
+      }
     );
   } catch (err) {
     console.error(`POST /start: pipeline failed for ${employee.employee_id} after internal retries:`, err);
-    sendEvent({ done: true, error: 'Something went wrong while building the onboarding plan. Please try again.' });
+    if (clientDisconnected) {
+      const cleaned = deleteOrphanedEmployee(db, employee.employee_id);
+      console.warn(
+        `POST /start: client disconnected before the pipeline finished for ${employee.employee_id} (which then also failed) - ` +
+          (cleaned ? 'removed the orphaned employee/manager_intake rows.' : 'nothing to clean up.')
+      );
+    } else {
+      sendEvent({ done: true, error: 'Something went wrong while building the onboarding plan. Please try again.' });
+    }
     return res.end();
   }
 
   if (result.status === 'blocked') {
+    if (clientDisconnected) {
+      const cleaned = deleteOrphanedEmployee(db, employee.employee_id);
+      console.warn(
+        `POST /start: client disconnected before the pipeline finished for ${employee.employee_id} (the Gatekeeper then blocked it too) - ` +
+          (cleaned ? 'removed the orphaned employee/manager_intake rows.' : 'nothing to clean up.')
+      );
+      return res.end();
+    }
     sendEvent({
       done: true,
       error: `${employee.full_name}'s employee record and manager intake were saved, but the Gatekeeper blocked this plan from being saved - see server logs for the blocking issue(s).`,
@@ -2184,6 +2256,12 @@ app.post('/start', async (req, res) => {
     return res.end();
   }
 
+  if (clientDisconnected) {
+    console.log(
+      `POST /start: pipeline succeeded for ${employee.employee_id} after the client disconnected - plan_id=${result.planId} saved anyway, not cleaned up.`
+    );
+    return res.end();
+  }
   sendEvent({ done: true, planId: result.planId });
   res.end();
 });
