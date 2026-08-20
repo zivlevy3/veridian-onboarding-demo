@@ -323,6 +323,7 @@ function renderCarousel(plan, context, activeWeek, trackStyles, nameEmailMap) {
       var dots = Array.prototype.slice.call(document.querySelectorAll('.dot'));
       var prevBtn = document.getElementById('prevBtn');
       var nextBtn = document.getElementById('nextBtn');
+      var trackEl = document.getElementById('track');
 
       // Below 767px, the 3D perspective/partial-opacity neighbor effect is dropped
       // entirely (it does not work well under touch) - only the active card is shown,
@@ -393,6 +394,55 @@ function renderCarousel(plan, context, activeWeek, trackStyles, nameEmailMap) {
       dots.forEach(function (dot) {
         dot.addEventListener('click', function () { setActive(Number(dot.getAttribute('data-week'))); });
       });
+
+      // Swipe (touch) on the card itself - swipe left = next week, swipe right =
+      // previous week, the same feed gesture Instagram/TikTok already trained everyone
+      // on. Additive, not a replacement for the arrows above (still there for anyone who
+      // doesn't try swiping). SWIPE_MIN_DISTANCE is a horizontal-distance threshold, not
+      // a velocity/timing one - deliberately simple for a demo. Requiring
+      // dx to exceed dy (not just dx > SWIPE_MIN_DISTANCE alone) is what keeps an
+      // ordinary vertical scroll of the items list from ever getting misread as a swipe.
+      var touchStartX = 0;
+      var touchStartY = 0;
+      var touchDeltaX = 0;
+      var touchTracking = false;
+      var SWIPE_MIN_DISTANCE = 50;
+
+      trackEl.addEventListener('touchstart', function (e) {
+        if (e.touches.length !== 1) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchDeltaX = 0;
+        touchTracking = true;
+      }, { passive: true });
+
+      trackEl.addEventListener('touchmove', function (e) {
+        if (!touchTracking || e.touches.length !== 1) return;
+        var dx = e.touches[0].clientX - touchStartX;
+        var dy = e.touches[0].clientY - touchStartY;
+        touchDeltaX = dx;
+        // Once the gesture is clearly horizontal, stop the page from also trying to
+        // scroll vertically underneath the swipe - a passive listener can't call
+        // preventDefault (it would just be silently ignored), which is why this one
+        // listener is explicitly { passive: false } while the other two stay passive.
+        if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      function endSwipe() {
+        if (!touchTracking) return;
+        touchTracking = false;
+        if (Math.abs(touchDeltaX) < SWIPE_MIN_DISTANCE) return;
+        if (touchDeltaX < 0) {
+          setActive(active + 1);
+        } else {
+          setActive(active - 1);
+        }
+      }
+      trackEl.addEventListener('touchend', endSwipe, { passive: true });
+      trackEl.addEventListener('touchcancel', function () { touchTracking = false; }, { passive: true });
+
       window.addEventListener('resize', position);
 
       position();
