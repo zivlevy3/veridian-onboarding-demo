@@ -721,9 +721,17 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
   .milo-bubble svg { display: block; width: 100%; height: 100%; }
   .milo-bubble:hover { transform: translateY(-2px) scale(1.05); }
   .milo-bubble[hidden] { display: none; }
+  /* drop-shadow (not box-shadow) deliberately - box-shadow follows the button's own
+     border-radius (a rounded square), not the actual bubble+tail SVG silhouette inside
+     it. That was invisible on the old circular icon (border-radius:50% made the glow a
+     circle matching the circle exactly) but became a visible mismatch once the icon
+     became an irregular shape narrower than its own box - the square glow extended past
+     the bubble's real edges and read as a static square frame around it, always
+     present since the animation runs continuously. drop-shadow shapes itself from the
+     rendered alpha (the real bubble silhouette), so it now hugs the actual shape. */
   @keyframes milo-glow {
-    0%, 100% { box-shadow: 0 4px 18px rgba(99,102,241,0.4), 0 0 0px rgba(99,102,241,0.3); }
-    50% { box-shadow: 0 4px 22px rgba(99,102,241,0.55), 0 0 20px rgba(99,102,241,0.45); }
+    0%, 100% { filter: drop-shadow(0 4px 10px rgba(99,102,241,0.5)); }
+    50% { filter: drop-shadow(0 4px 14px rgba(99,102,241,0.7)); }
   }
 
   .milo-window {
