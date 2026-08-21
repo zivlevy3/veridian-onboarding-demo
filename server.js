@@ -2118,7 +2118,12 @@ function renderStartPage(referenceData, companyName, errorMessage) {
 </html>`;
 }
 
-app.get('/', (req, res) => res.redirect('/plan/2'));
+// Real visitors (a LinkedIn link, not a developer poking at the app) land here first -
+// redirecting to someone else's existing plan as the entry screen never made sense for
+// them; it was a leftover from early local testing, when /plan/2 was the fastest way to
+// eyeball the dashboard. /start (the actual intake form) is the only sensible front door
+// for a real visitor.
+app.get('/', (req, res) => res.redirect('/start'));
 
 app.get('/plan/:planId', (req, res) => {
   const planId = Number(req.params.planId);
