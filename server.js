@@ -708,6 +708,12 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
     display: flex; align-items: center; justify-content: center;
     animation: milo-glow 2.6s ease-in-out infinite;
     transition: transform .15s ease;
+    /* Real touch devices (not synthetic TouchEvents, which never trigger this) show a
+       default gray tap-highlight overlay on tap, sized to the button's full rectangular
+       hit-box - not the narrower/irregular speech-bubble SVG inside it. Invisible on a
+       plain circle where the visible content filled the whole box, but on the current
+       shape it reads as a dark square container flashing behind the bubble. */
+    -webkit-tap-highlight-color: transparent;
   }
   /* The gradient + shape both live in the SVG now (a speech bubble, not a plain circle
      with a letter in it - an immediate "this is a chat" signal a circular avatar-style
