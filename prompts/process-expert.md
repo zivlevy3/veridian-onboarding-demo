@@ -367,6 +367,72 @@ orchestrator/manager may later override in the edit step - not your job here):
 | `trainer_self_learning` | n/a | Not a meeting - see weekly cap rule below |
 | `system_provisioning` | n/a | Not a meeting - see weekly cap rule below |
 
+## Facilitator selection by content type (2026-08-20)
+
+**Root cause found in production (2026-08-20)**: a real hire's plan scheduled "shadow a
+senior HRBP in a real advisory conversation" - genuinely observational, hands-on content
+- as `trainer_self_learning`, and separately routed several needs that were really about
+professional guidance to the direct manager, even though a real `professionalMentor` was
+present in context the whole time and never used for anything. The mentor relationship
+this pipeline exists to support was, in practice, almost never actually used. This
+section exists specifically to close that gap - not a style preference, a hard rule with
+its own sanity check below.
+
+**1. Content requiring real human professional guidance defaults to the mentor, not
+self-guided, not the manager.** "Requiring guidance" means: shadowing, guided/supervised
+practice, or observing how work actually happens in this role in real time - anything
+Content Expert's `rationale` describes as needing a person present, not a document (see
+`prompts/content-expert.md`'s "Facilitator awareness"). For this kind of need:
+- If `people.professionalMentor` is present: `facilitatorType: "professional_mentor"` is
+  the default. Don't route it to `direct_manager` just because the manager is the more
+  familiar choice - the whole point of a mentor relationship is to carry exactly this
+  kind of professional-guidance content so it isn't all funneled through the manager.
+- If `people.professionalMentor` is `null`: this is a genuine gap, not license to silently
+  substitute the manager or self-guided content instead. Note it in `gaps`
+  ("no Professional Mentor assigned - needs requiring hands-on guidance had no mentor to
+  route to") and only then fall back to the manager as the next-best real person - never
+  to `trainer_self_learning` for this category of content (see the sanity check below).
+
+**2. `trainer_self_learning` is for pure reading/document/LMS content only.** If a need's
+`title` or `rationale` uses a companionship word - "shadow", "observe", "pair with",
+"watch", "sit in on", "accompany" (English or the obvious equivalent) - it is describing
+an activity that happens *with* someone, and `facilitatorType` **cannot** be
+`trainer_self_learning` for that item, full stop. This is a literal contradiction
+otherwise: self-guided content has no one to shadow. Run this check on every item you
+place, not just ones you're unsure about - it's a hard sanity check, not a judgment call.
+
+**3. `direct_manager` is for the management relationship, not general professional
+content.** Reserve it for what "The direct-manager cluster" above actually describes -
+the week-1 intro, the week-2 deep-dive, the weekly check-ins, expectations, feedback,
+1:1 management topics. A need about developing professional/technical skill in the role
+belongs with the mentor (see #1), a real teammate, or self-guided material - not the
+manager by default just because a real name was needed and the manager was the first one
+available in context.
+
+## Sequencing: system access before content that lives inside that system
+
+If an item describes doing real work *inside* a specific system (e.g. "learn the
+Zendesk ticket workflow", "review the CI/CD pipeline in GitHub") and that same system
+also has its own `systems_access` provisioning item in this plan, the workflow/content
+item's `dependsOn` **must** name the provisioning item's title - it cannot be scheduled
+in an earlier week than the access item, and if they land in the same week, the access
+item must be understood as a prerequisite regardless. Walking someone through a
+workflow in a tool they don't have access to yet doesn't work in practice; enforce this
+as a real ordering constraint, not just a nice-to-have.
+
+## No real facilitator identity: a gap, not a fake-scheduled item
+
+If a need calls for meeting a specific kind of person (a peer, a cross-functional
+contact, "your technical support counterpart") but nothing in context - not
+`peopleSupported`, not `directReports`, not `role.core_collaboration`, nothing - names an
+actual person, do not schedule it as if it were resolved. This is the same "never invent"
+principle applied to facilitators specifically: a title like "Meet your technical support
+peer" with no real name behind it is not a placed item, it's an unresolved gap wearing an
+item's clothing. Add it to `gaps` instead (the Content Writer turns a genuine type-1 gap
+like this into a positively-framed pending-assignment item - see
+`prompts/content-writer.md` - that is where this belongs, not a scheduled item that
+implies a real person was found).
+
 ## Maximum 5 meetings per week, with a deferral order (framework part C §8)
 
 A "meeting" that counts against the **shared** cap is any item whose `facilitatorType` is

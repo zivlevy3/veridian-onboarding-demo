@@ -140,17 +140,23 @@ AI Platform's codebase" is not.
 
 ## Use `emailContext`, when the item supports it - written to the recipient, not about them
 
-For an item whose facilitator is a real, individually-named person the employee would
-plausibly reach out to directly to schedule (an `interface_contact` relationship
-meeting, a `team_member` teammate intro, `human_buddy`/`hr`/`hrbp`/`skip_manager`) -
-**except the recurring direct-manager relationship itself**, which is already scheduled
-automatically and needs no employee-initiated outreach - write a short `emailContext`:
-1-2 sentences addressed directly **to that person** (second person "you"/"your", never
-third-person naming them - "I'd love to understand your team's priorities," never "I'd
-love to understand Michael's priorities"). This powers an in-app "compose a real email"
-preview, not generic boilerplate - it must not read the same for two different people,
-and it must never open with "Meet X" framing (that's the card's `shortLine`, not a
-sentence a person would write to the recipient themselves).
+For **every item whose facilitator is a real, individually-named person** - any 1:1 with
+a real name behind it: `direct_manager`, `professional_mentor`, `human_buddy`, `hr`,
+`hrbp`, `skip_manager`, an `interface_contact` relationship meeting, a `team_member`
+teammate intro - write a short `emailContext`: 1-2 sentences addressed directly **to
+that person** (second person "you"/"your", never third-person naming them - "I'd love to
+understand your team's priorities," never "I'd love to understand Michael's
+priorities"). This powers an in-app "compose a real email" preview, not generic
+boilerplate - it must not read the same for two different people, and it must never open
+with "Meet X" framing (that's the card's `shortLine`, not a sentence a person would write
+to the recipient themselves).
+
+**Changed 2026-08-20: `direct_manager` items are now included, not excluded.** Every
+individually-named 1:1 gets the same "compose a real email" affordance - there's no
+principled reason a manager relationship is less reachable-by-email than a mentor or
+teammate one, and excluding it was inconsistent with how every other 1:1 is treated.
+This applies to every `direct_manager` instance, including each recurring weekly
+check-in, not just the week-1 intro.
 
 Ground it exactly the way `purpose` grounds `detailText`, including the same
 Executive-team-as-group vs named-department distinction from "Grounding the
@@ -161,10 +167,19 @@ person whose own team the employee genuinely supports gets "I'll be supporting
 fact not present in `context` - the recipient's real email address is resolved
 separately from real data, not written here.
 
-Omit `emailContext` entirely for: the direct-manager relationship (every instance,
-including the recurring check-in), any item with no individually-named human
-facilitator (self-guided training, system provisioning, a generic team label like "HR
-team"), and the "lighter week" / pending-assignment placeholders.
+Omit `emailContext` entirely for: any **group** meeting (the one team-wide
+meet-and-greet, any session with more than one attendee), any item with no
+individually-named human facilitator (self-guided training, system provisioning, a
+generic team label like "HR team"), and the "lighter week" / pending-assignment
+placeholders - including a pending-assignment item that names who the person *will* be
+once assigned, since there's no one to email yet.
+
+**If an item's own facilitator was never actually resolved to a real name** (Process
+Expert should not produce this per its own "no real facilitator identity" rule, but
+don't assume upstream never fails - check here too): render it as a type-1
+pending-assignment item (see below), not as an ordinary item with a vague facilitator
+label like "your peer" standing in for a name. A generic role-label is not a resolved
+person, regardless of which `facilitatorType` the item arrived with.
 
 ## Output schema
 
@@ -355,6 +370,20 @@ week 1 (these roles are always Mandatory/never-deferred once assigned - see
 - Yes: `shortLine: "Your mentor - coming soon"`, `detailText: "Your manager will pair you with a Professional Mentor soon to help with deeper guidance in your role - we'll let you know as soon as that's set."`, `facilitatorDisplayName: "To be assigned"`, `dayHint: "Coming soon"`.
 - Do **not** describe this as a gap, a limitation, or anything negative. It's a "this is coming" message, not an apology.
 - Do **not** also list this in `internalGaps` - once it's a pending-assignment item, that's its only home.
+
+**⚠️ This framing applies only when the relevant `context.people.*` field is literally
+`null` - never when a real person is already resolved.** Found in production (2026-08-20):
+a real hire whose `context.people.professionalMentor` was a fully resolved person (a real
+name, a real email) still got `"Your mentor - coming soon"` / `dayHint: "Coming soon"` -
+the model had generalized this worked example into "mentor items are inherently a
+pending/pairing thing," which is wrong. A resolved mentor is not different in kind from a
+resolved buddy or manager: write an **ordinary scheduled item** using their real name,
+exactly the same way you'd write any other 1:1 - no "coming soon," no "pairing," no
+"kickoff" language, and no framing that implies the relationship itself is still being
+set up. Before writing *any* pending-assignment item, check the specific field this
+person would have come from (`context.people.professionalMentor`,
+`context.people.humanBuddy`, etc.) - if it's a real object, not `null`, this is not a
+type-1 gap and this section doesn't apply, regardless of what the item is about.
 
 **Type 2 - "data/system limitation"**: something the platform itself can't currently
 determine (no Roles-catalog match, no interface map, no region-specific policy data, the

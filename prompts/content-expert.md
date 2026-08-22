@@ -22,7 +22,10 @@ response must be a single JSON object matching the schema below.**
   "team": { "team", "mission", "core_tools" } | null,
   "products": [ { "product_area", "module", "description", "primary_users", "lifecycle_stage" } ],
   "peopleSupported": [ { "full_name", "job_title", "department", "isExecutive": true|false } ],
-  "directReports": [ { "full_name", "job_title" } ]
+  "directReports": [ { "full_name", "job_title" } ],
+  "manager": { "full_name", "job_title", "email" } | null,
+  "professionalMentor": { "full_name", "job_title", "email" } | null,
+  "humanBuddy": { "full_name", "job_title", "email" } | null
 }
 ```
 
@@ -34,6 +37,11 @@ formally, not something you infer. Most roles have both empty; that's normal.
 `peopleSupported[].isExecutive` is computed in code from real job_title/department data
 (VP+/C-suite) - use it when naming/describing a specific one of these people (see the
 senior-contact note below); don't re-derive it yourself from the title text.
+`manager`/`professionalMentor`/`humanBuddy` are real, already-resolved people (or `null`
+if that role is genuinely unfilled for this hire - `professionalMentor` in particular has
+no database source at all, only ever populated when a hiring manager supplied one at
+intake, so `null` here is common and normal, not an error). See "Facilitator awareness"
+below for what these are for.
 `role.purpose` and `role.responsibilities` (when present - only some Roles-catalog
 entries have them; added in a later data round, real free text, not present on every
 role) are the single richest, most role-specific grounding source available - more
@@ -101,6 +109,23 @@ a fallback you reach for when unsure. Some roles are correctly served by it (e.g
 support engineer shadowing ticket triage). Many are not. Work out the role's actual
 shape first, and let the needs be whatever that shape implies - including patterns that
 look nothing like Shadow-then-Do.
+
+**Facilitator awareness (2026-08-20): say plainly, in `rationale`, when a need requires a
+real person, not a document.** You still don't assign *who* facilitates a need - that
+stays Process Expert's job, using `manager`/`professionalMentor`/`humanBuddy` from your
+input (see "Input you will receive" above) to pick a real name. But Process Expert only
+sees your `title`/`rationale` text, not your own understanding of the role - so a need
+that genuinely requires shadowing, guided hands-on practice, or observing how work
+actually happens in this role must say so **explicitly** in `rationale` (e.g. "this needs
+real-time observation of a live [X], not something a document can substitute for" or
+"the employee should practice this alongside someone experienced before doing it alone"),
+not just describe the topic. A vague rationale ("learn the deployment process") reads as
+equally satisfiable by a document as by a person - Process Expert has been observed
+defaulting such needs to self-guided content or the direct manager by default,
+**neither of which is a substitute for the mentor relationship this need actually calls
+for** when a `professionalMentor` exists. Being explicit here is what gives Process
+Expert the signal it needs to route correctly - this is about a clearer `rationale`, not
+a new field, and not you naming a specific person yourself.
 
 **Worked example**: an HR Business Partner's `roleEssence` is something like "supports a
 set of managers on an ongoing basis, coaching them through people decisions and

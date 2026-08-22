@@ -448,6 +448,88 @@ investigation — why Daniel's context specifically triggers this, and probably 
 structural fix (e.g. a minimum-content check independent of the cap checks) — but flagged
 here for a future round, not chased down now.
 
+**Facilitator selection for professional-guidance content defaults to the mentor, not
+self-guided or the manager (2026-08-22) — a principle-level fix, not a one-off
+correction.** Root cause: a real hire's selected Professional Mentor was almost never who
+a plan item actually ended up with — two independent bugs compounded into that one visible
+symptom.
+1. **Data-plumbing bug**: `lib/content-expert-agent.js`'s `input` object never included
+   `manager`/`professionalMentor`/`humanBuddy` at all — Process Expert and Content Writer
+   both already received the full `employeeContext` (no field-picking in their own input
+   construction); Content Expert alone silently dropped every people field. Not by design —
+   nothing in `content-expert.md` ever asked for the omission. Its absence meant Content
+   Expert could never flag, in a need's own `rationale`, that a real mentor exists and is
+   exactly who a shadowing/guided-practice need should point toward.
+2. **`content-writer.md`'s Type-1 "pending assignment" worked example was over-
+   generalized.** Confirmed directly against real saved content, not inferred: a real hire
+   (`VRD-1186` "ziv levy", `plan_id=31`) whose `context.people.professionalMentor` was a
+   fully resolved person (Or Barnea, a real name and email) still got rendered as *"Your
+   mentor - coming soon"* / `dayHint: "Coming soon"` — the model had generalized the
+   worked example into "mentor items are inherently a pending/pairing thing," which is
+   wrong. A resolved mentor is not different in kind from a resolved buddy or manager.
+
+Fix, three layers, deliberately keeping each agent's existing WHAT/WHY vs WHEN/WHO
+boundary (see "How Content Expert / Process Expert / Content Writer divide the work"
+above) rather than moving facilitator-*assignment* logic into Content Expert just because
+the bug report was framed around it:
+- `lib/content-expert-agent.js` now includes `manager`/`professionalMentor`/`humanBuddy`
+  in its input, matching what Process Expert/Content Writer already received.
+- `prompts/content-expert.md` gained a "Facilitator awareness" instruction: say plainly,
+  in `rationale`, when a need requires a real human (shadowing, guided hands-on practice,
+  observing real workflow) rather than a document. Content Expert still never assigns
+  `facilitatorType` itself — that stays Process Expert's job — but a vague rationale reads
+  as equally satisfiable by a document as by a person, and Process Expert had been
+  observed defaulting such needs to self-guided content or the direct manager for exactly
+  that reason.
+- `prompts/process-expert.md` gained three new rules: (1) content requiring real human
+  professional guidance defaults to `professional_mentor` when `people.professionalMentor`
+  exists — never `direct_manager` by default just because it's the familiar choice; if the
+  mentor is `null`, note the gap explicitly and only then fall back to manager, never to
+  `trainer_self_learning` for this category; (2) `trainer_self_learning` is restricted to
+  pure reading/document/LMS content — an explicit sanity check against companionship words
+  ("shadow", "observe", "pair with", "watch", "sit in on", "accompany") makes
+  `trainer_self_learning` + those words a literal contradiction, checked on every item, not
+  a judgment call; (3) `direct_manager` stays reserved for the actual management
+  relationship, not general professional/skill content. Also added: a dependency rule (an
+  item describing work inside a specific system must set `dependsOn` to that system's own
+  access item — system access before content that lives inside it) and a no-real-
+  facilitator rule (if no real person can be named for a need, file it as a gap for
+  Content Writer to render as a type-1 pending item — never schedule a fake reference
+  pretending to be resolved).
+- `prompts/content-writer.md`: the Type-1 pending-assignment framing is now explicitly
+  gated to "only when the specific `context.people.*` field is literally `null`" — never
+  applied just because the topic is mentor-shaped. Also, the `emailContext` section
+  (previously missing `professional_mentor` entirely, and explicitly *excluding*
+  `direct_manager`) now covers every item with a real, individually-named human
+  facilitator, `direct_manager` included — every recurring weekly manager check-in gets
+  one too, not just the first meeting.
+
+**Verified on real data, no new test employee** (`VRD-1186` "ziv levy" — the only
+`manager_intake` row in this dataset with a populated `primary_mentor_email`,
+`or.barnea@veridian.ai`, making it the real case the original bug report was almost
+certainly based on; regenerated `plan_id=31` → `plan_id=43`):
+- Isolated Content Expert call (fixed input): `rationale` text now explicitly names the
+  mentor relationship for shadowing/paired-practice needs ("...alongside someone
+  experienced (their mentor)", "...needs real-time observation... not something a document
+  can substitute for").
+- Full pipeline run (`plan_id=43`): "Shadow a live code review and deployment cycle"
+  routed to `professional_mentor` (Or Barnea), rendered as an ordinary scheduled item with
+  `emailContext` — not "coming soon". GitHub-dependent items (the shadow session, GitHub &
+  Code Review Standards training, Secure Development) all carry `dependsOn: ["GitHub
+  access"]`. The one need with no real named individual (a design/product cross-functional
+  partner) was rendered honestly as "(to be confirmed)" with no `emailContext`, and also
+  filed into `gaps`/`internalGaps` for follow-up — not a fabricated name. Manager meetings
+  landed one or two per week across all 8 weeks (no clustering). Every real 1:1 — buddy,
+  manager (including every recurring check-in), mentor, HRBP, skip-manager — carries
+  `emailContext`; self-guided/systems items correctly don't.
+- **Incidental finding while verifying**: `scripts/run-orchestrator.js` does not read
+  `manager_intake` from the DB automatically — mentor/buddy must be passed explicitly via
+  `--mentor=`/`--buddy=` flags even when regenerating an existing employee who already has
+  a real `manager_intake` row on file. Missed on the first verification attempt (produced
+  `plan_id=42` with no mentor/buddy at all, silently); re-run with the flags produced the
+  correct `plan_id=43`. Not fixed this round — flagged so a future regeneration doesn't
+  repeat the same silent miss.
+
 ---
 
 ## 4. "Don't invent" — where it's actually enforced
