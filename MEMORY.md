@@ -448,6 +448,11 @@ investigation — why Daniel's context specifically triggers this, and probably 
 structural fix (e.g. a minimum-content check independent of the cap checks) — but flagged
 here for a future round, not chased down now.
 
+**Fixed 2026-08-30 — see "Collapse detection and retry" in section 5 below.** Recurred
+for real on a second employee (Shimi Man, IT Support Specialist, live Railway plan)
+before the structural fix landed — same shape, different context, confirming this
+wasn't a one-off Daniel-Hadar-specific quirk.
+
 **Facilitator selection for professional-guidance content defaults to the mentor, not
 self-guided or the manager (2026-08-22) — a principle-level fix, not a one-off
 correction.** Root cause: a real hire's selected Professional Mentor was almost never who
@@ -957,6 +962,69 @@ code, not just prose the model could ignore:
     entirely rather than left as dead code once this landed - it had exactly one caller,
     which no longer calls it, and keeping it around with a comment describing behavior
     the pipeline no longer has would be actively misleading to a future reader.
+- **Collapse detection and retry (2026-08-30) - closes the "Process Expert can collapse
+  an entire plan to near-nothing" issue flagged-but-unfixed in section 3 on 2026-08-19.**
+  Trigger: the same failure shape recurred for real on a second, different employee
+  (Shimi Man, IT Support Specialist) via a live Railway submission - weeks 3-8 all
+  landed with zero items, *and* none of the role-agnostic compliance trainings
+  (Security Awareness, Code of Conduct, GDPR Basics) were scheduled either, even though
+  those come from `trainings[]` and don't depend on role-catalog richness at all. This
+  wasn't "a thin role produced less content" - it was the same collapse phenomenon
+  documented for Daniel Hadar, just on a different context, confirming it wasn't a
+  one-off quirk of his specific data.
+  - **`lib/plan-validate.js`'s `detectPlanCollapse(plan)`** flags a plan as collapsed
+    only on two independent signals **combined**, not either alone: 3+ consecutive
+    fully-empty weeks (`week.items.length === 0` - exactly what `ensureNoEmptyWeeks`
+    would otherwise turn into a "lighter week" card) AND zero compliance-track items
+    anywhere in the whole plan. Checked directly on the Process Expert's own `plan`,
+    before Content Writer ever runs - no need to wait for the rendered "lighter week"
+    text to check for it. Requiring both signals together (not just the empty-week
+    count alone) is deliberate: a genuinely light back half of a plan for a real,
+    content-appropriate reason should never trip this on its own - see the synthetic
+    "3 empty weeks but a compliance item exists elsewhere" case in the verification
+    below, which correctly does NOT flag as collapsed.
+  - **`lib/orchestrator.js`** wraps Content Expert + Process Expert together in a retry
+    loop (`MAX_COLLAPSE_ATTEMPTS = 4`, matching every other stage's 1-initial-+-3-retries
+    budget) that checks `detectPlanCollapse` after each attempt. Treated like a
+    JSON-shape failure (a fresh regeneration), not like an ordinary cap violation
+    (in-place rebalancing) - there's no reasonable way to "rebalance" a plan that's
+    missing most of its content the way `plan-rebalance.js` fixes a load-cap overage.
+    Both agents are re-run together, not just Process Expert alone, since either could
+    be the actual cause (a thin `onboardingNeeds[]` from Content Expert constrains what
+    Process Expert has to schedule in the first place). Only if every attempt in the
+    budget still collapses is the plan accepted anyway, as a genuine last resort - a
+    `"Possible degenerate plan - manual review recommended"` message goes into the
+    plan's own `gaps[]` (the same `internalGaps` path every other last-resort message
+    already uses, HR/manager-only, never shown to the employee), mirroring the
+    "Everyone gets a plan" priority order above rather than introducing a second pattern
+    for the same kind of decision.
+  - **Verified two ways before considering this done, since a real collapse is a
+    probabilistic event that may or may not occur in any single real API run - a clean
+    real run on its own can't prove the retry-and-recover path actually fires:**
+    1. **Real API run, no mocking**: `VRD-1011` (Daniel Hadar, the original documented
+       collapse case) via `node --env-file=.env scripts/run-orchestrator.js VRD-1011` -
+       came back healthy on the first attempt this time (all 8 weeks populated, real
+       compliance items present), and `detectPlanCollapse` correctly evaluated the saved
+       plan as `collapsed: false`. Confirms no false positive on a genuinely healthy
+       generation - useful, but doesn't by itself prove the retry path works, since
+       nothing collapsed for it to catch.
+    2. **Deterministic mock test, zero API cost** (`require.cache` substitution for the
+       four real-API agent modules, run once and discarded - not kept as a permanent
+       test asset, consistent with how every other verification in this file was done
+       inline rather than as a checked-in test script): Process Expert mocked to return
+       a Shimi-Man-shaped collapsed plan (weeks 3-8 empty, no compliance) on its first
+       call and a healthy plan on its second. Result: `contentExpertCallCount === 2`,
+       `processExpertCallCount === 2`, the retry fired exactly once, and the final saved
+       plan was the healthy one, not the collapsed one - `detectPlanCollapse` on it
+       returned `collapsed: false`. This is what actually proves the retry-and-recover
+       logic is wired correctly, independent of whether a real API call happens to
+       collapse on any given run.
+    3. Four synthetic shapes run directly against `detectPlanCollapse` confirmed the
+       both-signals-required design point: a Shimi-Man-shaped plan (6 empty weeks, no
+       compliance) → collapsed; a healthy plan → not collapsed; 3 empty weeks *with* a
+       compliance item elsewhere → correctly NOT collapsed (single-signal false positive
+       avoided); 2 consecutive empty weeks with no compliance (below the 3-week
+       threshold) → correctly NOT collapsed.
 - **Department and Team are closed dropdowns of real org data only - no "Other."**
   `createEmployee` (`lib/employees.js`) requires an exact match against `teams`/
   `departments` and throws otherwise - offering "Other" here would be a form control
@@ -979,6 +1047,46 @@ code, not just prose the model could ignore:
   - the server re-validates for real via `saveManagerIntake` on submit regardless, so a
   client-side mismatch (e.g. from a stale cascade) surfaces as a real, clear error
   rather than a silent accept.
+- **Buddy's "Other" free-text option removed entirely (2026-08-30) - it was the one
+  people-picker inconsistent with this project's "always a real person, never invented"
+  rule** (Manager and Mentor never had an "Other" option in the first place; only Buddy
+  did). Found via a real, live case: a manager typed a name into Buddy's "Other" field
+  (placeholder text literally said "Name or email," inviting exactly this) expecting it
+  to be used - `resolveManagerIntake` (`lib/manager-intake.js`) does an exact
+  `WHERE email = ?` lookup against whatever's typed, so free text can never resolve to a
+  real employee. What happened next made this worse than an ordinary "not found": since
+  `intake.humanBuddy` came back `null`, `mergeIntake`'s gap-clearing branch
+  (`lib/orchestrator.js`) never fired, so the typed name silently vanished into an
+  `unresolved[]` gap message that isn't rendered anywhere in the UI (`internalGaps` -
+  see the "Known gap, by design" note in `README.md`) - the manager who typed a real
+  name had zero feedback that it was discarded, and the employee's plan just showed the
+  generic "Your buddy - coming soon" placeholder as if nobody had been asked at all.
+  - **Fix: removed, not repaired.** Considered instead making the fallback more
+    explicit/actionable (e.g. a clearer gap message), but removal is the more honest fix
+    for the same reason Department/Team already lost their own "Other" option: the
+    dropdown (`teamCandidates()`) already covers the common real case (a same-team
+    buddy) with guaranteed-valid selections, same-team-buddy-by-real-email for someone
+    outside that pool was never reliably reachable through a plain-text field the UI
+    itself mislabeled as accepting "Name," and even a corrected fallback message
+    wouldn't close the actual harm - the manager still gets no feedback that their real
+    choice was discarded. Mentor already proves a dropdown-only Buddy-equivalent field
+    works fine with zero "Other" option; Buddy was the inconsistent one, not the norm.
+  - `server.js`: `fldBuddyOtherWrap`/`fldBuddyOther` removed from the intake HTML
+    entirely, `refreshBuddy()` no longer passes `other: true` to `setEmployeeOptions`,
+    the `toggleOther(fldBuddy, ...)` listener removed, and the `POST /start` handler no
+    longer branches on `body.buddy === '__other__'` - `buddyEmail` is now always either
+    empty or a real employee's email straight from the dropdown.
+  - **The defensive fallback in `resolveManagerIntake`/`mergeIntake` was deliberately
+    left as-is, not removed** - it's a reasonable safety net for any caller that isn't
+    this UI (a future integration, a raw API request, stale data), not something that
+    needs its own fix now that the one reachable-through-the-UI path to a bogus value is
+    gone. Verified directly: a bogus value fed straight to `resolveManagerIntake` still
+    resolves to `humanBuddy: null` with an `unresolved[]` entry (nothing invented, no
+    crash), and critically **does not clobber an already-real DB-level buddy** if one
+    exists (`mergeIntake` only overrides `people.humanBuddy` when intake actually
+    resolved someone) - confirmed on `VRD-1011`, whose real DB buddy (Lior Biton)
+    survived a bogus intake value unchanged. A real email still resolves cleanly
+    (happy path unaffected).
 - **"Pending Start" employees are excluded from the Manager/Buddy/Mentor/Additional
   mentor pools.** A new hire who hasn't started yet can't sensibly be someone else's
   buddy/mentor/manager - confirmed in the rendered page that an earlier test hire
@@ -1130,3 +1238,33 @@ code, not just prose the model could ignore:
   immediate abort), confirmed the UI showed the reconnect message rather than an error,
   then let the real pipeline finish server-side (`plan_id=41`) and confirmed the
   client's poll loop caught it and auto-redirected to `/plan/41` with zero user action.
+
+---
+
+## 6. Working process: a commit isn't shipped until it's pushed
+
+**Standing rule (2026-08-30): every approved commit gets pushed immediately - not left
+local "for later."** Before reporting any fix as done, verify in fact (`git log
+origin/master..HEAD` empty) that it's actually on `origin/master`, not just committed
+locally.
+
+**Why this is a rule and not just a habit**: found for real, the hard way. The
+mentor/facilitator root-cause fix (see section 3's 2026-08-22 entry) was committed
+locally but never pushed. Shortly after, the user tested the live Railway URL - which
+deploys from `origin/master` - to investigate a *different* real employee's plan (Shimi
+Man, IT Support Specialist). Two of that investigation's three findings (no email icon
+on any 1:1; a stale code comment describing pre-fix `emailContext` behavior) turned out
+to be fully explained by the live site silently still running the old, unpushed code,
+not by any new regression - a wasted diagnostic detour that direct verification
+(`git log origin/master..HEAD`) would have caught in one command before any
+investigation started.
+
+**How to apply**: the moment the user approves a fix (not "when convenient," not
+"batched with the next one"), `git push origin master` in the same breath as the
+commit, then confirm the empty diff before saying anything is done. If a change is
+committed but a push is somehow not yet safe (mid-review, user explicitly asked to hold
+off), say so explicitly rather than reporting completion - "committed, not yet pushed"
+and "shipped" are different states and must be described differently. Never assume the
+live/deployed behavior matches local `HEAD` without checking - a stale deployment looks
+identical to a fresh regression from the outside, and the two require completely
+different responses.

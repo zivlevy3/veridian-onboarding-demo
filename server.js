@@ -1580,9 +1580,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
         <label class="field-label" for="fldBuddy">Buddy</label>
         <p class="field-hint">Who's there for the everyday, informal stuff</p>
         <select class="field-input" id="fldBuddy"></select>
-        <div class="other-input" id="fldBuddyOtherWrap">
-          <input class="field-input" type="text" id="fldBuddyOther" placeholder="Name or email">
-        </div>
       </div>
       <div class="field-group">
         <label class="field-label" for="fldMentor">Mentor<span class="required-dot" title="Required"></span></label>
@@ -1658,8 +1655,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   var fldManager = document.getElementById('fldManager');
   var fldStartDate = document.getElementById('fldStartDate');
   var fldBuddy = document.getElementById('fldBuddy');
-  var fldBuddyOtherWrap = document.getElementById('fldBuddyOtherWrap');
-  var fldBuddyOther = document.getElementById('fldBuddyOther');
   var fldMentor = document.getElementById('fldMentor');
   var fldMentor2 = document.getElementById('fldMentor2');
   var fldJd = document.getElementById('fldJd');
@@ -1907,7 +1902,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     setEmployeeOptions(fldManager, managerCandidates(), { placeholder: 'Select a manager' });
   }
   function refreshBuddy() {
-    setEmployeeOptions(fldBuddy, teamCandidates(), { placeholder: 'None', other: true });
+    setEmployeeOptions(fldBuddy, teamCandidates(), { placeholder: 'None' });
   }
   function refreshMentor() {
     setEmployeeOptions(fldMentor, mentorCandidates(), { placeholder: 'Select a mentor' });
@@ -1936,7 +1931,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     refreshMentor();
   });
   fldRole.addEventListener('change', function () { toggleOther(fldRole, fldRoleOtherWrap); });
-  fldBuddy.addEventListener('change', function () { toggleOther(fldBuddy, fldBuddyOtherWrap); });
   fldManager.addEventListener('change', refreshMentor);
 
   // Auto-fills the company email from the name as "firstname.lastname@veridian.ai"
@@ -1981,7 +1975,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
       managerEmail: fldManager.value,
       startDate: fldStartDate.value,
       buddy: fldBuddy.value,
-      buddyOther: fldBuddyOther.value.trim(),
       mentorEmail: fldMentor.value,
       secondaryMentorEmail: fldMentor2.value,
       jobPostingText: fldJd.value.trim(),
@@ -2221,8 +2214,11 @@ app.get('/employee/:employeeId/plan-status', (req, res) => {
 // display label itself, so nothing here needs to know that mapping exists. Role/title
 // is the one field that tolerates a
 // no-catalog-match "Other" (createEmployee already degrades that to a GAP, not a
-// failure), and buddy tolerates its own free-text "Other" (stored as-is, resolved
-// loosely by the orchestrator).
+// failure) - Buddy no longer has an "Other" option (see MEMORY.md, 2026-08-30): it used
+// to accept free text and pass it straight through as if it were an email, which
+// silently failed to resolve against any real employee and vanished into an
+// unrendered gap with zero feedback to whoever typed it. Same "always a real person,
+// never invented" rule Department/Team already follow.
 app.post('/start', async (req, res) => {
   const body = req.body || {};
   let employee;
@@ -2231,7 +2227,7 @@ app.post('/start', async (req, res) => {
     const department = body.department;
     const team = body.team;
     const title = body.role === '__other__' ? String(body.roleOther || '').trim() : body.role;
-    buddyEmail = body.buddy === '__other__' ? String(body.buddyOther || '').trim() || null : body.buddy || null;
+    buddyEmail = body.buddy || null;
 
     if (!department || !team || !title) {
       return res.status(400).json({ error: 'Department, team, and role/title are all required.' });
