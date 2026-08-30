@@ -1268,3 +1268,22 @@ and "shipped" are different states and must be described differently. Never assu
 live/deployed behavior matches local `HEAD` without checking - a stale deployment looks
 identical to a fresh regression from the outside, and the two require completely
 different responses.
+
+**Root cause of the deployment delay itself, found 2026-08-30 (same day, right after
+the rule above was written): Railway's Auto-Deploy was switched off for this project -
+not a broken webhook, not a "Wait for CI" gate.** A push to `origin/master` was
+reaching GitHub correctly the whole time; Railway just wasn't listening for it. The
+user found this and re-enabled Auto-Deploy in Railway's own Settings → Source, then
+verified it with an empty/no-op commit and confirmed a redeploy actually fired.
+**From now on, a push to `origin/master` should trigger an automatic Railway redeploy
+with no manual step** - the push-discipline rule above (push immediately, verify `git
+log origin/master..HEAD` is empty) is still the correct and sufficient check from this
+repo's side; there is no longer a reason to expect an extra manual redeploy step on the
+Railway side on top of it. Worth remembering specifically because this was a real,
+material part of what caused the Shimi Man confusion in the first place - two
+independent explanations (an unpushed commit, and a deployment pipeline that wouldn't
+have picked it up automatically even if pushed) were tangled together at the time; only
+the first was diagnosed and fixed then. If a future push still doesn't seem to reach
+the live site despite `git log origin/master..HEAD` being empty, don't re-assume "just
+push again" - check Railway's own deploy history/logs for that push directly, the same
+way this was actually root-caused.
