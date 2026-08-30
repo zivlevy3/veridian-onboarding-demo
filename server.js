@@ -1586,11 +1586,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
         <p class="field-hint">Who'll walk them through the professional side of the role</p>
         <select class="field-input" id="fldMentor" required></select>
       </div>
-      <div class="field-group">
-        <label class="field-label" for="fldMentor2">Additional mentor</label>
-        <p class="field-hint">A second person to loop in, if relevant</p>
-        <select class="field-input" id="fldMentor2"></select>
-      </div>
     </details>
 
     <details class="field-card field-card-collapsible field-card--else">
@@ -1656,7 +1651,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   var fldStartDate = document.getElementById('fldStartDate');
   var fldBuddy = document.getElementById('fldBuddy');
   var fldMentor = document.getElementById('fldMentor');
-  var fldMentor2 = document.getElementById('fldMentor2');
   var fldJd = document.getElementById('fldJd');
   var errorBanner = document.getElementById('errorBanner');
   var loadingOverlay = document.getElementById('loadingOverlay');
@@ -1907,9 +1901,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   function refreshMentor() {
     setEmployeeOptions(fldMentor, mentorCandidates(), { placeholder: 'Select a mentor' });
   }
-  function refreshMentor2() {
-    setEmployeeOptions(fldMentor2, EMPLOYEES, { placeholder: 'None' });
-  }
 
   function toggleOther(select, wrap) {
     wrap.classList.toggle('visible', select.value === OTHER);
@@ -1954,7 +1945,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   refreshManager();
   refreshBuddy();
   refreshMentor();
-  refreshMentor2();
 
   function showError(message) {
     errorBanner.textContent = message;
@@ -1976,7 +1966,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
       startDate: fldStartDate.value,
       buddy: fldBuddy.value,
       mentorEmail: fldMentor.value,
-      secondaryMentorEmail: fldMentor2.value,
       jobPostingText: fldJd.value.trim(),
     };
 
@@ -2283,7 +2272,6 @@ app.post('/start', async (req, res) => {
 
     saveManagerIntake(db, employee.employee_id, {
       primaryMentorEmail: body.mentorEmail,
-      secondaryMentorEmail: body.secondaryMentorEmail || null,
       buddyEmail,
       jobPostingText: body.jobPostingText || null,
     });

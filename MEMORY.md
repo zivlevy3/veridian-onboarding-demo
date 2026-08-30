@@ -1047,6 +1047,24 @@ code, not just prose the model could ignore:
   - the server re-validates for real via `saveManagerIntake` on submit regardless, so a
   client-side mismatch (e.g. from a stale cascade) surfaces as a real, clear error
   rather than a silent accept.
+- **"Additional mentor" (secondary mentor) removed from `/start` entirely (2026-08-30) -
+  unclear to users (an unfiltered whole-company dropdown with no clear distinction from
+  the primary mentor) and never needed for the demo.** Unlike the Buddy "Other" removal
+  above, this wasn't fixing a bug - `secondaryMentorEmail` was accepted, validated (any
+  real employee, no proximity restriction), and persisted correctly the whole time. It
+  just was never actually *used*: `resolveManagerIntake` never read it, so it never
+  reached `context.people` or any agent - a real field with real validation that fed
+  nothing downstream. Removed the whole path: the HTML field/JS var/refresh function on
+  `/start`, the payload key, `secondaryMentorEmail` from `saveManagerIntake`'s input and
+  from `validateMentorSelection`'s signature (its whole no-restriction validation branch
+  deleted, not just made unreachable). `manager_intake.secondary_mentor_email` **stays in
+  the schema, always `NULL` going forward** - a migration to drop one demo column isn't
+  worth it, and the column is harmless sitting unused (same reasoning as leaving
+  `output/*.json` historical snapshots alone elsewhere in this file). Verified end-to-end,
+  not just read: local dev server, DOM query confirmed exactly 3 selects remain in
+  "Who's involved" (manager/buddy/mentor, no fourth), and a real form submission created
+  employee + `manager_intake` cleanly with `secondary_mentor_email: null` (not
+  `undefined`, no error) - cleaned up via `deleteOrphanedEmployee` afterward.
 - **Buddy's "Other" free-text option removed entirely (2026-08-30) - it was the one
   people-picker inconsistent with this project's "always a real person, never invented"
   rule** (Manager and Mentor never had an "Other" option in the first place; only Buddy
