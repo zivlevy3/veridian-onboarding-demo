@@ -233,6 +233,15 @@ function renderItem(planId, item, trackStyles, activeWeek, nameEmailMap) {
   const editBtn = EDITABLE_TRACKS.has(item.track)
     ? `<button type="button" class="icon-btn edit-btn" title="Edit (preview only)" aria-label="Edit ${escapeHtml(item.shortLine)}">&#9998;</button>`
     : '';
+  // Placed last, after day-hint/mail/edit - combined with .facilitator's flex-basis:
+  // 100% (see CSS), this guarantees the "who" text always lands on its own line below
+  // the title/day-hint/icons row, whether or not it's even present. Omitted entirely
+  // (not an empty span) when there's genuinely no "who" to show - systems_access items
+  // have an intentionally empty facilitatorDisplayName (see prompts/content-writer.md),
+  // and an empty span here would still claim a blank line via flex-basis: 100%.
+  const facilitatorSpan = item.facilitatorDisplayName
+    ? `<span class="facilitator">${escapeHtml(item.facilitatorDisplayName)}</span>`
+    : '';
   return `
     <li class="item${item.completed ? ' completed' : ''}" data-id="${escapeHtml(item.id || '')}" data-track="${escapeHtml(item.track || '')}" data-short-line="${escapeHtml(item.shortLine)}" data-detail-text="${escapeHtml(item.detailText)}" data-facilitator="${escapeHtml(item.facilitatorDisplayName)}" data-day-hint="${escapeHtml(item.dayHint)}" data-email-context="${escapeHtml(item.emailContext || '')}">
       <form class="check-form" method="POST" action="/plan/${planId}/item/${encodeURIComponent(item.id)}/toggle?week=${activeWeek}">
@@ -242,10 +251,10 @@ function renderItem(planId, item, trackStyles, activeWeek, nameEmailMap) {
         <summary>
           <span class="tag" style="background:${style.chipBg};color:${style.chipFg}">${escapeHtml(style.label)}</span>
           <span class="short-line">${escapeHtml(item.shortLine)}</span>
-          <span class="facilitator">${escapeHtml(item.facilitatorDisplayName)}</span>
           <span class="day-hint">${escapeHtml(item.dayHint)}</span>
           ${mailBtn}
           ${editBtn}
+          ${facilitatorSpan}
         </summary>
         <p class="detail-text">${escapeHtml(item.detailText)}</p>
       </details>
@@ -816,7 +825,11 @@ function renderPlanPage(plan, context, activeWeek, errorMessage, nameEmailMap) {
   summary::-webkit-details-marker { display: none; }
   .tag { font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em; }
   .short-line { font-weight: 600; flex: 1 1 auto; min-width: 140px; color: var(--text-primary); }
-  .facilitator { color: var(--text-secondary); font-size: 0.83rem; }
+  /* flex-basis: 100% forces this onto its own line inside the wrapping flex row
+     unconditionally - not just when its text is too long to fit alongside the title, a
+     short person's name used to sit inline with short-line while a long department name
+     wrapped, an inconsistency that had nothing to do with what the text actually was. */
+  .facilitator { color: var(--text-secondary); font-size: 0.83rem; flex-basis: 100%; }
   .day-hint { color: var(--text-muted); font-size: 0.78rem; margin-left: auto; }
   .detail-text { margin: 0 0.85rem 0.8rem; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
 
@@ -1209,9 +1222,9 @@ ${renderLegend(trackStyles)}
             '<span class="tag" style="background:' + style.chipBg + ';color:' + style.chipFg + '">' + escapeAttr(style.label) + '</span>' +
             '<span class="demo-item-tag">Draft</span>' +
             '<span class="short-line">' + escapeAttr(data.shortLine) + '</span>' +
-            '<span class="facilitator">' + escapeAttr(data.facilitator) + '</span>' +
             '<span class="day-hint">' + escapeAttr(data.dayHint) + '</span>' +
             '<button type="button" class="icon-btn edit-btn" title="Edit (preview only)">&#9998;</button>' +
+            '<span class="facilitator">' + escapeAttr(data.facilitator) + '</span>' +
           '</summary>' +
           '<p class="detail-text">' + escapeAttr(data.detailText) + '</p>' +
         '</details>' +

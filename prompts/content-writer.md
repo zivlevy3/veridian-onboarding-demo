@@ -340,33 +340,27 @@ write "TBD" or a blank here for a *named* item - if there's truly no name availa
 item belongs in the pending-assignment category below instead.
 
 **Compliance/business/role training or reading content with no live human involved at
-all must read as explicitly self-guided - never a bare department/system-owner name
-standing alone as if it were who's running the session for you.** There is no
-facilitator here, full stop, regardless of which team owns or administers it - a name
-like `"Security Engineering"` on its own reads exactly like the real-group case above
-even though there's no one to actually meet.
-- When a real `owner` field grounds the item (from `trainings[]`), use `"Self-guided
-  (Owner)"` - e.g. `"Self-guided (Security Engineering)"`, `"Self-guided (Legal &
-  Compliance)"` - the same "Name (relationship)" pattern already used for real people
-  above, just marking the relationship as self-guided instead of a person.
-- When there's no such real owner field at all (pure reading/LMS content Content Expert
-  or the business track defined), use the plain `"Self-guided training"` label.
+all must read as explicitly self-guided - just the plain label, nothing else added.**
+There is no facilitator here, full stop, regardless of which team owns or administers
+it. Use exactly `"Self-guided training"` - always this plain label, whether or not a
+real `owner` field happens to ground the item from `trainings[]`. Corrected 2026-08-30:
+an earlier version appended the owner in parentheses when one existed (`"Self-guided
+(Security Engineering)"`) - dropped, because the owner name isn't information the
+employee needs here and it made two self-guided items look like two different kinds of
+thing when they're the same kind of thing (no facilitator, complete it yourself).
 
-**`systems_access` items get NO learning-method label at all - not "Self-guided
-(Owner)", not "Self-guided training", nothing - and `owner` is not a facilitator of any
-kind here, not even a collective one.** Corrected 2026-08-30 (twice): an earlier version
-applied the self-guided label to `systems_access` too (a category error - access
-provisioning isn't a learning activity), then a second pass described the fix as "the
-same plain collective label as the real-group case above" - wrong framing, since that
-comparison still treats `owner` as *a kind of facilitator*, just like a real team. It
-isn't: `"IT Operations"` on a `systems_access` item is plain attribution (who
-provisions/owns this system), not anyone the employee interacts with, meets, or is
-guided by - there is no facilitator concept here at all, collective or otherwise. For
-`systems_access`, use the real `owner` field from `systems[]` exactly as it is (e.g.
-`"IT Operations"`, `"Engineering"`) with no added framing, tag, or comparison to the
-group/person cases above. `systems_access` items fix their own no-facilitator ambiguity
-entirely through their `shortLine` wording instead - see "Use `usageNote`" above - not
-through this field.
+**`systems_access` items show NO "who" text at all - not "Self-guided training", not
+the `owner` name, nothing - `facilitatorDisplayName` is an empty string `""`.**
+Corrected 2026-08-30 (three times now): first the self-guided label was wrongly applied
+to `systems_access` (a category error - access provisioning isn't a learning activity),
+then a corrected version still displayed the plain `owner` name (`"IT Operations"`) -
+also wrong, on reflection: `owner` is attribution info that adds nothing the employee
+needs to see next to an access-check task, and showing anything here at all invites
+reading it as a facilitator, which `systems_access` never has, not even a plain-text
+one. There is nothing to say about who's involved in checking your own access - the
+`shortLine` already carries the whole task ("Check your GitHub access"). Leave
+`facilitatorDisplayName` empty and let `shortLine` do all the work - see "Use
+`usageNote`" above for that wording rule.
 
 ## shortLine wording: "Meet X" requires a real person or group
 

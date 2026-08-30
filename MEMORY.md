@@ -136,6 +136,55 @@ documentation only, not as an example of correct wording or structure - the
 `PRE-CONTENT-EXPERT` filename suffix marks this deliberately so it isn't mistaken for a
 current-standard reference in a future session.
 
+**`facilitatorDisplayName` distinguishes four cases, not two, after several rounds of
+real-data correction (2026-08-30) - documented here as one settled rule, not a replay of
+each intermediate wrong version.** Found starting from a real live plan (Shimi Man, IT
+Support Specialist): `systems_access` items were showing a bare department name
+(`"IT Operations"`), reading exactly like a real facilitator when there wasn't one, and
+several compliance/training items had no self-guided marker at all. The settled rule:
+- **A real, individually-named person or an actual group** (a team meet-and-greet): the
+  real name/team, e.g. `"Dana Friedman (your manager)"`, `"Product Experience team"`.
+- **Self-guided content with no live human at all** (compliance, business/role
+  training/reading): always the plain label `"Self-guided training"` - never with the
+  `trainings[].owner` appended in parentheses (`"Self-guided (Security Engineering)"`
+  was tried and reverted - the owner name isn't information the employee needs, and it
+  made two self-guided items look like two different kinds of thing when they're the
+  same kind of thing).
+- **`systems_access` (access provisioning, not a learning activity or a person)**: an
+  **empty string** - no label, no owner name, nothing. Went through three wrong
+  intermediate states before landing here: self-guided label applied (category error -
+  provisioning isn't training), then the bare owner name alone (still implies a
+  facilitator concept that doesn't apply), before arriving at "nothing to say here at
+  all." `systems_access` items carry their own meaning entirely through `shortLine`,
+  phrased as a task, not a status: `"Check your GitHub access"` /
+  `"Verify your Slack access works"`, never `"GitHub access ready"` (a passive status
+  update that doesn't tell the employee to do anything).
+- **A real, definitely-happening need whose specific facilitator's name isn't resolved
+  yet** (Process Expert's "No real facilitator identity" rule, `process-expert.md`):
+  `"To be confirmed"` - deliberately distinct from the pending-assignment pattern's
+  `"To be assigned"` (Buddy/Mentor with no relationship decided at all). The two read
+  the same on first glance but mean different things: "To be confirmed" keeps the
+  item's real `shortLine`/`detailText`/`dayHint` exactly as an ordinary scheduled item
+  (only the name is outstanding), while "To be assigned" is the full "coming soon"
+  treatment (see "Two different kinds of gaps" below) - conflating them was tried and
+  reverted once real review caught it changing the subject to sound like nothing was
+  scheduled at all when a real meeting genuinely would happen.
+
+**The "who" line in the dashboard (`server.js`'s `renderItem`) always renders on its own
+line, separate from the title - a CSS rule, not a text-length coincidence.** Before this
+fix, `.facilitator` had no `flex-basis` inside `summary`'s wrapping flex row, so a short
+facilitator (a person's name) could sit inline with the title while a long one (a
+department name) wrapped - purely a byproduct of how much horizontal space happened to
+be left, unrelated to what the text actually was. `.facilitator { flex-basis: 100% }`
+forces it onto its own line unconditionally; the span is placed last in the row (after
+day-hint/mail/edit) so those stay grouped with the title, and it's omitted entirely
+(not rendered as an empty span) when `facilitatorDisplayName` is `""` (`systems_access`)
+- an empty `flex-basis:100%` span would still claim a blank line. Verified together in
+the real dashboard (`plan_id=46`, a real Content Writer re-run saved directly, not
+through the full pipeline): person names, "Self-guided training", and "To be confirmed"
+all rendered on their own line below the title; every Tools & Access item showed no
+"who" line at all.
+
 ---
 
 ## 2. Scheduling and personalization rules
