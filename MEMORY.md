@@ -1340,17 +1340,49 @@ different responses.
 the rule above was written): Railway's Auto-Deploy was switched off for this project -
 not a broken webhook, not a "Wait for CI" gate.** A push to `origin/master` was
 reaching GitHub correctly the whole time; Railway just wasn't listening for it. The
-user found this and re-enabled Auto-Deploy in Railway's own Settings → Source, then
-verified it with an empty/no-op commit and confirmed a redeploy actually fired.
-**From now on, a push to `origin/master` should trigger an automatic Railway redeploy
-with no manual step** - the push-discipline rule above (push immediately, verify `git
-log origin/master..HEAD` is empty) is still the correct and sufficient check from this
-repo's side; there is no longer a reason to expect an extra manual redeploy step on the
-Railway side on top of it. Worth remembering specifically because this was a real,
-material part of what caused the Shimi Man confusion in the first place - two
-independent explanations (an unpushed commit, and a deployment pipeline that wouldn't
-have picked it up automatically even if pushed) were tangled together at the time; only
-the first was diagnosed and fixed then. If a future push still doesn't seem to reach
-the live site despite `git log origin/master..HEAD` being empty, don't re-assume "just
-push again" - check Railway's own deploy history/logs for that push directly, the same
-way this was actually root-caused.
+user re-enabled Auto-Deploy in Railway's own Settings → Source and verified it with an
+empty/no-op commit - confirmed a redeploy actually fired, closing the specific "unpushed
+commit was mistaken for a regression" failure mode the rule above exists to prevent.
+**Superseded later the same day - see the two entries directly below**: Auto-Deploy
+was deliberately turned back off once a second, worse consequence of "every push wipes
+the live DB" surfaced (`plan_id` collisions, not just a plan going missing). The
+diagnosis in this entry (Auto-Deploy off = pushes silently not reaching the live site)
+stays correct and worth knowing on its own terms - it just isn't this project's current
+Railway configuration anymore.
+
+**Direct consequence of no persistent volume, found for real (2026-08-30, same day):
+`plan_id` is not a stable identifier across redeploys on the live Railway site - it can
+be reused for a completely different person.** Every redeploy resets the live DB back to
+the git-committed snapshot (`db/veridian.sqlite`'s max `plan_id` is 31 as of this
+writing), so SQLite's autoincrement restarts from 32 each time. If a similar number of
+real submissions happens after each reset before reaching whichever employee is being
+looked at, two entirely different people from two different redeploy "epochs" can land
+on the exact same `plan_id` by coincidence - confirmed for real: two different real
+hires (Shelly Or, then Harel Hemo) both ended up at `/plan/42` on two separate occasions,
+in two browser tabs the user had open side by side, which looked exactly like a
+same-plan regression (a mentor "disappearing") but wasn't - both tabs were stale
+snapshots from before an intervening redeploy, not two views of the same underlying
+data. Confirmed `plan_id=42` didn't even exist in the live DB at the time of comparison
+(404) - neither tab reflected current reality. **This is the same underlying limitation
+that caused the Shimi Man mix-up** (a plan vanishing after a subsequent redeploy),
+recurring in a second, more confusing shape (a plan_id silently pointing at different
+data instead of just disappearing) - it's the "every redeploy wipes the DB" fact itself
+that's the real, recurring risk, not any one symptom of it.
+
+**Decision (2026-08-30, same day): Auto-Deploy turned back off, deliberately this
+time - not a persistent volume.** A Railway volume would have solved this cleanly (real
+data survives every redeploy, no more resets, no more `plan_id` collisions), and was
+seriously considered - rejected purely on cost: Railway bills volume storage as part of
+usage-based billing, and for a demo project the user chose not to take on that ongoing
+cost. Instead: Auto-Deploy off in Settings → Source, so pushing to `origin/master` no
+longer redeploys by itself - a redeploy now only happens when the user explicitly clicks
+Deploy in the Railway dashboard. **This changes what "push discipline" (the rule at the
+top of this section) actually delivers**: pushing to `origin/master` still ships the
+code to GitHub (still do it immediately, still verify with `git log
+origin/master..HEAD`), but **no longer ships it to the live site** - "pushed" and "live
+on Railway" are now two separate, independently-true-or-false states, not one. Never
+say a fix is "live"/"deployed" based on the push alone anymore; say it's pushed and
+ready, and that a manual Deploy click in Railway is what actually puts it live (and
+resets the DB when it happens) - that manual click is the user's call, made
+deliberately when they're not mid-test, precisely to stop an unrelated push from wiping
+real data being actively looked at.
