@@ -179,12 +179,19 @@ Fixed items in this track, beyond the manager cluster (next section):
   - If `context.officeTourGuide` is `null` (no one else found at that office), skip the
     office-tour half entirely and note the gap - don't invent a guide. The buddy intro
     meeting (if a Buddy exists) still gets scheduled on its own in that case.
-- **Week 4-5**: "meet your department/area" - vision, structure, this year's goals. This
-  is delivered by a person, **not** self-guided: use a specific Trainer from context if
-  one fits, otherwise default to `facilitatorType: "direct_manager"` (there is no
-  separate "Trainer" role in this dataset, so in practice this defaults to the direct
-  manager). Ground it in `department.mission` / `department.primary_kpis`. Still
-  `track: "team_interfaces"` and still needs `purpose`.
+- **Week 4-5**: the department/area's vision, structure, and this year's goals. This is
+  delivered by a person, **not** self-guided: use a specific Trainer from context if one
+  fits, otherwise default to `facilitatorType: "direct_manager"` (there is no separate
+  "Trainer" role in this dataset, so in practice this defaults to the direct manager).
+  Ground it in `department.mission` / `department.primary_kpis`. **`track: "role"`, not
+  `team_interfaces`** (changed 2026-08-30 - see content-expert.md's general
+  team_interfaces-vs-role test: a department's actual vision/goals/mission is
+  substantively different from any other department's, so it isn't interchangeable
+  content just because a familiar facilitator like the direct manager delivers it).
+  Still needs `purpose`. Title this as understanding/learning the department's context,
+  not as meeting it - it's a department, not a person, even though a real person
+  delivers the content (e.g. "Get familiar with Engineering - vision and goals", not
+  "Meet your department").
 - **Week 4-5**: a meeting with HRBP (`facilitatorType: "hrbp"`, using `people.hrbp` -
   distinct from the `hr` intake session, which is a different person/purpose).
 
@@ -193,13 +200,21 @@ Fixed items in this track, beyond the manager cluster (next section):
 Do not spread the manager relationship across many small ad-hoc items. Exactly this
 shape:
 
-- **Week 1**: intro + onboarding-plan walkthrough - `facilitatorType: "direct_manager"`, **45 min** (not 60).
+- **Week 1**: intro + onboarding-plan walkthrough - `facilitatorType: "direct_manager"`,
+  **45 min** (not 60), `track: "team_interfaces"` (generic to the relationship - this
+  same walkthrough looks essentially the same in any role).
 - **Week 2**: **one consolidated meeting** covering team mission, team metrics, key
   work processes, key interfaces, and where to find knowledge/docs/reports - all in a
-  single item, **60 min** - not several small ones.
+  single item, **60 min** - not several small ones. **`track: "role"`, not
+  `team_interfaces`** (changed 2026-08-30): this team's actual mission, metrics, and
+  processes are substantive content specific to this role/team, not generic onboarding -
+  the fact that the direct manager facilitates it doesn't make it generic (see
+  content-expert.md's general team_interfaces-vs-role test - the same person can run
+  both a generic check-in and role-specific content).
 - **Weeks 3-8**: a **recurring weekly check-in**, `facilitatorType: "direct_manager"`,
-  **30 min**, one instance per week through the end of the plan. See "Recurring items"
-  below for how to represent this.
+  **30 min**, `track: "team_interfaces"` (generic relationship maintenance, not
+  role-specific content), one instance per week through the end of the plan. See
+  "Recurring items" below for how to represent this.
 - The existing 30-day checkpoint (framework part C §9) is **not a separate item**. Fold
   its agenda (review progress against the original plan, identify gaps, re-prioritize)
   into whichever weekly check-in instance falls closest to day 30 - extend that one
@@ -420,18 +435,29 @@ item must be understood as a prerequisite regardless. Walking someone through a
 workflow in a tool they don't have access to yet doesn't work in practice; enforce this
 as a real ordering constraint, not just a nice-to-have.
 
-## No real facilitator identity: a gap, not a fake-scheduled item
+## No real facilitator identity: never invent a name, but the need itself still gets scheduled
 
-If a need calls for meeting a specific kind of person (a peer, a cross-functional
-contact, "your technical support counterpart") but nothing in context - not
-`peopleSupported`, not `directReports`, not `role.core_collaboration`, nothing - names an
-actual person, do not schedule it as if it were resolved. This is the same "never invent"
-principle applied to facilitators specifically: a title like "Meet your technical support
-peer" with no real name behind it is not a placed item, it's an unresolved gap wearing an
-item's clothing. Add it to `gaps` instead (the Content Writer turns a genuine type-1 gap
-like this into a positively-framed pending-assignment item - see
-`prompts/content-writer.md` - that is where this belongs, not a scheduled item that
-implies a real person was found).
+If a need calls for meeting a specific kind of person **or group** (a peer, a
+cross-functional contact, "your technical support counterpart", "your product and
+design partners") but nothing in context - not `peopleSupported`, not `directReports`,
+not `role.core_collaboration`, nothing - names an actual person or a real, specific
+group, **never invent a name for the facilitator.** This applies just as much to an
+unnamed *group* (a plural "partners"/"counterparts" with no one actually identified) as
+to a single unnamed person - don't read "it's plural, not one specific person" as an
+exception.
+
+**This is a constraint on the facilitator's identity only, not a reason to drop the
+need from the schedule (revised 2026-08-30 - a needed correction, not a restatement).**
+The need itself is still real and still gets a normal `title`/`facilitatorType` and a
+normal place in the schedule, exactly like any other item - what changes is that
+Content Writer, not you, is responsible for rendering the unresolved name honestly
+(`facilitatorDisplayName: "To be confirmed"`, per `prompts/content-writer.md`) once it
+writes the final content. Only note it in `gaps` as informational context for
+HR/the manager (who the real contact should be, once known) - `gaps` is a supplementary
+record here, not the item's only home the way it is for the buddy/mentor
+pending-assignment pattern (a fundamentally different situation: there, no relationship
+has been decided *at all*; here, the meeting will definitely happen, only the specific
+name is outstanding).
 
 ## Maximum 5 meetings per week, with a deferral order (framework part C §8)
 

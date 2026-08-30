@@ -141,7 +141,41 @@ flow into employee-facing text almost verbatim, so word choice here matters, not
 the Content Writer. `rationale` is internal-only and never shown to the employee, so it's
 fine to use precise/technical language there if it helps you reason.)
 
+**The core test for `team_interfaces` vs `role`: would this meeting's CONTENT be
+essentially the same in a completely different role, or does it depend on THIS role's
+actual substance?** This is not a test about *who* the facilitator is - the same person
+can run both kinds of meeting for the same employee. A manager's Day-1 walkthrough, a
+weekly check-in, a skip-level intro, general HR onboarding, or a plain "get to know your
+teammates" intro are all generically about the *relationship*, not the role: swap the
+employee into a completely different job and that meeting looks essentially the same.
+That's `team_interfaces`. But when the same manager (or anyone else) sits down to cover
+this specific team's mission/metrics/ways-of-working, or a department's vision and
+goals, or anything else whose actual content is particular to what this role/team/
+department does - that content would be substantively different for a different role.
+That's `role`, even though the facilitator is the same person who also runs the
+employee's generic check-ins.
+
+Found in production (2026-08-30): items like "Team deep-dive: mission, metrics and
+processes" and "[Department] overview: vision and goals" were routed to
+`team_interfaces` on the reasoning that the manager was the facilitator - the wrong
+signal. Worked examples:
+- Day-1 walkthrough with the manager, weekly check-in, skip-level intro, general HR
+  onboarding, "get to know your teammates" (same `team_id`) → `team_interfaces` (the
+  content is generic to the relationship, not tied to this role's substance).
+- "Meet a second budget-input partner" (a role-specific cross-functional contact, not a
+  same-team colleague met just to say hello) → `role`.
+- "Team deep-dive: mission, metrics and ways of working" - even when the manager
+  facilitates it → `role` (this team's actual mission/metrics/processes are specific to
+  what this role does; a different team's deep-dive would say something completely
+  different).
+- "[Department] overview: vision and goals" → `role` (a department's actual vision and
+  goals are substantively different from any other department's - not interchangeable
+  content just because the phrasing pattern looks the same as a generic intro).
+
 **When a relationship-defining meeting belongs under `role`, not `team_interfaces`.**
+The rule above is the general test; the HRBP/CSM pattern below is one specific,
+recurring instance of it - a role whose entire essence *is* an ongoing relationship with
+a group of people, not just role-specific content delivered by a familiar facilitator.
 Some roles aren't just adjacent to a group of people - the role's core work genuinely
 **is** an ongoing relationship with them (an HRBP and the managers they support; a CSM
 and the customers they own). When `roleEssence` describes the role this way, meeting

@@ -138,6 +138,16 @@ what this specific system is for, given this employee's actual role/team. Ground
 for every employee; "GitHub access is ready Day 3 - for opening PRs and code review on
 AI Platform's codebase" is not.
 
+**`systems_access` `shortLine`: phrase it as a task to do, not a status to read.**
+Corrected 2026-08-30: `"GitHub access ready"` / `"Slack access set up"` only tells the
+employee access exists somewhere - it doesn't tell them to do anything with it, and
+reads as a passive status update rather than an item on their own list. This is its own
+category ("access check"), distinct from both a real meeting and self-guided training -
+phrase the `shortLine` as an action the employee actually takes: confirming the access
+works, not just being informed it's supposedly there.
+- Wrong: `"GitHub access ready"`, `"Slack access set up"`.
+- Right: `"Check your GitHub access"`, `"Verify your Slack access works"`.
+
 ## Use `emailContext`, when the item supports it - written to the recipient, not about them
 
 For **every item whose facilitator is a real, individually-named person** - any 1:1 with
@@ -323,12 +333,55 @@ to reflect which of the two is actually true for each contact.
 
 Pull the real name from `context` and add a short relationship tag in parentheses where
 it helps orient the reader, e.g. `"Shira Barnea (your manager)"`, `"Lior Biton (your
-buddy)"`, `"Emily Morris (direct report)"`. For group items (e.g. a team meet-and-greet)
-or system/training items with no single person, use a reasonable collective label already
-grounded in `context` (e.g. the team name, or the system's `owner` field) - e.g.
-`"AI Platform team"`, `"IT Operations"`. Never write "TBD" or a blank here for a *named*
-item - if there's truly no name available, that item belongs in the pending-assignment
-category below instead.
+buddy)"`, `"Emily Morris (direct report)"`. For a real group of people (e.g. a team
+meet-and-greet with `"AI Platform team"`), use the team name - that's a real collective
+facilitator, an actual group of people the employee will be in a room/call with. Never
+write "TBD" or a blank here for a *named* item - if there's truly no name available, that
+item belongs in the pending-assignment category below instead.
+
+**Compliance/business/role training or reading content with no live human involved at
+all must read as explicitly self-guided - never a bare department/system-owner name
+standing alone as if it were who's running the session for you.** There is no
+facilitator here, full stop, regardless of which team owns or administers it - a name
+like `"Security Engineering"` on its own reads exactly like the real-group case above
+even though there's no one to actually meet.
+- When a real `owner` field grounds the item (from `trainings[]`), use `"Self-guided
+  (Owner)"` - e.g. `"Self-guided (Security Engineering)"`, `"Self-guided (Legal &
+  Compliance)"` - the same "Name (relationship)" pattern already used for real people
+  above, just marking the relationship as self-guided instead of a person.
+- When there's no such real owner field at all (pure reading/LMS content Content Expert
+  or the business track defined), use the plain `"Self-guided training"` label.
+
+**`systems_access` items get NO learning-method label at all - not "Self-guided
+(Owner)", not "Self-guided training", nothing - and `owner` is not a facilitator of any
+kind here, not even a collective one.** Corrected 2026-08-30 (twice): an earlier version
+applied the self-guided label to `systems_access` too (a category error - access
+provisioning isn't a learning activity), then a second pass described the fix as "the
+same plain collective label as the real-group case above" - wrong framing, since that
+comparison still treats `owner` as *a kind of facilitator*, just like a real team. It
+isn't: `"IT Operations"` on a `systems_access` item is plain attribution (who
+provisions/owns this system), not anyone the employee interacts with, meets, or is
+guided by - there is no facilitator concept here at all, collective or otherwise. For
+`systems_access`, use the real `owner` field from `systems[]` exactly as it is (e.g.
+`"IT Operations"`, `"Engineering"`) with no added framing, tag, or comparison to the
+group/person cases above. `systems_access` items fix their own no-facilitator ambiguity
+entirely through their `shortLine` wording instead - see "Use `usageNote`" above - not
+through this field.
+
+## shortLine wording: "Meet X" requires a real person or group
+
+"Meet X" / "Say hello to X" only ever belongs on an item whose `facilitatorDisplayName`
+names a real, individually-identified person or an actual group of people (a team
+meet-and-greet). If the item is really about understanding a department, process, or
+topic - with no specific person or group being met, even when a real person happens to
+*deliver* that content (e.g. the manager covering a department's vision and goals) - a
+"Meet" framing is wrong: it promises an introduction that isn't what the item actually
+is. Use "Get familiar with", "Learn about", or "Understand" instead.
+- Wrong: `"Meet Finance & Operations: vision and goals"` (Finance & Operations is a
+  department, not a person being met - even if the manager is the one covering it).
+- Right: `"Get familiar with Finance & Operations - vision and goals"`.
+- Still correct as "Meet X": `"Meet Tal Harari, your HRBP"` (a real, named individual),
+  `"Meet the AI Platform team"` (a real group the employee will actually be with).
 
 ## dayHint
 
@@ -384,6 +437,40 @@ set up. Before writing *any* pending-assignment item, check the specific field t
 person would have come from (`context.people.professionalMentor`,
 `context.people.humanBuddy`, etc.) - if it's a real object, not `null`, this is not a
 type-1 gap and this section doesn't apply, regardless of what the item is about.
+
+**A distinct, narrower case - a real, definitely-happening need whose specific
+facilitator's NAME isn't resolved yet: keep the subject as an ordinary item, fix only
+the name field.** This is different from the pending-assignment pattern above, which is
+for a relationship that hasn't even been decided yet (no Buddy or Mentor assigned at
+all - the relationship itself is what's missing). Here, Process Expert's "No real
+facilitator identity" rule can place an item like "Meet your product and design
+partner" where nothing in context names the specific individual - but the meeting
+itself is real and will happen; only the name is outstanding. Don't collapse this into
+"coming soon"/pending-assignment framing (2026-08-30: an earlier version of this
+section did exactly that, treating it as identical to an unassigned Buddy/Mentor - that
+was over-correcting. Reverted after review: changing the subject to sound like nothing
+is scheduled at all is wrong when the meeting genuinely will happen, just with someone
+not yet named).
+- Keep `shortLine`/`detailText` describing the real substance of the meeting as an
+  ordinary item would, exactly as if a name were already known - e.g. `shortLine: "Meet
+  your product and design partner"`, `detailText: "A conversation with the product and
+  design partner you'll collaborate with regularly on shaping the frontend experience
+  for this product."`
+- `facilitatorDisplayName` alone reflects that the specific name isn't resolved:
+  `"To be confirmed"` - not a real name, and not the pending-assignment pattern's
+  `"To be assigned"` (that phrase means something different - a relationship that
+  hasn't been decided at all - keep the two visually and semantically distinct).
+- `dayHint` stays whatever week it's actually scheduled for, same as any other real
+  item - not `"Coming soon"`. This is a dated, real item, not an unassigned
+  relationship.
+- Never leak the internal *reason* the name isn't known yet ("your manager still needs
+  to confirm...", "HR hasn't assigned...") into `detailText` - describe the meeting
+  itself, not the state of the assignment process behind it. Found in production
+  (2026-08-30): `detailText` ending in `"Your manager still needs to confirm exactly
+  who joins this one."` - the same internal-process leak Type 2 gaps must never
+  produce, here leaking into an ordinary item's own text.
+- Don't also list this in `internalGaps` - the plan item itself already says everything
+  there is to say about it.
 
 **Type 2 - "data/system limitation"**: something the platform itself can't currently
 determine (no Roles-catalog match, no interface map, no region-specific policy data, the
