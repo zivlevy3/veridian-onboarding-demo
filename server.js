@@ -2353,6 +2353,21 @@ app.post('/start', async (req, res) => {
   // the underlying Error.message (which can be a full truncated JSON blob, not
   // something a manager submitting this form should ever see); the real error is
   // still logged server-side via console.error below for debugging.
+  // Heartbeat (2026-08-31): a fresh JSON line every 10s while runOrchestrator is in
+  // flight, purely to keep bytes moving across the connection during a real gap between
+  // progress events (Content Expert alone can legitimately take 15-100s+ once its own
+  // withRetry kicks in) - a genuine, observed live-site symptom was the stream dying
+  // silently around the ~100s mark with no error, before any stage-completion event
+  // arrived, even though the pipeline kept running server-side and saved a real plan.
+  // `{ heartbeat: true }` matches no branch in the client's handleEvent (not
+  // employeeId/done/type/stage), so it's a pure no-op there - nothing to change
+  // client-side. Guaranteed cleared in `finally` the moment runOrchestrator settles
+  // (resolves or throws) - it's only meaningful while that one call is actually
+  // in flight, not during the branches after it.
+  const heartbeatInterval = setInterval(() => {
+    if (!clientDisconnected) sendEvent({ heartbeat: true });
+  }, 10000);
+
   let result;
   try {
     result = await runOrchestrator(
@@ -2375,6 +2390,8 @@ app.post('/start', async (req, res) => {
       sendEvent({ done: true, error: 'Something went wrong while building the onboarding plan. Please try again.' });
     }
     return res.end();
+  } finally {
+    clearInterval(heartbeatInterval);
   }
 
   if (result.status === 'blocked') {

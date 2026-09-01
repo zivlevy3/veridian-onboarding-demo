@@ -1097,6 +1097,27 @@ code, not just prose the model could ignore:
        compliance item elsewhere → correctly NOT collapsed (single-signal false positive
        avoided); 2 consecutive empty weeks with no compliance (below the 3-week
        threshold) → correctly NOT collapsed.
+  - **Real gap found 2026-08-31 (Natti Kesem, Product Manager): a plan with fewer than
+    8 weeks in `plan.weeks` at all slipped past every check above undetected.** The
+    original design only counted *consecutive empty weeks within whatever `plan.weeks`
+    actually contained* - if the model returns a single week instead of 8 (a real,
+    previously-documented shape, see the Daniel Hadar entry in section 3), there's no
+    way to find "3 consecutive empty weeks" in a 1-element array, so `collapsed` stayed
+    `false`. Confirmed directly against the real saved plan: `plan/42` on the live site
+    rendered exactly one item ("A lighter week") and only a "Week 1" label anywhere on
+    the page - the exact Daniel Hadar shape recurring a second time, undetected because
+    this specific signal didn't exist yet. Fixed by adding `weekCount < 8` as a third,
+    independent, sufficient-on-its-own signal (doesn't need the compliance-item check
+    the empty-run signal requires, since a short weeks array is already a clear
+    structural violation regardless of what's inside whatever weeks did come back) -
+    `PROCESS_EXPERT_TOOL`'s own tool description already requires exactly 8 weeks, but
+    `lib/schemas.js`'s strict-mode JSON schema can't enforce array length
+    (`minItems`/`maxItems` unsupported, already a documented limitation there), so this
+    was always reachable, just not yet observed until now. Verified with 4 synthetic
+    cases: a Natti-shaped 1-week plan and a Daniel-Hadar-shaped 1-week-with-placeholder
+    plan both now correctly `collapsed: true`; a healthy 8-week plan and the original
+    3-consecutive-empty-weeks shape were re-checked too, confirming no regression in
+    either existing signal.
   - **Regression this same mechanism introduced, found and fixed 2026-08-31: the
     intake page's progress UI showed step 1 ("Understanding the role...") as stuck for
     a long time, then steps 2-4 all completing almost instantly.** Root cause: building
@@ -1406,6 +1427,26 @@ code, not just prose the model could ignore:
   immediate abort), confirmed the UI showed the reconnect message rather than an error,
   then let the real pipeline finish server-side (`plan_id=41`) and confirmed the
   client's poll loop caught it and auto-redirected to `/plan/41` with zero user action.
+- **Heartbeat added 2026-08-31: a `{ heartbeat: true }` line every 10s while
+  `runOrchestrator` is in flight, to keep bytes moving across the `POST /start`
+  connection during a real gap between progress events.** Found live: the streaming
+  connection to the real Railway URL died silently around the ~100-103s mark, with no
+  error, before any stage-completion event ever arrived - confirmed with two
+  independent HTTP clients (Node `fetch`, `curl`) both hitting the exact same cutoff,
+  and confirmed the pipeline itself kept running and saved a real plan server-side
+  despite the dead connection (same "disconnect ≠ failure" design as above already
+  covers that half). Content Expert alone can legitimately take well past 100s once
+  its own `withRetry` kicks in (see MEMORY.md's ~13-20% per-attempt failure rate for
+  this pipeline's real-API stages) - a long silent gap with zero bytes crossing the
+  wire is a real, common shape for this app, not a rare edge case. `{ heartbeat: true }`
+  matches no branch in the client's `handleEvent` (not `employeeId`/`done`/`type`/
+  `stage`), so it's a pure no-op there - no client-side change needed. Cleared in a
+  `finally` the instant `runOrchestrator` settles, resolve or reject.
+  - **Couldn't be verified locally - the ~100s cutoff never reproduced against the
+    local dev server, only against the real Railway URL from this environment.**
+    Deployed for real (Auto-Deploy on) and re-tested the same way live, immediately
+    after - see the "trigger redeploy" note above for how to confirm a push actually
+    reached the live site before trusting a live-only result like this one.
 
 ---
 
