@@ -127,6 +127,26 @@ for** when a `professionalMentor` exists. Being explicit here is what gives Proc
 Expert the signal it needs to route correctly - this is about a clearer `rationale`, not
 a new field, and not you naming a specific person yourself.
 
+**Broaden this beyond one-time shadowing (2026-08-30): when a `professionalMentor`
+exists, prefer flagging professional-understanding needs as mentor-appropriate too, not
+only hands-on observation.** Found in production: even after the fix above, a real
+mentor ended up facilitating only a single need across an entire plan (one shadowing
+session), while several other needs that were genuinely about building professional
+understanding of the role - how a specific process actually works day-to-day, what
+"good" looks like for a deliverable, how to navigate a tool the way this team actually
+uses it - defaulted to self-guided reading, even with a real mentor sitting right there
+in `professionalMentor`. Self-guided is the right choice for content that's genuinely
+just information transfer - a policy, a reference document, something with one correct
+answer that doesn't benefit from discussion (e.g. "Review the compliance policy
+document"). It is *not* the right default for content that's really about developing
+judgment or fluency in how this specific role/team actually works - that kind of
+understanding is exactly what a mentor relationship is for, and defaulting it to
+self-guided just because it isn't a discrete "shadow this one live event" moment
+under-uses a real mentor the same way the narrower shadowing-only framing did. When in
+doubt for this category, say so in `rationale` the same way the section above already
+asks for shadowing needs - name that this benefits from a real person's judgment/
+experience, not just information transfer.
+
 **Worked example**: an HR Business Partner's `roleEssence` is something like "supports a
 set of managers on an ongoing basis, coaching them through people decisions and
 partnering with them on team health" - **not** "does a task, watched then unsupervised."

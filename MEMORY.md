@@ -1074,6 +1074,58 @@ code, not just prose the model could ignore:
        compliance item elsewhere → correctly NOT collapsed (single-signal false positive
        avoided); 2 consecutive empty weeks with no compliance (below the 3-week
        threshold) → correctly NOT collapsed.
+- **Minimum-mentor-usage floor (2026-08-30, `lib/plan-mentor-floor.js`) - the inverse of
+  every other cap/rebalance mechanism in this codebase: guarantees a minimum instead of
+  enforcing a maximum.** Found in production (Danny Oz, Demand Generation Specialist): a
+  real, resolved mentor ended up facilitating exactly one role-track item across the
+  whole plan, while several other genuinely-professional-understanding needs defaulted
+  to self-guided anyway, even with the mentor sitting right there in context - not wrong
+  on its own (nothing mis-scheduled or mislabeled), but a real mentor relationship going
+  almost entirely unused, the same underlying failure this session's whole mentor-
+  routing effort exists to prevent, just showing up as under-*use* rather than
+  non-*use*.
+  - **Two complementary layers, prevention first, guarantee second**: `content-expert.md`'s
+    existing "Facilitator awareness" section (shadowing/hands-on-only) was broadened to
+    cover professional-*understanding* needs generally, not only one-off observation -
+    self-guided is now framed as correct only for genuine pure information-transfer
+    content (a policy, a reference doc), not for anything that benefits from a real
+    person's judgment just because it isn't a discrete "shadow this live event" moment.
+    This is the fix that should make the code-level floor a rare fallback, not the
+    normal path.
+  - **`ensureMentorFloor(plan, professionalMentor, trainings)`** runs deterministically
+    in `lib/orchestrator.js` after the plan is otherwise finalized (post-rebalance,
+    before Content Writer) - not a retry, since the fix is a straightforward reassignment
+    of items already in the plan, not something worth burning a full regeneration
+    attempt hoping for a better roll. If a real mentor exists but facilitates fewer than
+    3 role-track items, converts self-guided (`trainer_self_learning`) role-track items
+    to `professional_mentor`, up to 5, **excluding any item matching a real
+    `trainings[]` Training-Catalog entry** (normalized substring match against
+    `trainings[].training`) - a certification or standardized course exists
+    independently of any one person, so converting it to "facilitated by your mentor"
+    would be a fake accompaniment, not a genuine one; only Content-Expert-derived
+    role-specific needs are real candidates. Also respects the shared 5-meeting weekly
+    cap while converting (`professional_mentor` counts toward it, unlike
+    `trainer_self_learning`, which is exempt) - skips a week already at cap rather than
+    silently creating a new violation for `plan-rebalance.js`'s earlier pass to have
+    already missed. If fewer than 3 convertible candidates exist at all, this is a
+    real, honest limitation - not enough role-specific content to route to a person
+    without inventing some - reported via the same `LAST RESORT` gaps path every other
+    last-resort mechanism in this file already uses, not a new pattern.
+  - **Verified on real data, not just synthetic cases**: a real pipeline run on
+    `VRD-1186` (ziv levy) after the `content-expert.md` broadening alone produced 4
+    role-track mentor items with zero code-level conversion needed - the prompt fix
+    working as intended, the floor correctly staying a silent no-op when unnecessary.
+    To prove the floor mechanism itself (not just confirm it stayed quiet), the same
+    real saved plan was cloned and 3 of its 4 real mentor items downgraded back to
+    self-guided, simulating the original Danny Oz shape - `ensureMentorFloor` correctly
+    re-converted them plus one more Content-Expert-derived item to reach 5, while
+    correctly leaving this employee's two real catalog trainings (`"GitHub & Code
+    Review Standards"`, `"Secure Development"` - confirmed present in this run's actual
+    `context.trainings`) untouched. Four additional synthetic cases (already-sufficient
+    → no-op; no mentor → not applicable; mixed catalog/non-catalog candidates → only
+    non-catalog converted; a week already at the 5-meeting cap → that week's candidate
+    correctly skipped, only the other week's converted) confirmed the logic in
+    isolation before the real-data test.
 - **Department and Team are closed dropdowns of real org data only - no "Other."**
   `createEmployee` (`lib/employees.js`) requires an exact match against `teams`/
   `departments` and throws otherwise - offering "Other" here would be a form control
