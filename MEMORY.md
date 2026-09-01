@@ -185,6 +185,29 @@ through the full pipeline): person names, "Self-guided training", and "To be con
 all rendered on their own line below the title; every Tools & Access item showed no
 "who" line at all.
 
+**`systems_access` scheduling and position, refined further (2026-08-30, same day):
+week-level deadline instead of a hard day, and always last in the card.**
+- **`dayHint`**: `content-writer.md` used to surface the exact `systems[].due.raw` day
+  (`"Day 1"`, `"Day 3"`) verbatim - reads like a hard, single-day deadline for what's
+  really a self-service access check with reasonable slack across the week. Now always
+  `"By end of Week {weekNumber}"` for this track, derived from the item's actual placed
+  week (unchanged - Process Expert's `due.days`-based week placement is still correct
+  and still drives real sequencing, e.g. the system-access-before-workflow-content
+  dependency rule), never re-derived from `due.days` directly.
+- **Position**: `systems_access` items are now always rendered last within a week's
+  card, via a stable sort in `server.js`'s `renderWeekCard` (`sortSystemsAccessLast`) -
+  a render-time guarantee, not a Process Expert prompt instruction, for the same reason
+  `hasExecutiveMember`/`resolveOfficeTourGuide` are code-level: ordering is a
+  structural/positional fact, not something to leave to the model reproducing it
+  consistently on every generation. Applies to every week's card generally (not
+  hardcoded to week 1 specifically), since the same rationale - a stateless checklist
+  is visually distinct from scheduled content - holds wherever `systems_access` and
+  other tracks share a week.
+- Verified together, live: a real Content Writer re-run (`plan_id=48`) saved and viewed
+  in the dashboard - every `systems_access` item showed `"By end of Week 1"` and sat
+  below every People & Roles/Veridian.io item in the card, confirmed both via a direct
+  DOM query and a screenshot.
+
 ---
 
 ## 2. Scheduling and personalization rules

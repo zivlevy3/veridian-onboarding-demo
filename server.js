@@ -262,9 +262,22 @@ function renderItem(planId, item, trackStyles, activeWeek, nameEmailMap) {
   `;
 }
 
+// systems_access items are a stateless checklist ("confirm your access works"), not
+// scheduled content - always rendered after everything else in a week's card,
+// regardless of what order Process Expert happened to emit them in. Enforced here at
+// render time (a stable sort, not a prompt instruction) since ordering is a
+// structural/positional guarantee - the same reasoning this project already applies to
+// hasExecutiveMember/resolveOfficeTourGuide (see MEMORY.md) - not something left for
+// the model to reliably reproduce on every generation. Array.prototype.sort is stable
+// in Node, so every other track keeps its original relative order.
+function sortSystemsAccessLast(items) {
+  return [...items].sort((a, b) => (a.track === 'systems_access' ? 1 : 0) - (b.track === 'systems_access' ? 1 : 0));
+}
+
 function renderWeekCard(planId, week, trackStyles, dateRangeLabel, activeWeek, nameEmailMap) {
-  const items = week.items.length
-    ? week.items.map((item) => renderItem(planId, item, trackStyles, activeWeek, nameEmailMap)).join('')
+  const sortedItems = sortSystemsAccessLast(week.items);
+  const items = sortedItems.length
+    ? sortedItems.map((item) => renderItem(planId, item, trackStyles, activeWeek, nameEmailMap)).join('')
     : '<li class="empty">Nothing scheduled this week.</li>';
   return `
     <div class="week-card" data-week="${week.weekNumber}">

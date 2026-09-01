@@ -384,6 +384,20 @@ containing "Day 1" or "30-day" gives you `"Day 1"` / `"Around Day 30"`). Otherwi
 back to `"Week {weekNumber}"`. Don't invent a specific day number that isn't implied by
 the title or the week placement.
 
+**`systems_access` items are the one exception: always `"By end of Week {weekNumber}"`,
+never a specific day number, even though `systems[].due` gives you one.** Corrected
+2026-08-30: this track's items were showing the exact `due.raw` day (`"Day 1"`,
+`"Day 3"`) as `dayHint`, reading like a hard, single-day deadline - the wrong framing
+for a self-service access check. Getting provisioned access to a system isn't a
+scheduled meeting with a fixed slot; there's reasonable slack across the whole week to
+get to it. `due.days` still determines *which week* the item lands in (Process Expert's
+placement is unchanged and still correct - a due date early in week 1 vs. one that
+lands in week 2 still matters for real sequencing, e.g. the system-access-before-
+workflow-content dependency rule), but the displayed `dayHint` softens the specific day
+into a week-level deadline: `due.days` of 1-7 → `"By end of Week 1"`, 8-14 →
+`"By end of Week 2"`, etc. - always derived from the item's actual placed
+`weekNumber`, not by re-deriving it from `due.days` yourself.
+
 ## No fully empty weeks (framework part C)
 
 The Process Expert's plan can legitimately have a week with zero items - that's real
