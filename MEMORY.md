@@ -1097,6 +1097,32 @@ code, not just prose the model could ignore:
        compliance item elsewhere → correctly NOT collapsed (single-signal false positive
        avoided); 2 consecutive empty weeks with no compliance (below the 3-week
        threshold) → correctly NOT collapsed.
+  - **Regression this same mechanism introduced, found and fixed 2026-08-31: the
+    intake page's progress UI showed step 1 ("Understanding the role...") as stuck for
+    a long time, then steps 2-4 all completing almost instantly.** Root cause: building
+    the collapse-retry loop moved `emitStage('content-expert')` and
+    `emitStage('process-expert')` to fire together, once, only *after* the whole loop
+    exited - not at each stage's own real completion, which is where they used to fire
+    before this loop existed. Every collapse-retry re-attempt (re-running both agents)
+    also now happened silently inside that same "still on step 1" window, with no
+    visible checkpoint. **Proven with real timestamps, not inferred from reading the
+    code**: temporary logging (`Date.now()` at the exact point `onProgress` fires,
+    server-side, immediately before `res.write`) on a real live-site-shaped run showed
+    `content-expert` and `process-expert` landing at the *identical millisecond*
+    (`1788263153280`) - decisive proof the events were bundled together at the source,
+    before any network or client-side code ever touched them; a client/streaming
+    buffering theory was floated first and ruled out by this same evidence, not
+    assumed. Fixed by moving each `emitStage` call back inside the loop, immediately
+    after that stage's own `logStageTiming` call - safe to fire more than once if a
+    collapse-retry re-attempt runs, since the client's `doneStages` state is a set
+    (re-marking an already-done stage is a no-op). Re-verified the same way on a fresh
+    real run after the fix: all four stage timestamps now land at genuinely different,
+    proportional times (`content-expert` +15.7s, `process-expert` +37.1s,
+    `content-writer` +38.2s, `gatekeeper` +7.0s from submit - matching this pipeline's
+    real, previously-measured per-stage durations, not clustered together). The
+    temporary `Date.now()` logging was removed from both the server callback and the
+    client's `handleEvent` after verification - diagnostic scaffolding, not meant to
+    ship.
 - **Minimum-mentor-usage floor (2026-08-30, `lib/plan-mentor-floor.js`) - the inverse of
   every other cap/rebalance mechanism in this codebase: guarantees a minimum instead of
   enforcing a maximum.** Found in production (Danny Oz, Demand Generation Specialist): a
