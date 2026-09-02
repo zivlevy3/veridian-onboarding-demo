@@ -1538,12 +1538,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
      the word "error", never which stage glitched (see the onRetry/emitRetry comment in
      lib/orchestrator.js) - the ring keeps spinning underneath exactly as before. */
   .progress-step--retrying .progress-step-label { color: var(--accent-2); }
-  /* Shown while polling GET /employee/:id/plan-status after a dropped connection -
-     deliberately not styled like .error-banner (red-tinted) since this isn't a failure,
-     just an active, ongoing check. */
-  .loading-reconnect { margin: 1.2rem 0 0; max-width: 320px; text-align: center; color: var(--accent-2); font-size: 0.85rem; font-weight: 600; }
-  .loading-reconnect[hidden] { display: none; }
-
   @media (max-width: 767px) {
     /* 16px is the iOS Safari threshold - anything smaller on a focused input triggers
        an automatic zoom-in on focus that most users then have to manually zoom back out
@@ -1636,7 +1630,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     <li class="progress-step" data-stage="content-writer"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
     <li class="progress-step" data-stage="gatekeeper"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
   </ol>
-  <p class="loading-reconnect" id="loadingReconnect" hidden></p>
 </div>
 
 <script>
@@ -1683,20 +1676,33 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   var progressStepsEl = document.getElementById('progressSteps');
   var submitBtn = document.getElementById('submitBtn');
 
-  // Mirrors lib/orchestrator.js's onProgress stage keys, in pipeline order. Each
-  // emitStage(...) call there corresponds to one row here finishing.
+  // Mirrors lib/orchestrator.js's real pipeline stages, in order, each with the
+  // approximate cumulative number of seconds it takes to reach that stage's
+  // completion (from real, measured baseline timings - Content Expert ~15s, +Process
+  // Expert ~38s, +Content Writer ~38s, +Gatekeeper ~5s). Time-based, not event-based
+  // (2026-08-31, see MEMORY.md): this used to advance from real server-sent progress
+  // events over a long-lived streamed response, but that connection was found to die
+  // silently around the ~100s mark on the live deployment - now the server responds to
+  // POST /start immediately and this is a client-side ESTIMATE of progress while the
+  // client polls GET /employee/:employeeId/plan-status for the real outcome (see the
+  // submit handler below). An estimate can be wrong in either direction - a retry on
+  // any stage means real progress is slower than this - but a moving, proportional
+  // indicator beats a blind wait, and once elapsed time passes the last threshold the
+  // active step switches to RETRY_LABEL rather than looking stuck (see
+  // renderProgressSteps).
   var PROGRESS_STAGES = [
-    { stage: 'content-expert', label: 'Understanding the role...' },
-    { stage: 'process-expert', label: 'Structuring the timeline...' },
-    { stage: 'content-writer', label: 'Drafting the plan...' },
-    { stage: 'gatekeeper', label: 'Reviewing for quality...' },
+    { stage: 'content-expert', label: 'Understanding the role...', cumulativeSeconds: 15 },
+    { stage: 'process-expert', label: 'Structuring the timeline...', cumulativeSeconds: 53 },
+    { stage: 'content-writer', label: 'Drafting the plan...', cumulativeSeconds: 91 },
+    { stage: 'gatekeeper', label: 'Reviewing for quality...', cumulativeSeconds: 96 },
   ];
   var RETRY_LABEL = 'Just a moment, refining a few details...';
 
-  // Small explicit state machine instead of incremental class-toggling - doneStages
-  // grows as stage events arrive, retrying toggles on/off around retry events, and
-  // every row is fully re-rendered from this state each time, so there's exactly one
-  // source of truth for what the UI should look like at any point.
+  // Small explicit state machine instead of incremental class-toggling - doneStages is
+  // recomputed from elapsed time on every tick (see startProgressSimulation below),
+  // retrying flips on once elapsed time passes the last threshold, and every row is
+  // fully re-rendered from this state each time, so there's exactly one source of
+  // truth for what the UI should look like at any point.
   var progressState = { doneStages: [], retrying: false };
 
   function renderProgressSteps() {
@@ -1716,18 +1722,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   function resetProgressSteps() {
     progressState = { doneStages: [], retrying: false };
     renderProgressSteps();
-    document.getElementById('loadingReconnect').hidden = true;
-  }
-
-  function markStageDone(stage) {
-    if (progressState.doneStages.indexOf(stage) === -1) progressState.doneStages.push(stage);
-    progressState.retrying = false;
-    renderProgressSteps();
-  }
-
-  function showRetryMessage() {
-    progressState.retrying = true;
-    renderProgressSteps();
   }
 
   function markAllStepsDone() {
@@ -1735,14 +1729,28 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     renderProgressSteps();
   }
 
-  // Shown instead of an immediate failure when the connection drops - the steps stay
-  // frozen at whatever they last reached (real information, not stale-looking), this
-  // line is what tells the visitor something changed and is still being actively
-  // resolved, not silently stuck.
-  function showReconnecting() {
-    var el = document.getElementById('loadingReconnect');
-    el.hidden = false;
-    el.textContent = 'Connection lost - checking whether your plan finished...';
+  // Drives progressState from elapsed time instead of real server events (see
+  // PROGRESS_STAGES above for why) - ticks once a second, marks a stage "done" once
+  // elapsed time passes its cumulativeSeconds threshold, and switches the active step
+  // to RETRY_LABEL once elapsed time passes the last threshold with nothing found yet,
+  // so a longer-than-usual run (a real retry on some stage) reads as "still working",
+  // not stuck. Returns a stop function - call it the moment polling finds a real
+  // outcome (success or failure), there's no reason to keep estimating past that.
+  function startProgressSimulation() {
+    var startTime = Date.now();
+    var timer = setInterval(function () {
+      var elapsedSeconds = (Date.now() - startTime) / 1000;
+      var doneStages = [];
+      PROGRESS_STAGES.forEach(function (step) {
+        if (elapsedSeconds >= step.cumulativeSeconds) doneStages.push(step.stage);
+      });
+      var lastThreshold = PROGRESS_STAGES[PROGRESS_STAGES.length - 1].cumulativeSeconds;
+      progressState = { doneStages: doneStages, retrying: elapsedSeconds >= lastThreshold };
+      renderProgressSteps();
+    }, 1000);
+    return function stopProgressSimulation() {
+      clearInterval(timer);
+    };
   }
 
   function opt(value, label) {
@@ -2002,136 +2010,76 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     loadingOverlay.hidden = false;
     submitBtn.disabled = true;
 
+    var stopProgressSimulation = null;
+
     function fail(message) {
+      if (stopProgressSimulation) stopProgressSimulation();
       loadingOverlay.hidden = true;
       submitBtn.disabled = false;
       showError(message || 'Something went wrong.');
     }
 
-    // Captured from the stream's very first event (see server.js's POST /start,
-    // sendEvent({employeeId}) right after writeHead) - the one thing worth keeping if
-    // the connection drops, since it's what lets a drop be checked instead of assumed.
-    var employeeId = null;
+    // Polling is the only mechanism now (2026-08-31, see MEMORY.md) - POST /start
+    // responds immediately with just { employeeId }, and the real pipeline runs fully
+    // detached from that request server-side (see server.js's runBackgroundPipeline).
+    // A long-lived streamed response was the original design here, with this same
+    // polling endpoint only as a fallback for a dropped connection - promoted to the
+    // only path after the streamed response was found to die silently around the
+    // ~100s mark on the live deployment (confirmed with two independent HTTP clients,
+    // unaffected by adding a periodic heartbeat write), well short of this pipeline's
+    // real ~95-190s+ range once any stage's own retry logic kicks in.
+    var POLL_INTERVAL_MS = 4000;
+    var MAX_POLL_ATTEMPTS = 75; // ~5 minutes of checking before giving up
 
-    // "Disconnect is not the same as failure" (2026-08-20, see MEMORY.md). The server
-    // can't be cancelled mid-pipeline once it's running (see POST /start's own comment on
-    // this) and a real run has been observed taking 90-130s+ end to end - so a stream
-    // that just stopped arriving is not evidence the pipeline failed, only that this
-    // particular connection can't hear about it anymore. Poll GET
-    // /employee/:id/plan-status instead of guessing: if a plan shows up, this was always
-    // a success the user just couldn't see - redirect exactly as if the stream had
-    // delivered it normally. Only after several checks with no plan does this become a
-    // real, shown failure - and even then, retrying with the exact same details (not a
-    // new name) is safe and correct, since the orphan-cleanup already in POST /start
-    // (deleteOrphanedEmployee) is exactly what handles that case.
-    var POLL_INTERVAL_MS = 8000;
-    var MAX_POLL_ATTEMPTS = 15; // ~2 minutes of checking before giving up
-
-    function checkPlanStatus(attempt) {
-      if (!employeeId) {
-        fail('Connection lost - please try again with the same details (safe to resubmit).');
-        return;
-      }
+    function checkPlanStatus(employeeId, attempt) {
       fetch('/employee/' + encodeURIComponent(employeeId) + '/plan-status')
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (data.hasPlan) {
+            if (stopProgressSimulation) stopProgressSimulation();
             markAllStepsDone();
             window.location.href = '/plan/' + data.planId;
             return;
           }
-          if (attempt >= MAX_POLL_ATTEMPTS) {
-            fail('Something went wrong while building the onboarding plan. Safe to try again with the same details.');
+          if (data.failed) {
+            fail(data.error);
             return;
           }
-          setTimeout(function () { checkPlanStatus(attempt + 1); }, POLL_INTERVAL_MS);
+          if (attempt >= MAX_POLL_ATTEMPTS) {
+            fail('This is taking longer than expected. Safe to try again with the same details, or check back in a few minutes.');
+            return;
+          }
+          setTimeout(function () { checkPlanStatus(employeeId, attempt + 1); }, POLL_INTERVAL_MS);
         })
         .catch(function () {
           // A failed status check is itself just a transient hiccup, not the answer -
           // keep polling on the same schedule rather than treating one failed check as
           // the final word.
           if (attempt >= MAX_POLL_ATTEMPTS) {
-            fail('Something went wrong while building the onboarding plan. Safe to try again with the same details.');
+            fail('This is taking longer than expected. Safe to try again with the same details, or check back in a few minutes.');
             return;
           }
-          setTimeout(function () { checkPlanStatus(attempt + 1); }, POLL_INTERVAL_MS);
+          setTimeout(function () { checkPlanStatus(employeeId, attempt + 1); }, POLL_INTERVAL_MS);
         });
     }
 
-    function handleConnectionDrop() {
-      showReconnecting();
-      checkPlanStatus(1);
-    }
-
-    // POST /start's response is a stream of newline-delimited JSON progress events, not
-    // one final JSON body - a validation failure (bad department/team/manager/etc.) is
-    // still a plain JSON error response sent before any streaming starts (checked via
-    // r.ok below); everything after that point (pipeline progress, retries, the final
-    // outcome) arrives as one JSON object per line, read incrementally via
-    // fetch()+ReadableStream. Not native EventSource/SSE - this is a POST with a real
-    // body, and EventSource can only issue GET.
     fetch('/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
       .then(function (r) {
-        if (!r.ok) {
-          // A validation-stage error (bad department/team/manager/etc.) - a plain,
-          // specific message sent before any streaming started. Tagged isServerError so
-          // the catch below shows it as-is, not the generic connection-drop handling
-          // that's for an actual dropped connection, not a real rejection.
-          return r.json().then(function (data) {
-            var e = new Error((data && data.error) || 'Something went wrong.');
-            e.isServerError = true;
-            throw e;
-          });
-        }
-        var reader = r.body.getReader();
-        var decoder = new TextDecoder();
-        var buffer = '';
-        var receivedDone = false;
-
-        function handleEvent(event) {
-          if (event.employeeId) { employeeId = event.employeeId; return; }
-          if (event.done) {
-            receivedDone = true;
-            if (event.planId) {
-              markAllStepsDone();
-              window.location.href = '/plan/' + event.planId;
-            } else {
-              fail(event.error);
-            }
-            return;
-          }
-          if (event.type === 'retry') { showRetryMessage(); return; }
-          if (event.stage) { markStageDone(event.stage); return; }
-        }
-
-        function pump() {
-          return reader.read().then(function (chunk) {
-            if (chunk.done) {
-              // The stream closed without ever sending a done:true line - the
-              // connection dropped mid-pipeline (screen off, network loss), not a
-              // real, reported outcome. The server-side cleanup for this exact case
-              // is in POST /start's req.on('close') handling.
-              if (!receivedDone) handleConnectionDrop();
-              return;
-            }
-            buffer += decoder.decode(chunk.value, { stream: true });
-            var lines = buffer.split('\\n');
-            buffer = lines.pop();
-            lines.forEach(function (line) {
-              if (line.trim()) handleEvent(JSON.parse(line));
-            });
-            return pump();
-          });
-        }
-        return pump();
+        return r.json().then(function (data) {
+          if (!r.ok) throw new Error((data && data.error) || 'Something went wrong.');
+          return data;
+        });
+      })
+      .then(function (data) {
+        stopProgressSimulation = startProgressSimulation();
+        checkPlanStatus(data.employeeId, 1);
       })
       .catch(function (err) {
-        if (err.isServerError) { fail(err.message); return; }
-        handleConnectionDrop();
+        fail(err.message);
       });
   });
 })();
@@ -2201,17 +2149,74 @@ app.get('/start', (req, res) => {
   res.send(renderStartPage(referenceData, companyName));
 });
 
-// "Disconnect is not the same as failure" (2026-08-20, see MEMORY.md) - a client whose
-// connection to POST /start dropped mid-pipeline (screen off, network blip) has no way
-// to know whether the server kept going and actually finished, since runOrchestrator
-// can't be cancelled mid-flight and is deliberately left to run to its real conclusion
-// (see the req.on('close') handling below). This lets the client ask the one question
-// that actually matters after a drop - "did a plan get saved for me?" - instead of
-// assuming the answer is no. Read-only, no auth (matches every other route on this
-// single-view demo dashboard - see the file header comment).
+// In-memory only, by design (2026-08-31) - a demo-scale simplification, not meant to
+// survive a process restart/redeploy (which wipes the whole DB anyway - see MEMORY.md,
+// there's no persistent volume). Tracks ONLY pipeline failures the poll endpoint below
+// needs to distinguish from "still working" - a successful run needs no entry here at
+// all, since the endpoint already finds it directly via the `plans` table. Consumed
+// (deleted) the first time a poll reads an entry, so this never grows unbounded in a
+// long-running process.
+const pipelineFailures = new Map();
+
+// Runs the full pipeline detached from any HTTP request/response - see POST /start's
+// own comment for why a long-lived streamed response was tried first and abandoned.
+// Never throws outward; every outcome either leaves a real saved plan behind (found
+// naturally by the poll endpoint below via the `plans` table) or records a failure in
+// `pipelineFailures` for that same endpoint to report. Not awaited by its caller -
+// deliberately fire-and-forget, so POST /start can respond immediately; this function
+// has no reference to req/res anywhere in it, so it keeps running on the event loop
+// exactly like any other in-flight async work in this process even if the connection
+// that triggered it closes the instant POST /start responds.
+async function runBackgroundPipeline(db, employeeId, employeeFullName, intakeInput) {
+  let result;
+  try {
+    result = await runOrchestrator(db, employeeId, intakeInput);
+  } catch (err) {
+    console.error(`POST /start: pipeline failed for ${employeeId} after internal retries:`, err);
+    const cleaned = deleteOrphanedEmployee(db, employeeId);
+    console.warn(
+      `POST /start: cleaned up ${employeeId} after a genuine pipeline failure - ` +
+        (cleaned ? 'removed the orphaned employee/manager_intake rows.' : 'nothing to clean up (a plan must already exist).')
+    );
+    pipelineFailures.set(employeeId, {
+      error: 'Something went wrong while building the onboarding plan. Please try again.',
+    });
+    return;
+  }
+
+  if (result.status === 'blocked') {
+    // Deliberately NOT cleaned up (unlike the exception case above) - the employee
+    // record and manager intake are left in place for HR/manager review, matching the
+    // message below. Only a genuine pipeline exception (nothing useful produced at
+    // all) triggers automatic cleanup.
+    console.warn(`POST /start: Gatekeeper blocked the plan for ${employeeId} - employee/intake rows left in place for review.`);
+    pipelineFailures.set(employeeId, {
+      error: `${employeeFullName}'s employee record and manager intake were saved, but the Gatekeeper blocked this plan from being saved - see server logs for the blocking issue(s).`,
+    });
+    return;
+  }
+
+  console.log(`POST /start: pipeline succeeded for ${employeeId} - plan_id=${result.planId} saved.`);
+}
+
+// The client polls this from the moment POST /start responds (2026-08-31) - not a
+// fallback for a dropped connection anymore, the only mechanism now that the pipeline
+// runs fully detached from the request that triggered it (see runBackgroundPipeline
+// above and POST /start's own comment for why). `failed` entries are consumed
+// (deleted) on read - one report to the polling client is enough. Read-only, no auth
+// (matches every other route on this single-view demo dashboard - see the file header
+// comment).
 app.get('/employee/:employeeId/plan-status', (req, res) => {
   const plan = db.prepare('SELECT plan_id FROM plans WHERE employee_id = ? ORDER BY plan_id DESC LIMIT 1').get(req.params.employeeId);
-  res.json({ hasPlan: !!plan, planId: plan ? plan.plan_id : null });
+  if (plan) return res.json({ hasPlan: true, planId: plan.plan_id, failed: false });
+
+  const failure = pipelineFailures.get(req.params.employeeId);
+  if (failure) {
+    pipelineFailures.delete(req.params.employeeId);
+    return res.json({ hasPlan: false, failed: true, error: failure.error });
+  }
+
+  res.json({ hasPlan: false, failed: false });
 });
 
 // Creates the employee, saves the manager's intake answers, then runs the full
@@ -2307,117 +2312,33 @@ app.post('/start', async (req, res) => {
   }
 
   // The employee record and intake answers are saved - everything past this point is
-  // the real pipeline run (30s-300s of real API latency), so the response switches to a
-  // stream of newline-delimited JSON progress events instead of one silent wait. Not a
-  // native EventSource/SSE stream - this is a POST with a real body, and EventSource can
-  // only issue GET - just a normal streamed HTTP response the client reads incrementally
-  // via fetch()+ReadableStream (see renderStartPage's client script). Every line is one
-  // JSON event; the final line always carries `done: true`. Once writeHead below has
-  // run, no more plain JSON error responses are possible - every outcome from here on
-  // (pipeline failure, Gatekeeper block, success) goes out as a `done` event instead.
-  res.writeHead(200, { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-cache' });
-  // Swallows write-after-close errors (EPIPE/ERR_STREAM_WRITE_AFTER_END) instead of
-  // letting them become an unhandled 'error' event - real once clientDisconnected below
-  // is even possible to observe, since that's exactly the state that produces them.
-  res.on('error', () => {});
-  const sendEvent = (event) => res.write(JSON.stringify(event) + '\n');
-  // First event, always, before anything else - if the connection drops before another
-  // byte arrives, this is still enough for the client to poll GET
-  // /employee/:employeeId/plan-status instead of giving up outright (see renderStartPage's
-  // client script).
-  sendEvent({ employeeId: employee.employee_id });
+  // the real pipeline run (30s-300s+ of real API latency, longer with retries). Responds
+  // immediately instead of holding this connection open for the whole run.
+  //
+  // A long-lived streamed response (newline-delimited JSON progress events over
+  // fetch()+ReadableStream) was the original design (2026-08-20) and survived several
+  // rounds of fixes, including a periodic heartbeat write meant to keep the connection
+  // alive during a long gap between real progress events. None of it held up against a
+  // real, confirmed production issue (2026-08-31, see MEMORY.md): the connection to the
+  // live Railway deployment died silently around the ~100s mark - confirmed with two
+  // independent HTTP clients (Node fetch, curl), and unaffected by the heartbeat, which
+  // means bytes genuinely weren't reaching the client even though they were being
+  // written server-side. ~100s is well short of this pipeline's real range once any
+  // stage's own retry logic kicks in (a documented ~13-20% per-attempt failure rate
+  // across two real, sequential agent calls). The pipeline itself was never affected by
+  // any of this - see runBackgroundPipeline below, it already doesn't depend on this
+  // request/response for anything - only the client's real-time visibility into it was.
+  //
+  // Now: respond with just `{ employeeId }` and let the client poll GET
+  // /employee/:employeeId/plan-status from the very start (see renderStartPage's client
+  // script) - polling is the only mechanism now, not a fallback for a dropped stream.
+  res.json({ employeeId: employee.employee_id });
 
-  // Screen-off / network-drop mid-pipeline is a real case, not a hypothetical: the
-  // client's fetch is gone, but runOrchestrator (already in flight, several sequential
-  // real API calls deep) can't be cleanly cancelled mid-way without deep surgery through
-  // every agent call - so it's left to run to whatever conclusion it reaches, same as
-  // always. What changes is what happens AFTER: if the client is gone, there's no point
-  // writing progress events into a dead socket (guarded in the onProgress callback
-  // below), and - the real fix - if the pipeline never reaches a saved plan (throws, or
-  // the Gatekeeper blocks it), the employee/manager_intake rows created earlier in this
-  // request are cleaned up via deleteOrphanedEmployee rather than left as a permanent
-  // orphan with nothing to show for it. A pipeline that succeeds anyway despite the
-  // disconnect is left alone - a real plan now exists, which is a fine outcome even if
-  // nobody was watching it finish.
-  let clientDisconnected = false;
-  req.on('close', () => {
-    if (!res.writableEnded) clientDisconnected = true;
+  runBackgroundPipeline(db, employee.employee_id, employee.full_name, {
+    buddyEmail,
+    mentorEmail: body.mentorEmail,
+    jobPostingText: body.jobPostingText || null,
   });
-
-  // runOrchestrator already retries each real API stage internally (see
-  // lib/orchestrator.js's withRetry) for exactly this reason - a transient generation
-  // glitch (malformed-code-in-json, an ordinary JSON parse error, a Gatekeeper
-  // self-narration glitch - see MEMORY.md) shouldn't reach whoever's filling out this
-  // form as a raw error. If every retry attempt for some stage still failed, that's a
-  // real, rarer failure - the visitor gets a clean, generic message here rather than
-  // the underlying Error.message (which can be a full truncated JSON blob, not
-  // something a manager submitting this form should ever see); the real error is
-  // still logged server-side via console.error below for debugging.
-  // Heartbeat (2026-08-31): a fresh JSON line every 10s while runOrchestrator is in
-  // flight, purely to keep bytes moving across the connection during a real gap between
-  // progress events (Content Expert alone can legitimately take 15-100s+ once its own
-  // withRetry kicks in) - a genuine, observed live-site symptom was the stream dying
-  // silently around the ~100s mark with no error, before any stage-completion event
-  // arrived, even though the pipeline kept running server-side and saved a real plan.
-  // `{ heartbeat: true }` matches no branch in the client's handleEvent (not
-  // employeeId/done/type/stage), so it's a pure no-op there - nothing to change
-  // client-side. Guaranteed cleared in `finally` the moment runOrchestrator settles
-  // (resolves or throws) - it's only meaningful while that one call is actually
-  // in flight, not during the branches after it.
-  const heartbeatInterval = setInterval(() => {
-    if (!clientDisconnected) sendEvent({ heartbeat: true });
-  }, 10000);
-
-  let result;
-  try {
-    result = await runOrchestrator(
-      db,
-      employee.employee_id,
-      { buddyEmail, mentorEmail: body.mentorEmail, jobPostingText: body.jobPostingText || null },
-      (progress) => {
-        if (!clientDisconnected) sendEvent(progress);
-      }
-    );
-  } catch (err) {
-    console.error(`POST /start: pipeline failed for ${employee.employee_id} after internal retries:`, err);
-    if (clientDisconnected) {
-      const cleaned = deleteOrphanedEmployee(db, employee.employee_id);
-      console.warn(
-        `POST /start: client disconnected before the pipeline finished for ${employee.employee_id} (which then also failed) - ` +
-          (cleaned ? 'removed the orphaned employee/manager_intake rows.' : 'nothing to clean up.')
-      );
-    } else {
-      sendEvent({ done: true, error: 'Something went wrong while building the onboarding plan. Please try again.' });
-    }
-    return res.end();
-  } finally {
-    clearInterval(heartbeatInterval);
-  }
-
-  if (result.status === 'blocked') {
-    if (clientDisconnected) {
-      const cleaned = deleteOrphanedEmployee(db, employee.employee_id);
-      console.warn(
-        `POST /start: client disconnected before the pipeline finished for ${employee.employee_id} (the Gatekeeper then blocked it too) - ` +
-          (cleaned ? 'removed the orphaned employee/manager_intake rows.' : 'nothing to clean up.')
-      );
-      return res.end();
-    }
-    sendEvent({
-      done: true,
-      error: `${employee.full_name}'s employee record and manager intake were saved, but the Gatekeeper blocked this plan from being saved - see server logs for the blocking issue(s).`,
-    });
-    return res.end();
-  }
-
-  if (clientDisconnected) {
-    console.log(
-      `POST /start: pipeline succeeded for ${employee.employee_id} after the client disconnected - plan_id=${result.planId} saved anyway, not cleaned up.`
-    );
-    return res.end();
-  }
-  sendEvent({ done: true, planId: result.planId });
-  res.end();
 });
 
 // Explicit 0.0.0.0 (not just relying on Node's own default-all-interfaces behavior when

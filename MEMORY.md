@@ -1447,6 +1447,95 @@ code, not just prose the model could ignore:
     Deployed for real (Auto-Deploy on) and re-tested the same way live, immediately
     after - see the "trigger redeploy" note above for how to confirm a push actually
     reached the live site before trusting a live-only result like this one.
+  - **Empirically disproven, same day, after deploying it live: the heartbeat did not
+    fix the cutoff.** Re-ran the exact same two independent live tests (Node `fetch`,
+    `curl`) against the deployed heartbeat code - both died at the same ~95-103s mark
+    as before, and **zero heartbeat events ever reached either client**, despite the
+    server-side code being straightforward (`setInterval` + `res.write`, no bug found
+    on close review). This ruled out the working theory behind the heartbeat itself:
+    the problem isn't "too long a gap with no bytes sent triggers an idle timeout" (a
+    write clearly reaching the network would have reset such a timer) - something
+    between the Node process and the client isn't delivering written bytes at all
+    during a long-running response, which periodic small writes can't fix. Directly
+    motivated abandoning long-lived streaming entirely - see the architecture change
+    directly below.
+
+- **`POST /start` moved from a long-lived streamed response to immediate response +
+  detached background pipeline + client-side polling (2026-08-31) - the default
+  design now, not a fallback.** Follows directly from the heartbeat's failure above:
+  once even actively-written bytes weren't reliably reaching the client during a long
+  response, no amount of "send more/smaller writes" could fix it - the fix had to stop
+  depending on a connection staying open and deliverable for the pipeline's real
+  ~95-190s+ range at all.
+  - **`POST /start` now responds with just `{ employeeId }` immediately** after the
+    employee/manager_intake rows are saved (the synchronous validation part is
+    unchanged) - no more `res.writeHead`/chunked streaming/`sendEvent` at all in this
+    route.
+  - **`runBackgroundPipeline(db, employeeId, employeeFullName, intakeInput)`** (new,
+    `server.js`) runs `runOrchestrator` detached from that request - called without
+    `await` and holding no reference to `req`/`res` anywhere in it, so it keeps
+    executing on the event loop exactly like any other in-flight async work in the
+    process regardless of what happens to the connection that triggered it. No more
+    `onProgress` callback passed to `runOrchestrator` at all - nothing client-facing
+    needs it anymore, and `lib/orchestrator.js` already logs every stage via
+    `console.log` on its own (unchanged, still real evidence for exactly this kind of
+    live debugging - see the Danny Oz/Natti Kesem timing investigations above, both
+    driven by these same log lines).
+  - **Failure/blocked outcomes are tracked in a new in-memory `pipelineFailures`
+    `Map`** (employeeId → `{ error }`), not the response stream - deliberately
+    in-memory only, a demo-scale simplification that doesn't need to survive a
+    restart (a redeploy already wipes the whole DB regardless - no persistent volume,
+    see above). Consumed (deleted) the first time a poll reads an entry. Preserves the
+    one behavioral distinction the old code had between the two failure kinds: a
+    genuine pipeline exception still triggers `deleteOrphanedEmployee` (nothing useful
+    was produced); a Gatekeeper block still leaves the employee/manager_intake rows in
+    place for HR/manager review, matching the original design intent for that case -
+    the old `clientDisconnected`-gated branching for both is gone (there's no
+    meaningful "did the client stick around" question anymore, since the client's
+    connection to `POST /start` is intentionally always brief now).
+  - **`GET /employee/:employeeId/plan-status`** (already existed as the disconnect
+    fallback - see the "Disconnect is not the same as failure" entry above) gained a
+    `failed`/`error` field alongside the existing `hasPlan`/`planId`, checking
+    `pipelineFailures` when no plan is found yet - this is what lets the client show a
+    real failure immediately instead of only after exhausting a poll budget.
+  - **Client-side (`renderStartPage`'s script)**: the `ReadableStream` reader/pump
+    loop, `handleEvent`, `handleConnectionDrop`, and `showReconnecting` (along with the
+    now-unused `.loading-reconnect` element/CSS) were removed entirely, not left
+    alongside the new path - polling was already implemented as the disconnect
+    fallback (`checkPlanStatus`), promoted here to the only mechanism, called
+    immediately once `POST /start`'s quick response arrives (interval tightened
+    8s→4s, budget widened 15 attempts (~2 min)→75 attempts (~5 min), since polling is
+    now covering this pipeline's full real range rather than just a late-stage
+    recovery window).
+  - **The 4-step progress UI is now a client-side time estimate, not server-driven.**
+    `PROGRESS_STAGES` carries real, measured cumulative-second thresholds per stage
+    (Content Expert ~15s, +Process Expert ~38s→53s, +Content Writer ~38s→91s,
+    +Gatekeeper ~5s→96s); `startProgressSimulation()` ticks every second and marks a
+    stage done once elapsed time crosses its threshold, switching the active step to
+    the existing `RETRY_LABEL` ("Just a moment, refining a few details...") once
+    elapsed time passes the last threshold with nothing found yet, so a longer-than-
+    usual run (a real retry on some stage) reads as "still working" rather than stuck.
+    An estimate, not a report of real state - can visually finish before the real
+    poll does (or vice versa on a retry) - `checkPlanStatus` is what actually decides
+    the outcome; the timer is stopped the moment it does (success, failure, or timeout).
+  - **Verified locally, end to end, including the specific guarantee this whole
+    change depends on**: a request aborted client-side at 160ms (an `AbortController`
+    cutting the connection well before even a synchronous DB write could plausibly
+    finish, let alone the ~95s+ pipeline) still resulted in a real saved plan
+    (`plan_id=51`) - confirmed both via the server log
+    (`POST /start: pipeline succeeded for VRD-1189 - plan_id=51 saved.`) and a
+    separate `GET /employee/VRD-1189/plan-status` call afterward
+    (`{"hasPlan":true,"planId":51,"failed":false}`). A real browser-driven submission
+    separately confirmed the full visible flow: the time-based progress UI correctly
+    advanced (step 1 done / step 2 active at ~22s elapsed, matching the real
+    thresholds, entirely without server events), and once the server-side pipeline
+    completed (`plan_id=52`) the client's own polling caught it and redirected to
+    `/plan/52` automatically, with zero manual action.
+  - **Live re-verification against the real Railway URL, after deploying this change,
+    is the next step** - local behavior proves the architecture is correct in
+    principle, but the entire reason this change exists is a live-only symptom (the
+    heartbeat's own live-vs-local gap above is the cautionary example: this fix must
+    be confirmed the same way, not assumed from local success alone).
 
 ---
 
