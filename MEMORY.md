@@ -1597,10 +1597,21 @@ code, not just prose the model could ignore:
     shown correctly while a slot was occupied by another run, and the automatic,
     unprompted transition to the real 4-step estimate (starting at "Understanding the
     role...") the moment the occupying pipeline finished and freed the slot.
-  - **Live re-verification against the real Railway URL: pending, done once
-    immediately after this commit deploys** - deliberately exactly one real
-    end-to-end check, not another round of multiple simultaneous live submissions
-    (the whole point of this fix was to stop doing that on the live deployment).
+  - **Live re-verification against the real Railway URL: done, exactly once,
+    immediately after this commit deployed** - deliberately a single real submission,
+    not another round of multiple simultaneous live requests (the whole point of this
+    fix was to stop doing that on the live deployment). `POST /start` responded with
+    `{"employeeId":"VRD-1187"}` in 407ms (confirming the new immediate-response shape
+    is live), polling correctly reported `waiting:false` the whole time (no queueing -
+    no concurrent load to trigger it), and the run ended with the Gatekeeper blocking
+    this specific plan on content grounds - unrelated to anything in this round
+    (a real, pre-existing kind of pipeline outcome, already documented elsewhere in
+    this file, nothing to do with the polling/concurrency work here). What actually
+    mattered for this verification held up end to end on the live deployment: the
+    quick response, the correct `waiting` state with no false positive, and - notably
+    - the new failure-reporting path itself worked exactly as designed, surfacing the
+    block through `plan-status` as `{"failed":true,"error":"..."}` promptly instead of
+    the client polling indefinitely.
 
 ---
 
