@@ -27,7 +27,7 @@ it, use it as given):
   trainings: [ { training_id, training, mandatory, duration, audience, due: { days, isPreboarding, unparsed } } ],
   policies: [ { policy_id, policy, summary } ],
   products: [ { product_area, module, description, primary_users, lifecycle_stage } ],
-  officeTourGuide: { employee_id, full_name, email, job_title, reason: "buddy" | "teammate" | "office-mate" } | null,
+  officeTourGuide: { employee_id, full_name, email, job_title, reason: "buddy" | "teammate" | "office-mate" | "manager" } | null,
   onboardingNeeds: [ { title, track: "role" | "team_interfaces", purpose, rationale, headcount } ],
   businessDepthNotes: [ { session: 1-6, reason } ],
   gaps: [ "string describing something the Context Layer could not resolve" ]
@@ -172,13 +172,24 @@ Fixed items in this track, beyond the manager cluster (next section):
     (being the employee's go-to person day-to-day, and showing them around the office)
     rather than picking only one. `estimatedHours` should reflect the combined time (intro
     + ~30 min tour), not just the tour alone.
+  - **When `officeTourGuide.reason === "manager"`** (no real teammate or other
+    colleague exists at that office - a small team, so the direct manager is the tour
+    guide): do **not** emit a separate `team_member` item for this - that would give the
+    same person two contradictory labels in one plan (their fixed Week 1 direct-manager
+    intro item, and a generic "team member" tour item). Instead, **fold the tour into
+    the existing Week 1 direct-manager intro + walkthrough item** from "The
+    direct-manager cluster" below: keep `facilitatorType: "direct_manager"`, add a
+    tour/office-visit word to its `title` (e.g. "Intro, walkthrough + office tour with
+    {name}"), mention the tour in `purpose`, and add the ~30 min tour time to its
+    `estimatedHours` (e.g. 45 min -> 1.25h). One item, not two.
   - **Otherwise** (`officeTourGuide.reason` is `"teammate"`/`"office-mate"`, i.e. a
-    different person from the Buddy): keep this as its own separate item,
-    `facilitatorType: "team_member"`, in addition to the buddy intro meeting below - not a
-    replacement for it.
-  - If `context.officeTourGuide` is `null` (no one else found at that office), skip the
-    office-tour half entirely and note the gap - don't invent a guide. The buddy intro
-    meeting (if a Buddy exists) still gets scheduled on its own in that case.
+    different person from both the Buddy and the manager): keep this as its own separate
+    item, `facilitatorType: "team_member"`, in addition to the buddy intro meeting below -
+    not a replacement for it.
+  - If `context.officeTourGuide` is `null` (no one at all found at that office, not even
+    the manager), skip the office-tour half entirely and note the gap - don't invent a
+    guide. The buddy intro meeting (if a Buddy exists) still gets scheduled on its own in
+    that case.
 - **Week 4-5**: the department/area's vision, structure, and this year's goals. This is
   delivered by a person, **not** self-guided: use a specific Trainer from context if one
   fits, otherwise default to `facilitatorType: "direct_manager"` (there is no separate
@@ -370,8 +381,8 @@ orchestrator/manager may later override in the edit step - not your job here):
 
 | facilitatorType | mandatoryTier default | Notes |
 |---|---|---|
-| `direct_manager` | mandatory | Week 1 intro+walkthrough (45 min), week 2 consolidated deep-dive (60 min), and the weekly check-in series weeks 3-8 (30 min, `recurring: true`) - see "The direct-manager cluster" above. Never deferred |
-| `human_buddy` | mandatory | Intro meeting - merged with the office-tour item into one when `officeTourGuide.reason === "buddy"`, otherwise the intro stays separate from the office-tour item (which is then `team_member`, not `human_buddy`) - see "Fixed items in this track" above. Both Day 1, never deferred. If `people.humanBuddy` is null, still add the item(s) but note the gap (see below) instead of inventing a name |
+| `direct_manager` | mandatory | Week 1 intro+walkthrough (45 min, extended to include the office tour when `officeTourGuide.reason === "manager"` - see "Fixed items in this track" above), week 2 consolidated deep-dive (60 min), and the weekly check-in series weeks 3-8 (30 min, `recurring: true`) - see "The direct-manager cluster" above. Never deferred |
+| `human_buddy` | mandatory | Intro meeting - merged with the office-tour item into one when `officeTourGuide.reason === "buddy"`, otherwise the intro stays separate from the office-tour item (which is then `team_member` or folded into `direct_manager`, not `human_buddy`) - see "Fixed items in this track" above. Both Day 1, never deferred. If `people.humanBuddy` is null, still add the item(s) but note the gap (see below) instead of inventing a name |
 | `hr` | mandatory | Intake session, if the org has one - never deferred |
 | `hrbp` | recommended | Meeting with `people.hrbp`, week 4-5 - distinct from `hr` (different person, different purpose) |
 | `skip_manager` | recommended | Can defer 1-2 weeks under load |
