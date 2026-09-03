@@ -1531,11 +1531,76 @@ code, not just prose the model could ignore:
     thresholds, entirely without server events), and once the server-side pipeline
     completed (`plan_id=52`) the client's own polling caught it and redirected to
     `/plan/52` automatically, with zero manual action.
-  - **Live re-verification against the real Railway URL, after deploying this change,
-    is the next step** - local behavior proves the architecture is correct in
-    principle, but the entire reason this change exists is a live-only symptom (the
-    heartbeat's own live-vs-local gap above is the cautionary example: this fix must
-    be confirmed the same way, not assumed from local success alone).
+  - **Live re-verification against the real Railway URL, done immediately after
+    deploying** - local behavior alone wouldn't have been enough to trust this, since
+    the entire reason this change exists is a live-only symptom (the heartbeat's own
+    live-vs-local gap above is the cautionary example). Confirmed the new response
+    shape directly (`{"employeeId":"..."}`, not the old ndjson stream) and, more
+    importantly, confirmed the actual guarantee this design depends on against the
+    live deployment specifically: a request aborted client-side at 56ms still resulted
+    in a real saved plan minutes later, found via `plan-status` polling
+    (`{"hasPlan":true,"planId":42,...}`) - the connection dying does not stop the
+    background pipeline on Railway either, not just locally.
+
+- **Real, serious gap found the same day, from this session's own live testing of the
+  change above: the detached background pipeline has no concurrency limit at all,**
+  unlike the old streamed-response design where one held-open HTTP connection per
+  submission naturally capped how many pipelines could run at once. Several real
+  submissions in quick succession during live verification very likely crashed the
+  live Node process under memory/CPU pressure from multiple full agent pipelines
+  running fully concurrently - one submission's plan had already saved before the
+  crash (survived, since the SQLite file persists within the container), while a
+  process crash wipes the in-memory `pipelineFailures` Map and kills any pipeline
+  still in flight at the time, explaining why two other submissions from the same
+  window showed no result at all - not even a recorded failure - a full day later. Not
+  confirmed against real server logs (no access), but treated as certain enough to act
+  on rather than wait for proof that may never be available.
+  - **`MAX_CONCURRENT_PIPELINES = 2`** (`server.js`) caps how many
+    `runBackgroundPipeline` calls run at once; `scheduleBackgroundPipeline` either
+    starts a submission immediately (a free slot exists) or queues it - never rejected,
+    never dropped, just delayed until a slot frees up, tracked via a simple counter +
+    array-as-queue + a `pipelinesWaiting` `Set` (so the poll endpoint can tell "queued,
+    not started" apart from "started, not done yet").
+  - **`GET /employee/:employeeId/plan-status` gained a `waiting` field** for exactly
+    this distinction - the client's 4-step time estimate is calibrated against a
+    pipeline that has actually started, so showing it while still queued would be
+    actively wrong information, not just an estimate.
+  - **New "Getting things ready..." UI state**, shown only while `waiting: true` -
+    the 4-step progress list stays hidden the whole time (`resetProgressSteps` hides
+    both until the first poll response resolves which one applies), and the moment a
+    poll reports `waiting: false` for the first time, `showRunning()` fires and the
+    real time-based estimate starts counting *from that point*, not from form
+    submission - queue wait time was never part of what `PROGRESS_STAGES`' thresholds
+    are calibrated against. When there's no load at all (the common case), a
+    submission is never queued, so this state is never shown - the 4-step list appears
+    directly, unchanged from before this entry.
+  - **A real CSS bug caught and fixed during this same round, not just the logic
+    above**: `.progress-steps { display: flex; ... }` is an author-stylesheet rule
+    with equal specificity to the browser's built-in `[hidden]` default, so setting
+    the `hidden` attribute on `#progressSteps` had no visual effect at all - found via
+    an actual browser screenshot showing "Getting things ready..." and the 4-step list
+    rendered stacked on top of each other, not one replacing the other as intended. A
+    plain JS state check (`el.hidden === true`) would have looked correct while the
+    page rendered wrong - the screenshot is what caught it. Fixed with an explicit
+    `.progress-steps[hidden] { display: none; }` rule, the same pattern
+    `.loading-waiting[hidden]` already used correctly from the start.
+  - **Verified locally end to end, cheaply**: `MAX_CONCURRENT_PIPELINES` was
+    temporarily set to `1` for testing (reverted to `2` before committing) so two
+    real, near-simultaneous submissions were enough to exercise the queue path without
+    needing three. Confirmed via direct `plan-status` polling that exactly one showed
+    `waiting: true` while the other ran, confirmed via the server log that
+    "Calling Content Expert agent..." appeared twice in strict sequence (never
+    interleaved - the second pipeline's first real API call only fired after the
+    first pipeline's last one completed), and confirmed both ended up with real saved
+    plans (`plan_id=53`, `plan_id=54`) - neither "swallowed" by the other. Separately
+    confirmed the visible UI end to end in a real browser: "Getting things ready..."
+    shown correctly while a slot was occupied by another run, and the automatic,
+    unprompted transition to the real 4-step estimate (starting at "Understanding the
+    role...") the moment the occupying pipeline finished and freed the slot.
+  - **Live re-verification against the real Railway URL: pending, done once
+    immediately after this commit deploys** - deliberately exactly one real
+    end-to-end check, not another round of multiple simultaneous live submissions
+    (the whole point of this fix was to stop doing that on the live deployment).
 
 ---
 

@@ -1504,6 +1504,13 @@ function renderStartPage(referenceData, companyName, errorMessage) {
      under the eyebrow, so the (real, measured) 30s-300s wait never reads as stuck. */
   .loading-eta { margin: 0 0 1.4rem; color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; }
 
+  /* Shown only while queued behind the concurrency guard (2026-08-31) - not yet a real
+     pipeline stage, so it deliberately doesn't reuse .progress-step styling; the
+     4-step list itself stays hidden the whole time this is visible, and this hides the
+     moment the pipeline actually starts (see startProgressSimulation in the script). */
+  .loading-waiting { margin: 0 0 1.2rem; color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; }
+  .loading-waiting[hidden] { display: none; }
+
   /* Real-time progress steps, replacing a single generic spinner - one row per pipeline
      stage (see server.js's POST /start streaming + lib/orchestrator.js's onProgress).
      Same visual language as the rest of this page: muted-until-relevant text, the two
@@ -1515,6 +1522,13 @@ function renderStartPage(referenceData, companyName, errorMessage) {
      and icons than an initial pass, since this is the only thing on screen for the
      entire wait and should read as the page's main content, not a footnote. */
   .progress-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1.8rem; width: 100%; max-width: 380px; }
+  /* Without this, the [hidden] attribute set/cleared in showWaitingInQueue/showRunning
+     (script below) has no visual effect - this class's own display:flex above is an
+     author rule with equal specificity to the browser's built-in hidden-attribute
+     default, so it always wins regardless of hidden. Found live in this browser test:
+     the 4-step list and "Getting things ready..." rendered stacked on top of each
+     other instead of one replacing the other. */
+  .progress-steps[hidden] { display: none; }
   .progress-step { display: flex; align-items: center; gap: 1.1rem; font-size: 1.35rem; font-weight: 600; line-height: 1.3; color: var(--text-muted); }
   .progress-step-icon {
     flex: none; width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--hairline);
@@ -1624,6 +1638,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
 <div class="loading-overlay" id="loadingOverlay" hidden>
   <p class="loading-heading">Building the plan</p>
   <p class="loading-eta">This usually takes a minute or two</p>
+  <p class="loading-waiting" id="loadingWaiting" hidden>Getting things ready...</p>
   <ol class="progress-steps" id="progressSteps">
     <li class="progress-step" data-stage="content-expert"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
     <li class="progress-step" data-stage="process-expert"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
@@ -1722,6 +1737,29 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   function resetProgressSteps() {
     progressState = { doneStages: [], retrying: false };
     renderProgressSteps();
+    // Neither shown until the first plan-status poll says which one applies (see
+    // checkPlanStatus below) - avoids a flash of the 4-step list before it's known
+    // whether this submission is queued behind the concurrency guard or already
+    // running for real.
+    document.getElementById('loadingWaiting').hidden = true;
+    progressStepsEl.hidden = true;
+  }
+
+  // Shown only while queued behind MAX_CONCURRENT_PIPELINES other runs (server.js's
+  // concurrency guard, 2026-08-31) - the 4-step estimate below is calibrated against a
+  // pipeline that has actually started, so showing it while still queued would just be
+  // wrong information, not an estimate.
+  function showWaitingInQueue() {
+    document.getElementById('loadingWaiting').hidden = false;
+    progressStepsEl.hidden = true;
+  }
+
+  // Shown once the pipeline has actually started (dequeued, or never queued in the
+  // first place - the common case when there's no load) - switches away from the
+  // waiting message for good; checkPlanStatus below never calls this twice.
+  function showRunning() {
+    document.getElementById('loadingWaiting').hidden = true;
+    progressStepsEl.hidden = false;
   }
 
   function markAllStepsDone() {
@@ -2045,6 +2083,18 @@ function renderStartPage(referenceData, companyName, errorMessage) {
             fail(data.error);
             return;
           }
+          if (data.waiting) {
+            // Still queued behind the concurrency guard - not running yet, so the
+            // 4-step estimate doesn't apply. Never starts the timer here.
+            showWaitingInQueue();
+          } else if (!stopProgressSimulation) {
+            // First time we've seen it actually running (dequeued, or never queued at
+            // all - the common case) - start the real-time estimate from *now*, not
+            // from when the form was submitted, since queue wait time isn't part of
+            // what PROGRESS_STAGES' thresholds are calibrated against.
+            showRunning();
+            stopProgressSimulation = startProgressSimulation();
+          }
           if (attempt >= MAX_POLL_ATTEMPTS) {
             fail('This is taking longer than expected. Safe to try again with the same details, or check back in a few minutes.');
             return;
@@ -2075,7 +2125,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
         });
       })
       .then(function (data) {
-        stopProgressSimulation = startProgressSimulation();
         checkPlanStatus(data.employeeId, 1);
       })
       .catch(function (err) {
@@ -2199,24 +2248,76 @@ async function runBackgroundPipeline(db, employeeId, employeeFullName, intakeInp
   console.log(`POST /start: pipeline succeeded for ${employeeId} - plan_id=${result.planId} saved.`);
 }
 
+// Concurrency guard (2026-08-31) - found the hard way: the detached background
+// pipeline above has no concurrency limit of its own, unlike the old streamed-response
+// design where one held-open HTTP connection per submission naturally capped how many
+// pipelines could run at once. Several real submissions close together (this session's
+// own live testing) very likely crashed the live Node process under memory/CPU
+// pressure from multiple full agent pipelines (each several real, sequential Anthropic
+// calls) running fully concurrently - the in-memory pipelineFailures Map had no record
+// for any of them afterward (wiped by the crash) even though one submission's plan had
+// already saved to the (persistent-within-the-container) SQLite file before the crash,
+// which is exactly the asymmetry a process crash mid-flight would produce. Not
+// confirmed against real server logs (no access), but treated as certain enough to act
+// on. `MAX_CONCURRENT_PIPELINES` caps how many `runBackgroundPipeline` calls are
+// actually in flight at once; anything beyond that queues instead of starting
+// immediately - never rejected, never dropped, just delayed until a slot frees up.
+const MAX_CONCURRENT_PIPELINES = 2;
+let runningPipelineCount = 0;
+const pipelineQueue = [];
+// Employee ids currently queued (not yet started) - the poll endpoint below reports
+// this distinctly from "started but not finished yet", so the client can show a
+// generic "getting things ready" state instead of the real 4-step progress estimate,
+// which only means something once the pipeline has actually started running.
+const pipelinesWaiting = new Set();
+
+function scheduleBackgroundPipeline(db, employeeId, employeeFullName, intakeInput) {
+  function start() {
+    pipelinesWaiting.delete(employeeId);
+    runningPipelineCount += 1;
+    runBackgroundPipeline(db, employeeId, employeeFullName, intakeInput)
+      .catch((err) => {
+        // runBackgroundPipeline already catches everything meaningful internally and
+        // records it in pipelineFailures - reaching here at all would mean something
+        // outside that (a bug in this wrapper itself), logged so it's never silent.
+        console.error(`Unexpected error scheduling the background pipeline for ${employeeId}:`, err);
+      })
+      .finally(() => {
+        runningPipelineCount -= 1;
+        const next = pipelineQueue.shift();
+        if (next) next();
+      });
+  }
+
+  if (runningPipelineCount < MAX_CONCURRENT_PIPELINES) {
+    start();
+  } else {
+    pipelinesWaiting.add(employeeId);
+    pipelineQueue.push(start);
+  }
+}
+
 // The client polls this from the moment POST /start responds (2026-08-31) - not a
 // fallback for a dropped connection anymore, the only mechanism now that the pipeline
 // runs fully detached from the request that triggered it (see runBackgroundPipeline
 // above and POST /start's own comment for why). `failed` entries are consumed
-// (deleted) on read - one report to the polling client is enough. Read-only, no auth
-// (matches every other route on this single-view demo dashboard - see the file header
-// comment).
+// (deleted) on read - one report to the polling client is enough. `waiting: true`
+// means still queued behind MAX_CONCURRENT_PIPELINES other runs, not yet started -
+// distinct from "started but not done yet" (waiting: false, hasPlan: false), which is
+// what the client's real 4-step progress estimate is calibrated against. Read-only, no
+// auth (matches every other route on this single-view demo dashboard - see the file
+// header comment).
 app.get('/employee/:employeeId/plan-status', (req, res) => {
   const plan = db.prepare('SELECT plan_id FROM plans WHERE employee_id = ? ORDER BY plan_id DESC LIMIT 1').get(req.params.employeeId);
-  if (plan) return res.json({ hasPlan: true, planId: plan.plan_id, failed: false });
+  if (plan) return res.json({ hasPlan: true, planId: plan.plan_id, failed: false, waiting: false });
 
   const failure = pipelineFailures.get(req.params.employeeId);
   if (failure) {
     pipelineFailures.delete(req.params.employeeId);
-    return res.json({ hasPlan: false, failed: true, error: failure.error });
+    return res.json({ hasPlan: false, failed: true, error: failure.error, waiting: false });
   }
 
-  res.json({ hasPlan: false, failed: false });
+  res.json({ hasPlan: false, failed: false, waiting: pipelinesWaiting.has(req.params.employeeId) });
 });
 
 // Creates the employee, saves the manager's intake answers, then runs the full
@@ -2334,7 +2435,7 @@ app.post('/start', async (req, res) => {
   // script) - polling is the only mechanism now, not a fallback for a dropped stream.
   res.json({ employeeId: employee.employee_id });
 
-  runBackgroundPipeline(db, employee.employee_id, employee.full_name, {
+  scheduleBackgroundPipeline(db, employee.employee_id, employee.full_name, {
     buddyEmail,
     mentorEmail: body.mentorEmail,
     jobPostingText: body.jobPostingText || null,
