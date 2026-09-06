@@ -1511,6 +1511,19 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   .loading-waiting { margin: 0 0 1.2rem; color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; }
   .loading-waiting[hidden] { display: none; }
 
+  /* Shown once elapsed time passes every PROGRESS_STAGES threshold but the real pipeline
+     still hasn't finished (2026-09-06) - a real run can now genuinely run past this
+     estimate (the Gatekeeper feedback retry loop can add a full extra Content
+     Writer + Gatekeeper round trip, on top of any stage's own JSON-failure retries).
+     Without this, all 4 steps just sit at "done" forever once their thresholds pass,
+     indistinguishable from actually being finished - looks frozen even though polling
+     is still running underneath (see checkPlanStatus/renderProgressSteps in the
+     script). Sits below the 4-step list, not replacing it - the steps stay showing
+     "done" (a fair approximation - the pipeline likely did clear those stages by now),
+     this just adds the one piece of information they can no longer convey on their own. */
+  .loading-retrying { margin: 1rem 0 0; color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; text-align: center; }
+  .loading-retrying[hidden] { display: none; }
+
   /* Real-time progress steps, replacing a single generic spinner - one row per pipeline
      stage (see server.js's POST /start streaming + lib/orchestrator.js's onProgress).
      Same visual language as the rest of this page: muted-until-relevant text, the two
@@ -1645,6 +1658,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     <li class="progress-step" data-stage="content-writer"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
     <li class="progress-step" data-stage="gatekeeper"><span class="progress-step-icon"></span><span class="progress-step-label"></span></li>
   </ol>
+  <p class="loading-retrying" id="loadingRetrying" hidden>Still working - this is taking a bit longer than usual...</p>
 </div>
 
 <script>
@@ -1689,6 +1703,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   var errorBanner = document.getElementById('errorBanner');
   var loadingOverlay = document.getElementById('loadingOverlay');
   var progressStepsEl = document.getElementById('progressSteps');
+  var loadingRetryingEl = document.getElementById('loadingRetrying');
   var submitBtn = document.getElementById('submitBtn');
 
   // Mirrors lib/orchestrator.js's real pipeline stages, in order, each with the
@@ -1732,6 +1747,14 @@ function renderStartPage(referenceData, companyName, errorMessage) {
       li.classList.toggle('progress-step--retrying', isActive && progressState.retrying);
       label.textContent = isActive && progressState.retrying ? RETRY_LABEL : step.label;
     });
+    // progressState.retrying only ever becomes true once elapsed time passes every
+    // step's threshold (the last one is the largest), so by the time it's true every
+    // step above already reads "done" and none of them is ever the "active" one the
+    // per-step retrying branch above is written for - there's no step left to carry
+    // this signal. This is the fallback: one message below the list saying the
+    // pipeline is still genuinely running, instead of 4 checkmarks that quietly stop
+    // meaning "done" and start meaning "done, or possibly stuck, no way to tell."
+    loadingRetryingEl.hidden = !progressState.retrying;
   }
 
   function resetProgressSteps() {
@@ -2033,7 +2056,14 @@ function renderStartPage(referenceData, companyName, errorMessage) {
   // unaffected by adding a periodic heartbeat write), well short of this pipeline's
   // real ~95-190s+ range once any stage's own retry logic kicks in.
   var POLL_INTERVAL_MS = 4000;
-  var MAX_POLL_ATTEMPTS = 75; // ~5 minutes of checking before giving up
+  // 10 minutes (2026-09-06, raised from 5) - the Gatekeeper feedback retry loop (see
+  // lib/orchestrator.js, MAX_GATEKEEPER_FEEDBACK_ATTEMPTS) can add a full extra
+  // Content Writer + Gatekeeper round trip on top of the base ~96s pipeline, and each
+  // of those calls can independently retry up to 4 times on a JSON-shape failure
+  // (withRetry) - stacked with the Content Expert/Process Expert collapse-retry loop,
+  // the real worst case is well past the old 5-minute ceiling, which gave up on (and
+  // stopped showing progress for) a pipeline that was still genuinely working.
+  var MAX_POLL_ATTEMPTS = 150; // ~10 minutes of checking before giving up
 
   // Hoisted out of the submit handler (2026-09-06) so a page load that resumes an
   // in-flight submission - see beginPolling below - can reach the exact same polling
