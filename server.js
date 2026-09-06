@@ -2023,6 +2023,90 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     errorBanner.hidden = false;
   }
 
+  // Polling is the only mechanism now (2026-08-31, see MEMORY.md) - POST /start
+  // responds immediately with just { employeeId }, and the real pipeline runs fully
+  // detached from that request server-side (see server.js's runBackgroundPipeline).
+  // A long-lived streamed response was the original design here, with this same
+  // polling endpoint only as a fallback for a dropped connection - promoted to the
+  // only path after the streamed response was found to die silently around the
+  // ~100s mark on the live deployment (confirmed with two independent HTTP clients,
+  // unaffected by adding a periodic heartbeat write), well short of this pipeline's
+  // real ~95-190s+ range once any stage's own retry logic kicks in.
+  var POLL_INTERVAL_MS = 4000;
+  var MAX_POLL_ATTEMPTS = 75; // ~5 minutes of checking before giving up
+
+  // Hoisted out of the submit handler (2026-09-06) so a page load that resumes an
+  // in-flight submission - see beginPolling below - can reach the exact same polling
+  // logic, not a second copy of it. stopProgressSimulation lives here (not as a local
+  // inside one call) since fail() and checkPlanStatus() both need to see whichever
+  // instance beginPolling most recently started.
+  var stopProgressSimulation = null;
+
+  function fail(message) {
+    if (stopProgressSimulation) stopProgressSimulation();
+    loadingOverlay.hidden = true;
+    submitBtn.disabled = false;
+    showError(message || 'Something went wrong.');
+  }
+
+  function checkPlanStatus(employeeId, attempt) {
+    fetch('/employee/' + encodeURIComponent(employeeId) + '/plan-status')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.hasPlan) {
+          if (stopProgressSimulation) stopProgressSimulation();
+          markAllStepsDone();
+          window.location.href = '/plan/' + data.planId;
+          return;
+        }
+        if (data.failed) {
+          fail(data.error);
+          return;
+        }
+        if (data.waiting) {
+          // Still queued behind the concurrency guard - not running yet, so the
+          // 4-step estimate doesn't apply. Never starts the timer here.
+          showWaitingInQueue();
+        } else if (!stopProgressSimulation) {
+          // First time we've seen it actually running (dequeued, or never queued at
+          // all - the common case) - start the real-time estimate from *now*, not
+          // from when the form was submitted, since queue wait time isn't part of
+          // what PROGRESS_STAGES' thresholds are calibrated against. Also what a page
+          // load resuming an already-running submission (see beginPolling) lands on -
+          // the estimate simply starts counting from the moment it was first observed
+          // running, same as the queued-then-dequeued case already does.
+          showRunning();
+          stopProgressSimulation = startProgressSimulation();
+        }
+        if (attempt >= MAX_POLL_ATTEMPTS) {
+          fail('This is taking longer than expected. Safe to try again with the same details, or check back in a few minutes.');
+          return;
+        }
+        setTimeout(function () { checkPlanStatus(employeeId, attempt + 1); }, POLL_INTERVAL_MS);
+      })
+      .catch(function () {
+        // A failed status check is itself just a transient hiccup, not the answer -
+        // keep polling on the same schedule rather than treating one failed check as
+        // the final word.
+        if (attempt >= MAX_POLL_ATTEMPTS) {
+          fail('This is taking longer than expected. Safe to try again with the same details, or check back in a few minutes.');
+          return;
+        }
+        setTimeout(function () { checkPlanStatus(employeeId, attempt + 1); }, POLL_INTERVAL_MS);
+      });
+  }
+
+  // Shared by a fresh submission and a resumed one (see the bottom of this file for
+  // the resume check) - shows the overlay and starts polling from attempt 1. Doesn't
+  // touch the URL itself; each caller decides whether/how to reflect employeeId there.
+  function beginPolling(employeeId) {
+    resetProgressSteps();
+    loadingOverlay.hidden = false;
+    submitBtn.disabled = true;
+    stopProgressSimulation = null;
+    checkPlanStatus(employeeId, 1);
+  }
+
   document.getElementById('intakeForm').addEventListener('submit', function (e) {
     e.preventDefault();
     errorBanner.hidden = true;
@@ -2048,71 +2132,6 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     loadingOverlay.hidden = false;
     submitBtn.disabled = true;
 
-    var stopProgressSimulation = null;
-
-    function fail(message) {
-      if (stopProgressSimulation) stopProgressSimulation();
-      loadingOverlay.hidden = true;
-      submitBtn.disabled = false;
-      showError(message || 'Something went wrong.');
-    }
-
-    // Polling is the only mechanism now (2026-08-31, see MEMORY.md) - POST /start
-    // responds immediately with just { employeeId }, and the real pipeline runs fully
-    // detached from that request server-side (see server.js's runBackgroundPipeline).
-    // A long-lived streamed response was the original design here, with this same
-    // polling endpoint only as a fallback for a dropped connection - promoted to the
-    // only path after the streamed response was found to die silently around the
-    // ~100s mark on the live deployment (confirmed with two independent HTTP clients,
-    // unaffected by adding a periodic heartbeat write), well short of this pipeline's
-    // real ~95-190s+ range once any stage's own retry logic kicks in.
-    var POLL_INTERVAL_MS = 4000;
-    var MAX_POLL_ATTEMPTS = 75; // ~5 minutes of checking before giving up
-
-    function checkPlanStatus(employeeId, attempt) {
-      fetch('/employee/' + encodeURIComponent(employeeId) + '/plan-status')
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          if (data.hasPlan) {
-            if (stopProgressSimulation) stopProgressSimulation();
-            markAllStepsDone();
-            window.location.href = '/plan/' + data.planId;
-            return;
-          }
-          if (data.failed) {
-            fail(data.error);
-            return;
-          }
-          if (data.waiting) {
-            // Still queued behind the concurrency guard - not running yet, so the
-            // 4-step estimate doesn't apply. Never starts the timer here.
-            showWaitingInQueue();
-          } else if (!stopProgressSimulation) {
-            // First time we've seen it actually running (dequeued, or never queued at
-            // all - the common case) - start the real-time estimate from *now*, not
-            // from when the form was submitted, since queue wait time isn't part of
-            // what PROGRESS_STAGES' thresholds are calibrated against.
-            showRunning();
-            stopProgressSimulation = startProgressSimulation();
-          }
-          if (attempt >= MAX_POLL_ATTEMPTS) {
-            fail('This is taking longer than expected. Safe to try again with the same details, or check back in a few minutes.');
-            return;
-          }
-          setTimeout(function () { checkPlanStatus(employeeId, attempt + 1); }, POLL_INTERVAL_MS);
-        })
-        .catch(function () {
-          // A failed status check is itself just a transient hiccup, not the answer -
-          // keep polling on the same schedule rather than treating one failed check as
-          // the final word.
-          if (attempt >= MAX_POLL_ATTEMPTS) {
-            fail('This is taking longer than expected. Safe to try again with the same details, or check back in a few minutes.');
-            return;
-          }
-          setTimeout(function () { checkPlanStatus(employeeId, attempt + 1); }, POLL_INTERVAL_MS);
-        });
-    }
-
     fetch('/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2125,12 +2144,28 @@ function renderStartPage(referenceData, companyName, errorMessage) {
         });
       })
       .then(function (data) {
-        checkPlanStatus(data.employeeId, 1);
+        // Reflects the new submission in the URL (2026-09-06) - without this, a page
+        // refresh while the pipeline is still running has no way to know which
+        // employee it was polling for (employeeId only ever lived in this function's
+        // local state before), and reloads a blank intake form instead of resuming.
+        // replaceState, not pushState: this is the same logical screen continuing, not
+        // a new page to land on via the back button.
+        var url = new URL(window.location.href);
+        url.searchParams.set('employeeId', data.employeeId);
+        history.replaceState(null, '', url);
+        beginPolling(data.employeeId);
       })
       .catch(function (err) {
         fail(err.message);
       });
   });
+
+  // Resumes an in-flight submission on page load (2026-09-06) - if employeeId is in
+  // the URL (see the submit handler above), a refresh mid-pipeline continues polling
+  // for it instead of showing the empty form. No employeeId in the URL means a real
+  // first visit, so the form just renders normally with nothing further to do here.
+  var resumeEmployeeId = new URL(window.location.href).searchParams.get('employeeId');
+  if (resumeEmployeeId) beginPolling(resumeEmployeeId);
 })();
 </script>
 </body>
