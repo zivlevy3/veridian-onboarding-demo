@@ -1975,6 +1975,22 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     return pool;
   }
 
+  // The opposite adjustment from mentorCandidates above - a Buddy is specifically
+  // "someone who isn't the manager" (day-to-day peer support, not the management
+  // relationship), so the currently-selected manager is excluded here rather than
+  // added (2026-09-06 - a manager could otherwise be picked as their own report's
+  // Buddy, which setEmployeeOptions/resolveOfficeTourGuide then had no way to tell
+  // apart from a real, separate Buddy). If the manager changes to match whichever
+  // person is already selected as Buddy, refreshBuddy (called on the manager's own
+  // change handler, see below) rebuilds this list without that email in it -
+  // setEmployeeOptions's own previous-value check then finds no match and the
+  // selection resets to "None" rather than silently keeping an option no longer
+  // offered.
+  function buddyCandidates() {
+    var managerEmail = fldManager.value;
+    return teamCandidates().filter(function (e) { return e.email !== managerEmail; });
+  }
+
   function setEmployeeOptions(select, list, opts) {
     opts = opts || {};
     var previous = select.value;
@@ -1991,7 +2007,7 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     setEmployeeOptions(fldManager, managerCandidates(), { placeholder: 'Select a manager' });
   }
   function refreshBuddy() {
-    setEmployeeOptions(fldBuddy, teamCandidates(), { placeholder: 'None' });
+    setEmployeeOptions(fldBuddy, buddyCandidates(), { placeholder: 'None' });
   }
   function refreshMentor() {
     setEmployeeOptions(fldMentor, mentorCandidates(), { placeholder: 'Select a mentor' });
@@ -2017,7 +2033,14 @@ function renderStartPage(referenceData, companyName, errorMessage) {
     refreshMentor();
   });
   fldRole.addEventListener('change', function () { toggleOther(fldRole, fldRoleOtherWrap); });
-  fldManager.addEventListener('change', refreshMentor);
+  fldManager.addEventListener('change', function () {
+    // Order matters: refreshBuddy must run after fldManager.value has already
+    // changed (it has, by the time a 'change' handler runs) so buddyCandidates
+    // excludes the new manager, not the old one - and so a Buddy selection that now
+    // matches the new manager gets reset instead of silently kept.
+    refreshBuddy();
+    refreshMentor();
+  });
 
   // Auto-fills the company email from the name as "firstname.lastname@veridian.ai"
   // (lowercase, non-letters stripped) - stops the moment the visitor types into the
